@@ -75,9 +75,9 @@ Each evidence file is classified by rigor:
 
 | Quality Tier | Evidence IDs | Description |
 |---|---|---|
-| **Strong** | EV-001–EV-005, EV-013, EV-019 | Raw command + full unredacted terminal output; independently reproducible |
+| **Strong** | EV-001–EV-005, EV-013, EV-019–EV-020 | Raw command + full unredacted terminal output; independently reproducible |
 | **Moderate** | EV-006–EV-012, EV-014–EV-016 | Raw output with privacy redactions or structural summaries rather than verbatim copy |
-| **Weak** | EV-017–EV-018 | Command summaries (not raw terminal sessions); results asserted rather than demonstrated via follow-up commands (e.g., missing `cat /tmp/marker.txt`); unresolved confound (`--dangerously-skip-permissions`) |
+| **Weak** | EV-017–EV-018 | Command summaries (not raw terminal sessions); results asserted rather than demonstrated via follow-up commands (superseded by EV-020 confound resolution) |
 
 Claims based on Weak-tier evidence should be treated as **directional indicators** requiring independent reproduction, not as confirmed behavioral findings.
 

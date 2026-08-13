@@ -115,11 +115,22 @@ ask?: string[]
 {"scope": "project"}
 ```
 
-Observed list prefixes in `response` text:
-
 ```text
 global<TAB>allow
 global<TAB>deny
 shared<TAB>allow
 shared<TAB>deny
 ```
+
+### 6.10 Granular Permission Rule Grammar DSL `[LIVE-1.1.12 · 2026-08-13]` `EV-013`, `EV-015`
+
+Authorization rule strings in `allow`, `deny`, and `ask` arrays follow a structured Domain-Specific Language (DSL):
+
+| Rule Pattern | Target Tool / Scope | Description | Live Examples |
+|---|---|---|---|
+| `unsandboxed(<path_or_cmd>)` | `run_command` | Executes specified command directly on the host OS, bypassing sandbox isolation containers. | `unsandboxed(/opt/homebrew/bin/gws)`, `unsandboxed(git status)` |
+| `command(<cmd_prefix>)` | `run_command` | Authorizes execution of commands matching the leading prefix string. | `command(git add)`, `command(git commit)`, `command(ls)` |
+| `read_url(<domain_or_pattern>)` | `read_url_content` / Web | Authorizes HTTP text fetching and browser egress to specified host domains. | `read_url(antigravity.google)`, `read_url(docs.pieces.app)` |
+| `mcp(<server>/<tool>)` | MCP Tool Dispatch | Authorizes or restricts specific Model Context Protocol tool operations. | `deny: ["mcp(chrome-devtools-mcp/list_pages)"]` |
+| `read_file(<path_pattern>)` | `view_file` / Core | Denies or allows reading files matching sensitive workspace path patterns. | `deny: ["read_file(/path/.opencode)"]` |
+

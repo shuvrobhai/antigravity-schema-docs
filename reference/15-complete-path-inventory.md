@@ -96,10 +96,12 @@ updater/
 | File Path | Schema Model | Purpose |
 |---|---|---|
 | `~/.gemini/config/config.json` | `MasterConfigSchema` | Master extensibility manifest storing enabled plugin states, global permission grants (allow/deny commands), browser JS execution policy, and artifact review modes. |
+| `~/.gemini/config/import_manifest.json` | `ImportManifestSchema` | Cross-ecosystem plugin/skill migration history tracking source origins (`claude-code`, `gemini-cli`, `antigravity`) and components. `[LIVE-1.1.12 · 2026-08-13]` |
 | `~/.gemini/projects.json` | `ProjectsIndexSchema` | Map of all known workspace directory paths to project aliases. |
 | `~/.gemini/antigravity/antigravity_state.pbtxt` | `DesktopStateSchema` | Antigravity 2.0 Desktop app state (`post_onboarding`, `seen_nuxs`, `agent_onboarding_completed`, `last_selected_agent_model`, `migrate_convos_into_projects`, `installation_uuid`, `migrate_retroactive_projects`, `migrations`). |
 | `~/.gemini/antigravity-ide/` | `IDEStateSchema` | Antigravity IDE state (`installation_id`, `active_conversations_count`, `html_artifacts_count`, `browser_recordings`). |
-| `~/.gemini/trustedFolders.json` | `TrustedFoldersSchema` | Trust policy map classifying folders into `TRUST_FOLDER` vs `DO_NOT_TRUST`. |
+| `~/.gemini/extension_integrity.json` | Cryptographic Verification Store | Extension integrity manifest verifying binary hashes and store cryptographic signatures. `[LIVE-1.1.12 · 2026-08-13]` |
+| `~/.gemini/trustedFolders.json` | JSON Key-Value Map | Trust policy map classifying folders into `TRUST_FOLDER` vs `DO_NOT_TRUST`. `[LIVE-1.1.12 · 2026-08-13]` |
 | `~/.gemini/trusted_hooks.json` | `TrustedHooksSchema` | Trusted statusline/script execution whitelist per directory. |
 | `~/.gemini/config/trusted_hooks.json` | `TrustedHooksSchema` | Additional live-observed trusted hooks path; live contents `[]` `[LIVE-1.1.12 · 2026-08-13]` |
 | `~/.gemini/GEMINI.md` | `GEMINI.md` | Global behavioral constraints and user rules prompt. |

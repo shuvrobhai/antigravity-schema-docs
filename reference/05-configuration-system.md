@@ -87,7 +87,7 @@ String values support `$VAR_NAME`, `${VAR_NAME}`, `${VAR_NAME:-DEFAULT_VALUE}` `
 
 - **`runningLightSpeed` Modes:** `fast` (high-cadence spinner), `medium` (default balanced cadence), `slow` (low-frequency for remote SSH/bandwidth saving), `off` (disables terminal animations for screen-readers and headless logs).
 
-> **`model` (verified 2026-08-11 via config diff + live probe `[GOOGLE]`/A):** Not listed on the antigravity.google settings page — discovered by diffing the live config (`scripts/diff_settings.py`). Confirmed hands-on: a headless `agy -p` run with **no** `--model` flag resolved the session's `Model Selection` to the configured value (`Gemini 3.5 Flash (Low)`), proving the key is the persisted default-model setting. Value format matches the documented `--model="Gemini 3.5 Flash"` flag format; effort tier (`Low`/`High`) is part of the value.
+> **`model` (verified 2026-08-11 via live config diff + live probe `[GOOGLE]`/A):** Not listed on the antigravity.google settings page — discovered by inspecting and diffing live `~/.gemini/antigravity-cli/settings.json`. Confirmed hands-on: a headless `agy -p` run with **no** `--model` flag resolved the session's `Model Selection` to the configured value (`Gemini 3.5 Flash (Low)`), proving the key is the persisted default-model setting. Value format matches the documented `--model="Gemini 3.5 Flash"` flag format; effort tier (`Low`/`High`) is part of the value.
 
 #### Custom Scripts `[DOCS]`
 

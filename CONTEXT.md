@@ -25,7 +25,7 @@ The authority marker on each claim — `[DOCS]`, `[GOOGLE]`, `[LIVE-1.1.12 · 20
 _Avoid_: citation, footnote
 
 **Evidence file**:
-`evidence/agy-1.1.12/evidence.md` — the master record of EV-001–EV-019 live observations that ground `[LIVE-1.1.12 · 2026-08-13]` claims.
+`evidence/agy-1.1.12/evidence.md` — the master record of EV-001–EV-020 live observations that ground `[LIVE-1.1.12 · 2026-08-13]` claims.
 _Avoid_: log, proof
 
 **Source archive**:
@@ -39,3 +39,11 @@ _Avoid_: source index, sources table
 **Native schema catalog**:
 `schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 17 core native schemas documented in section 20; validated against drift by `scripts/validate.py`.
 _Avoid_: json templates, config definitions
+
+**Schema-to-Doc Parity Gate**:
+Automated AST validation checking that all documented configuration properties, enums, and descriptors in `reference/` match definitions in `schemas/` without drift.
+_Avoid_: schema sync check, field audit
+
+**Evidence Consistency Checker**:
+Automated validation verifying live evidence range alignment across works-cited/summary tables and prohibiting stale confound phrasing once an EV is marked `RESOLVED`.
+_Avoid_: proof checker, ev linter

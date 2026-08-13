@@ -17,13 +17,45 @@
     },
     "type": {
       "type": "string",
-      "enum": ["USER_INPUT", "PLANNER_RESPONSE", "TOOL_INVOCATION", "TOOL_RESULT", "STATUS_UPDATE", "ERROR"],
+      "enum": [
+        "USER_INPUT",
+        "CONVERSATION_HISTORY",
+        "PLANNER_RESPONSE",
+        "CHECKPOINT",
+        "ERROR_MESSAGE",
+        "VIEW_FILE",
+        "LIST_DIRECTORY",
+        "FIND",
+        "GREP_SEARCH",
+        "RUN_COMMAND",
+        "ASK_QUESTION",
+        "CODE_ACTION",
+        "EPHEMERAL_MESSAGE",
+        "GENERIC",
+        "INVOKE_SUBAGENT",
+        "MCP_TOOL",
+        "READ_URL_CONTENT",
+        "SEARCH_WEB",
+        "SYSTEM_MESSAGE",
+        "TOOL_CALL",
+        "TOOL_INVOCATION",
+        "TOOL_RESULT",
+        "STATUS_UPDATE",
+        "ERROR",
+        "SUBAGENT_DELEGATION",
+        "SUBAGENT_RESPONSE",
+        "RECOVERY"
+      ],
       "description": "Semantic classifier of the step content."
     },
     "status": {
       "type": "string",
-      "enum": ["DONE", "ERROR", "PENDING", "CANCELLED"],
+      "enum": ["DONE", "RUNNING", "ERROR", "PENDING", "CANCELLED"],
       "description": "Resolution status of the step."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp string (YYYY-MM-DDTHH:MM:SSZ) recorded at step creation."
     },
     "content": {
       "type": "string",

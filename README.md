@@ -38,7 +38,7 @@ antigtavity-schema/
 │   └── 20-schema-toolkit-and-native-schemas.md # JSON schemas & tool configurations
 │
 ├── evidence/                      # Empirical grounding & web snapshots
-│   ├── agy-1.1.12/                # Empirical test logs (EV-001 through EV-019)
+│   ├── agy-1.1.12/                # Empirical test logs (EV-001 through EV-020)
 │   │   └── evidence.md            # Live system observations & verification runs
 │   └── sources/                   # 46 point-in-time Markdown snapshots of cited URLs
 │       ├── index.md               # Generated snapshot manifest & citation map
@@ -130,3 +130,4 @@ make force-fetch-sources
 - [ADR-0001: Modular Reference with Composed Parent](docs/adr/0001-modular-reference-with-composed-parent.md)
 - [ADR-0002: Archive Cited Sources as Local Markdown Snapshots](docs/adr/0002-archive-cited-sources.md)
 - [ADR-0003: Standalone JSON Schema Catalog with Automated Drift Validation](docs/adr/0003-standalone-json-schema-catalog.md)
+- [ADR-0004: AST-Driven Table and Schema Linter for Automated Drift Prevention](docs/adr/0004-ast-table-and-schema-linter.md)

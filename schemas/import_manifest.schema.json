@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/import_manifest.schema.json",
+  "title": "ImportManifestSchema",
+  "description": "Google Antigravity cross-ecosystem plugin and skill import history manifest (~/.gemini/config/import_manifest.json).",
+  "type": "object",
+  "properties": {
+    "imports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the imported plugin or skill package."
+          },
+          "source": {
+            "type": "string",
+            "enum": ["claude-code", "gemini-cli", "antigravity"],
+            "description": "Upstream source ecosystem from which components were migrated."
+          },
+          "importedAt": {
+            "type": "string",
+            "description": "ISO 8601 UTC timestamp of import."
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["skills", "agents", "hooks", "commands", "mcpServers"]
+            },
+            "description": "List of distinct component types successfully migrated into the local installation."
+          }
+        },
+        "required": ["name", "source", "importedAt", "components"]
+      },
+      "description": "List of imported third-party and migrated ecosystem extensions."
+    }
+  },
+  "required": ["imports"],
+  "additionalProperties": false
+}

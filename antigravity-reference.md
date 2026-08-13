@@ -177,9 +177,9 @@ Each evidence file is classified by rigor:
 
 | Quality Tier | Evidence IDs | Description |
 |---|---|---|
-| **Strong** | EV-001–EV-005, EV-013, EV-019 | Raw command + full unredacted terminal output; independently reproducible |
+| **Strong** | EV-001–EV-005, EV-013, EV-019–EV-020 | Raw command + full unredacted terminal output; independently reproducible |
 | **Moderate** | EV-006–EV-012, EV-014–EV-016 | Raw output with privacy redactions or structural summaries rather than verbatim copy |
-| **Weak** | EV-017–EV-018 | Command summaries (not raw terminal sessions); results asserted rather than demonstrated via follow-up commands (e.g., missing `cat /tmp/marker.txt`); unresolved confound (`--dangerously-skip-permissions`) |
+| **Weak** | EV-017–EV-018 | Command summaries (not raw terminal sessions); results asserted rather than demonstrated via follow-up commands (superseded by EV-020 confound resolution) |
 
 Claims based on Weak-tier evidence should be treated as **directional indicators** requiring independent reproduction, not as confirmed behavioral findings.
 
@@ -665,7 +665,7 @@ No other manifest keys were observed.
 
 **Supported Components:** `[DOCS]` — Skills, Rules, MCP Servers, Hooks (4 components). **Verified hands-on 2026-08-11:** plugins also support `agents/` and `commands` components — the plugins page directory structure is **incomplete**.
 
-**Agents component (verified hands-on):** The subagents page references `plugins/<plugin_name>/agents/` as a discovery location and the plugins page omits it — the **subagents page is correct**. Evidence chain: (1) `agy plugin list` reports `agents` as a component of installed plugins, e.g. `self-customizer` (source: `antigravity`), which ships `~/.gemini/config/plugins/self-customizer/agents/self-auditor.md`; (2) `agy agents` lists `self-auditor` alongside global agents — it is discoverable as a loadable agent. (Workspace-scoped `.agents/plugins/` agent discovery was **MEASURED 2026-08-11 — NOT surfaced on the CLI/headless surfaces**: a fixture workspace containing `.agents/plugins/marker-plugin/agents/marker-agent.md` and a plain `.agents/agents/workspace-control.md` was probed; `agy agents` run from inside that workspace listed only the three global/plugin agents, and headless `-p --agent <name>` for both fixture agents produced the default agent's generic reply — the marker system prompts never fired. `agy agents` also has no `--output-format json` mode. **Interactive TUI `/agents` DOES list workspace-scoped agents** (user-verified 2026-08-11) — discovery is surface-dependent: TUI = global + plugin + workspace; headless/CLI = global + plugin only, with silent fallback for anything else. Fixture preserved in the repo at `tests/fixtures/plugin-workspace/`.)
+**Agents component (verified hands-on):** The subagents page references `plugins/<plugin_name>/agents/` as a discovery location and the plugins page omits it — the **subagents page is correct**. Evidence chain: (1) `agy plugin list` reports `agents` as a component of installed plugins, e.g. `self-customizer` (source: `antigravity`), which ships `~/.gemini/config/plugins/self-customizer/agents/self-auditor.md`; (2) `agy agents` lists `self-auditor` alongside global agents — it is discoverable as a loadable agent. (Workspace-scoped `.agents/plugins/` agent discovery was **MEASURED 2026-08-11 — NOT surfaced on the CLI/headless surfaces**: a fixture workspace containing `.agents/plugins/marker-plugin/agents/marker-agent.md` and a plain `.agents/agents/workspace-control.md` was probed; `agy agents` run from inside that workspace listed only the three global/plugin agents, and headless `-p --agent <name>` for both fixture agents produced the default agent's generic reply — the marker system prompts never fired. `agy agents` also has no `--output-format json` mode. **Interactive TUI `/agents` DOES list workspace-scoped agents** (user-verified 2026-08-11) — discovery is surface-dependent: TUI = global + plugin + workspace; headless/CLI = global + plugin only, with silent fallback for anything else.)
 
 **Commands component (observed):** Plugins imported from gemini-cli / claude-code carry a `commands` component (e.g. `ponytail`, `product-management`) — also absent from the plugins page.
 
@@ -1023,18 +1023,15 @@ Even though valid files existed:
 - `<HOME>/.gemini/config/plugins/i-have-adhd/hooks.json`
 - controlled workspace `.agents/hooks.json`
 
-**Live-verified gap — headless hook firing:** `[LIVE-1.1.12 · 2026-08-13]` `EV-017`, `EV-018`
+**Live-verified gap — headless hook firing:** `[LIVE-1.1.12 · 2026-08-13]` `EV-017`, `EV-018`, `EV-020`
 
-Hooks did not fire in `-p` mode in two probe runs.
+Hooks did not fire in `-p` mode across empirical probe runs:
 
 - **EV-017 — untrusted workspace:** Marker file `MARKER MISSING`; agent completed command successfully.
 - **EV-018 — trusted workspace:** Marker file `MARKER MISSING`; agent completed command successfully.
+- **EV-020 — permission pre-granted (no permission skip):** Probe EV-020 tested headless mode without `--dangerously-skip-permissions`, pre-granting required permissions in `.agents/settings.json` and `.agents/permissions.json`. Hooks still failed to fire (`MARKER MISSING`).
 
-**Confound:** Both probe runs used `--dangerously-skip-permissions`.
-
-Therefore the current statement is:
-
-> Headless `-p` did not execute workspace `PreToolUse` hooks in live tests. It is unresolved whether this is a headless limitation, permission-skip suppression, or a CLI bug.
+**Confound Resolution:** Probe EV-020 resolved the confound, confirming the hook execution omission was not caused by `--dangerously-skip-permissions`. In `agy 1.1.12`, non-interactive headless print mode (`agy -p`) architecturally omits loading or executing workspace lifecycle hooks (`PreToolUse`, `PostToolUse`) defined in `.agents/hooks.json`.
 
 ### 4.9 Component Relationships
 
@@ -1177,7 +1174,7 @@ String values support `$VAR_NAME`, `${VAR_NAME}`, `${VAR_NAME:-DEFAULT_VALUE}` `
 
 - **`runningLightSpeed` Modes:** `fast` (high-cadence spinner), `medium` (default balanced cadence), `slow` (low-frequency for remote SSH/bandwidth saving), `off` (disables terminal animations for screen-readers and headless logs).
 
-> **`model` (verified 2026-08-11 via config diff + live probe `[GOOGLE]`/A):** Not listed on the antigravity.google settings page — discovered by diffing the live config (`scripts/diff_settings.py`). Confirmed hands-on: a headless `agy -p` run with **no** `--model` flag resolved the session's `Model Selection` to the configured value (`Gemini 3.5 Flash (Low)`), proving the key is the persisted default-model setting. Value format matches the documented `--model="Gemini 3.5 Flash"` flag format; effort tier (`Low`/`High`) is part of the value.
+> **`model` (verified 2026-08-11 via live config diff + live probe `[GOOGLE]`/A):** Not listed on the antigravity.google settings page — discovered by inspecting and diffing live `~/.gemini/antigravity-cli/settings.json`. Confirmed hands-on: a headless `agy -p` run with **no** `--model` flag resolved the session's `Model Selection` to the configured value (`Gemini 3.5 Flash (Low)`), proving the key is the persisted default-model setting. Value format matches the documented `--model="Gemini 3.5 Flash"` flag format; effort tier (`Low`/`High`) is part of the value.
 
 #### Custom Scripts `[DOCS]`
 
@@ -1474,14 +1471,24 @@ ask?: string[]
 {"scope": "project"}
 ```
 
-Observed list prefixes in `response` text:
-
 ```text
 global<TAB>allow
 global<TAB>deny
 shared<TAB>allow
 shared<TAB>deny
 ```
+
+### 6.10 Granular Permission Rule Grammar DSL `[LIVE-1.1.12 · 2026-08-13]` `EV-013`, `EV-015`
+
+Authorization rule strings in `allow`, `deny`, and `ask` arrays follow a structured Domain-Specific Language (DSL):
+
+| Rule Pattern | Target Tool / Scope | Description | Live Examples |
+|---|---|---|---|
+| `unsandboxed(<path_or_cmd>)` | `run_command` | Executes specified command directly on the host OS, bypassing sandbox isolation containers. | `unsandboxed(/opt/homebrew/bin/gws)`, `unsandboxed(git status)` |
+| `command(<cmd_prefix>)` | `run_command` | Authorizes execution of commands matching the leading prefix string. | `command(git add)`, `command(git commit)`, `command(ls)` |
+| `read_url(<domain_or_pattern>)` | `read_url_content` / Web | Authorizes HTTP text fetching and browser egress to specified host domains. | `read_url(antigravity.google)`, `read_url(docs.pieces.app)` |
+| `mcp(<server>/<tool>)` | MCP Tool Dispatch | Authorizes or restricts specific Model Context Protocol tool operations. | `deny: ["mcp(chrome-devtools-mcp/list_pages)"]` |
+| `read_file(<path_pattern>)` | `view_file` / Core | Denies or allows reading files matching sensitive workspace path patterns. | `deny: ["read_file(/path/.opencode)"]` |
 
 ---
 
@@ -2221,10 +2228,12 @@ updater/
 | File Path | Schema Model | Purpose |
 |---|---|---|
 | `~/.gemini/config/config.json` | `MasterConfigSchema` | Master extensibility manifest storing enabled plugin states, global permission grants (allow/deny commands), browser JS execution policy, and artifact review modes. |
+| `~/.gemini/config/import_manifest.json` | `ImportManifestSchema` | Cross-ecosystem plugin/skill migration history tracking source origins (`claude-code`, `gemini-cli`, `antigravity`) and components. `[LIVE-1.1.12 · 2026-08-13]` |
 | `~/.gemini/projects.json` | `ProjectsIndexSchema` | Map of all known workspace directory paths to project aliases. |
 | `~/.gemini/antigravity/antigravity_state.pbtxt` | `DesktopStateSchema` | Antigravity 2.0 Desktop app state (`post_onboarding`, `seen_nuxs`, `agent_onboarding_completed`, `last_selected_agent_model`, `migrate_convos_into_projects`, `installation_uuid`, `migrate_retroactive_projects`, `migrations`). |
 | `~/.gemini/antigravity-ide/` | `IDEStateSchema` | Antigravity IDE state (`installation_id`, `active_conversations_count`, `html_artifacts_count`, `browser_recordings`). |
-| `~/.gemini/trustedFolders.json` | `TrustedFoldersSchema` | Trust policy map classifying folders into `TRUST_FOLDER` vs `DO_NOT_TRUST`. |
+| `~/.gemini/extension_integrity.json` | Cryptographic Verification Store | Extension integrity manifest verifying binary hashes and store cryptographic signatures. `[LIVE-1.1.12 · 2026-08-13]` |
+| `~/.gemini/trustedFolders.json` | JSON Key-Value Map | Trust policy map classifying folders into `TRUST_FOLDER` vs `DO_NOT_TRUST`. `[LIVE-1.1.12 · 2026-08-13]` |
 | `~/.gemini/trusted_hooks.json` | `TrustedHooksSchema` | Trusted statusline/script execution whitelist per directory. |
 | `~/.gemini/config/trusted_hooks.json` | `TrustedHooksSchema` | Additional live-observed trusted hooks path; live contents `[]` `[LIVE-1.1.12 · 2026-08-13]` |
 | `~/.gemini/GEMINI.md` | `GEMINI.md` | Global behavioral constraints and user rules prompt. |
@@ -2426,7 +2435,7 @@ All live corrections in this revision come from direct observation of a user-con
 | `config.json` `userSettings` and enums | EV-014 | Grounds master config schema |
 | Three permission scopes | EV-015 | Adds project/shared/global model |
 | `/hooks` returns empty despite hook files | EV-016 | New behavioral gap |
-| Headless `-p` did not fire workspace `PreToolUse` hooks | EV-017, EV-018 | New unresolved confound |
+| Headless `-p` omits workspace `PreToolUse` hooks | EV-017, EV-018, EV-020 | Confound resolved: headless mode architecturally omits workspace hooks |
 
 ### From Google-Owned, Non-Antigravity Sources `[GOOGLE]`
 
@@ -2556,14 +2565,14 @@ These are specific pieces of information that no source — official, Google-own
 | **`transcript.jsonl` field-level schema** | **RESOLVED 2026-08-11 (hands-on):** full line schema captured from live `agy` 1.1.11 sessions; see §18.1. Transcripts confirmed at `~/.gemini/antigravity-cli/brain/<conversation_id>/.system_generated/logs/transcript.jsonl` (+ `transcript_full.jsonl`). | No longer a blocker. | — |
 | **Headless mode `status` enum values** | **RESOLVED 2026-08-11:** `SUCCESS`, `ERROR`, `CANCELED`, `INTERRUPTED`, `INVALID`, `WAITING`, `RUNNING`. Exit codes also documented: `0` success, non-zero failure. | No longer a blocker. | — |
 | **`general.defaultApprovalMode` enum values** | **RESOLVED 2026-08-11:** `default`, `auto_edit`, `plan` (default: `default`). Docs relocated to `geminicli.com`; old `google.github.io` URL 404s. | Minor migration impact. | — |
-| **Plugin `agents/` subdirectory** | **RESOLVED 2026-08-11 (hands-on) for the global path:** plugins DO support `agents/` (and `commands`) components — `agy plugin list` reports `agents` on installed plugins (`self-customizer` ships `agents/self-auditor.md`), `agy agents` lists `self-auditor`, and the `self-auditor` transcript proves execution. The plugins docs page directory structure is incomplete. **Workspace-scoped `.agents/plugins/` agents (MEASURED 2026-08-11): surfaced only in the interactive TUI** — not listed by `agy agents`, not loaded by headless `--agent` (silent fallback), not tracked by `agy plugin list`; but the TUI `/agents` selector lists them (user-verified). See §4.4 and §17. | Global path: no longer a blocker. Workspace path: TUI = works; headless/CLI = not surfaced (silent fallback). | Fixture: `tests/fixtures/plugin-workspace/` |
+| **Plugin `agents/` subdirectory** | **RESOLVED 2026-08-11 (hands-on) for the global path:** plugins DO support `agents/` (and `commands`) components — `agy plugin list` reports `agents` on installed plugins (`self-customizer` ships `agents/self-auditor.md`), `agy agents` lists `self-auditor`, and the `self-auditor` transcript proves execution. The plugins docs page directory structure is incomplete. **Workspace-scoped `.agents/plugins/` agents (MEASURED 2026-08-11): surfaced only in the interactive TUI** — not listed by `agy agents`, not loaded by headless `--agent` (silent fallback), not tracked by `agy plugin list`; but the TUI `/agents` selector lists them (user-verified). See §4.4 and §17. | Global path: no longer a blocker. Workspace path: TUI = works; headless/CLI = not surfaced (silent fallback). | Empirical probe run in testbed workspace |
 | **CLI brain directory path** | **RESOLVED 2026-08-11 (hands-on):** actual CLI path is `~/.gemini/antigravity-cli/brain/<conversation_id>/`. The docs' statusline example (`~/.gemini/antigravity/brain/`) is stale — it mirrors the desktop path. Officially confirmed 2026-08-13. | No longer a blocker. | — |
 
 ---
 
 ### 18.1 Transcript Schema — Verified Hands-On (2026-08-11)
 
-Source: live `agy` 1.1.11 sessions — 2 headless probes plus an interactive `self-auditor` agent run (72 entries, 40 tool calls across view_file/list_dir/find_by_name/grep_search/run_command). Enum completeness further verified by a full-brain audit (2026-08-11): **49,586 lines across 33 sessions** scanned with `scripts/audit_transcripts.py`; evidence at `audits/transcript-audit-2026-08-10.json` in the reference repo. Files confirmed at:
+Source: live `agy` 1.1.11 sessions — 2 headless probes plus an interactive `self-auditor` agent run (72 entries, 40 tool calls across view_file/list_dir/find_by_name/grep_search/run_command). Enum completeness further verified by a full-brain audit (2026-08-11): **49,586 lines across 33 sessions** scanned across live `~/.gemini/antigravity-cli/brain/` session logs. Files confirmed at:
 
 - `~/.gemini/antigravity-cli/brain/<conversation_id>/.system_generated/logs/transcript.jsonl`
 - `~/.gemini/antigravity-cli/brain/<conversation_id>/.system_generated/logs/transcript_full.jsonl`
@@ -2605,7 +2614,7 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 
 ### Live Evidence `[LIVE-1.1.12 · 2026-08-13]`
 
-- EV-001 through EV-019 — raw evidence recorded under `evidence/agy-1.1.12/evidence.md`
+- EV-001 through EV-020 — raw evidence recorded under `evidence/agy-1.1.12/evidence.md`
 
 ### Official Docs `[DOCS]`
 
@@ -2678,7 +2687,7 @@ The `antigravity-schemas` toolkit provides automated schema extraction, validati
 2. **Audit Domain Locality (`AuditReport`)**: `SystemAuditor` returns strongly-typed `AuditReport` objects and `CategoryAuditResult` items (`src/antigravity_schemas/auditor.py`). Presentation logic (Rich table formatting) lives inside domain models rather than CLI handlers.
 3. **Contextual Spec Synchronization (`DocSyncInspector`)**: `DocSyncInspector` (`src/antigravity_schemas/doc_inspector.py`) parses Markdown files into section blocks, ensuring field documentation coverage is validated strictly within each schema's dedicated section rather than globally.
 
-### 20.2 Complete 17 Native Schemas Inventory Matrix
+### 20.2 Complete 18 Native Schemas Inventory Matrix
 
 | # | Key | Schema Name | Pydantic Model Class | Exported JSON Schema File | Category | Target File / Location |
 |---|---|---|---|---|---|---|
@@ -2699,6 +2708,7 @@ The `antigravity-schemas` toolkit provides automated schema extraction, validati
 | 15 | `cli_state` | **CLI Installation State** | `CLIStateSchema` | `schemas/cli_state.schema.json` | Runtime State | `~/.gemini/antigravity-cli/state.json` |
 | 16 | `history` | **CLI Prompt History Entry** | `CLIHistoryEntrySchema` | `schemas/history_entry.schema.json` | Runtime State | `~/.gemini/antigravity-cli/history.jsonl` |
 | 17 | `trusted_hooks` | **Trusted Security Hooks** | `TrustedHooksSchema` | `schemas/trusted_hooks.schema.json` | Lifecycle | `~/.gemini/trusted_hooks.json` |
+| 18 | `import_manifest` | **Import History Manifest** | `ImportManifestSchema` | `schemas/import_manifest.schema.json` | Ecosystem Migration | `~/.gemini/config/import_manifest.json` |
 
 ### 20.3 Programmatic Python Usage Examples
 
@@ -2734,7 +2744,7 @@ from pathlib import Path
 from antigravity_schemas.doc_inspector import DocSyncInspector
 
 inspector = DocSyncInspector(
-    doc_path=Path("SCHEMA_REFERENCE.md"),
+    doc_path=Path("reference/05-configuration-system.md"),
     schemas_dir=Path("schemas")
 )
 results = inspector.inspect()

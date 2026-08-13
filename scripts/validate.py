@@ -11,12 +11,14 @@ Runs comprehensive consistency, composition, and integrity checks across the wor
   7. Relative Markdown Links: all relative links in core documentation resolve
   8. Live Evidence Grounding: all EV-### IDs cited in reference/ exist in evidence.md
   9. Native Schema Integrity: all 17 Section 20 JSON schemas valid and in sync
+  10. Schema-to-Doc Property Parity: all documented table keys/enums match JSON schemas
+  11. Evidence Consistency: evidence ID range and confound resolutions synchronized across modules
 
 Usage:
   scripts/validate.py              run all checks
   scripts/validate.py --verbose    show detailed item breakdown for each check
   scripts/validate.py --fix        auto-repair rebuildable drift (rebuild parent, prune orphans)
-  scripts/validate.py --only NAME  run only specific check (e.g. --only build, --only links)
+  scripts/validate.py --only NAME  run only specific check (e.g. --only build, --only links, --only parity)
 """
 import argparse
 import glob
@@ -382,8 +384,8 @@ def check_native_schemas(fix: bool, verbose: bool) -> ValidationResult:
             "target": target.strip().replace("`", ""),
         }
 
-    if len(expected_schemas) != 17:
-        res.fail_with(f"expected 17 schemas from Section 20 matrix, parsed {len(expected_schemas)}")
+    if len(expected_schemas) != 18:
+        res.fail_with(f"expected 18 schemas from Section 20 matrix, parsed {len(expected_schemas)}")
 
     missing_files = []
     invalid_json = []
@@ -426,8 +428,136 @@ def check_native_schemas(fix: bool, verbose: bool) -> ValidationResult:
         for f in orphan_schemas:
             res.fail_with(f"untracked schema file in schemas/: {f}")
 
-    if not missing_files and not invalid_json and not orphan_schemas and len(expected_schemas) == 17:
-        res.pass_with(f"all 17 native JSON schemas valid and in sync with Section 20 catalog")
+    if not missing_files and not invalid_json and not orphan_schemas and len(expected_schemas) == 18:
+        res.pass_with(f"all 18 native JSON schemas valid and in sync with Section 20 catalog")
+
+    return res
+
+
+# --- Check 10: Schema-to-Doc Property Parity ---
+def check_schema_property_parity(fix: bool, verbose: bool) -> ValidationResult:
+    res = ValidationResult("Schema-to-Doc Property Parity")
+
+    def get_section(text: str, start_pat: str, end_pat: str) -> str:
+        s = re.search(start_pat, text, re.M)
+        if not s:
+            return ""
+        start_idx = s.end()
+        e = re.search(end_pat, text[start_idx:], re.M)
+        if e:
+            return text[start_idx : start_idx + e.start()]
+        return text[start_idx:]
+
+    # 1. Verify settings.schema.json against reference/05-configuration-system.md §5.5
+    settings_doc = os.path.join(SRC_DIR, "05-configuration-system.md")
+    settings_schema_path = os.path.join(SCHEMAS_DIR, "settings.schema.json")
+    if os.path.exists(settings_doc) and os.path.exists(settings_schema_path):
+        with open(settings_doc, encoding="utf-8") as fh:
+            cfg_text = fh.read()
+        with open(settings_schema_path, encoding="utf-8") as fh:
+            settings_json = json.load(fh)
+
+        sec55_text = get_section(cfg_text, r"^###\s+5\.5\s+Complete settings\.json Schema", r"^###\s+5\.6\s+Status Line")
+        schema_props = set(settings_json.get("properties", {}).keys())
+        doc_keys = set(re.findall(r"^\|\s*`([a-zA-Z0-9_.-]+)`\s*\|\s*(?:string|boolean|object|array|enum)", sec55_text, re.M))
+
+        missing_in_schema = []
+        for k in sorted(doc_keys):
+            root_k = k.split(".")[0]
+            if root_k not in schema_props:
+                missing_in_schema.append(k)
+
+        if missing_in_schema:
+            for k in missing_in_schema:
+                res.fail_with(f"settings.schema.json missing documented property: '{k}' (from §5.5)")
+        elif verbose:
+            res.add_detail(f"settings.schema.json covers all documented §5.5 keys ({len(doc_keys)} fields verified)")
+
+        # Check critical enums in settings
+        cmd_enum = settings_json.get("properties", {}).get("commandExecutionPolicy", {}).get("enum", [])
+        for val in ["sandbox", "auto", "eager", "off"]:
+            if val not in cmd_enum:
+                res.fail_with(f"settings.schema.json commandExecutionPolicy missing enum: '{val}'")
+
+    # 2. Verify status_line.schema.json against reference/05-configuration-system.md §5.6
+    statusline_schema_path = os.path.join(SCHEMAS_DIR, "status_line.schema.json")
+    if os.path.exists(settings_doc) and os.path.exists(statusline_schema_path):
+        with open(settings_doc, encoding="utf-8") as fh:
+            cfg_text = fh.read()
+        with open(statusline_schema_path, encoding="utf-8") as fh:
+            sl_json = json.load(fh)
+
+        sec56_text = get_section(cfg_text, r"^###\s+5\.6\s+Status Line JSON Payload", r"^###\s+5\.7\s+Keybindings")
+        sl_props = set(sl_json.get("properties", {}).keys())
+        sl_doc_keys = set(re.findall(r"^\|\s*`([a-zA-Z0-9_.-]+)`(?:\s*/\s*`[a-zA-Z0-9_.-]+`)?\s*\|\s*(?:string|boolean|int|bool|object|array)", sec56_text, re.M))
+
+        missing_sl = [k for k in sorted(sl_doc_keys) if k not in sl_props]
+        if missing_sl:
+            for k in missing_sl:
+                res.fail_with(f"status_line.schema.json missing documented property: '{k}' (from §5.6)")
+        elif verbose:
+            res.add_detail(f"status_line.schema.json covers all documented §5.6 fields ({len(sl_doc_keys)} verified)")
+
+    # 3. Verify transcript_step.schema.json against reference/18-remaining-hard-gaps.md §18.1
+    transcript_doc = os.path.join(SRC_DIR, "18-remaining-hard-gaps.md")
+    transcript_schema_path = os.path.join(SCHEMAS_DIR, "transcript_step.schema.json")
+    if os.path.exists(transcript_doc) and os.path.exists(transcript_schema_path):
+        with open(transcript_doc, encoding="utf-8") as fh:
+            t_doc_text = fh.read()
+        with open(transcript_schema_path, encoding="utf-8") as fh:
+            t_json = json.load(fh)
+
+        t_props = set(t_json.get("properties", {}).keys())
+        if "created_at" not in t_props:
+            res.fail_with("transcript_step.schema.json missing 'created_at' field documented in §18.1")
+
+        type_enums = set(t_json.get("properties", {}).get("type", {}).get("enum", []))
+        for core_type in ["USER_INPUT", "PLANNER_RESPONSE", "RUN_COMMAND", "CHECKPOINT", "VIEW_FILE", "LIST_DIRECTORY"]:
+            if core_type not in type_enums:
+                res.fail_with(f"transcript_step.schema.json missing verified 'type' enum: '{core_type}'")
+        if verbose:
+            res.add_detail(f"transcript_step.schema.json covers all verified §18.1 fields and {len(type_enums)} type enums")
+
+    if res.passed:
+        res.pass_with("all documented table properties and enums match native schema definitions")
+
+    return res
+
+
+# --- Check 11: Cross-Module Evidence Consistency ---
+def check_evidence_consistency(fix: bool, verbose: bool) -> ValidationResult:
+    res = ValidationResult("Cross-Module Evidence Consistency")
+    if not os.path.exists(EVIDENCE_FILE):
+        res.fail_with(f"master evidence file missing: {EVIDENCE_FILE}")
+        return res
+
+    with open(EVIDENCE_FILE, encoding="utf-8") as fh:
+        ev_text = fh.read()
+
+    ev_ids = sorted(set(re.findall(r"\b(EV-\d{3})\b", ev_text)))
+    if not ev_ids:
+        res.fail_with("no EV IDs found in evidence.md")
+        return res
+    max_ev = ev_ids[-1]
+
+    # Verify 19-works-cited.md summary matches max_ev
+    if os.path.exists(WORKS_CITED):
+        with open(WORKS_CITED, encoding="utf-8") as fh:
+            wc_text = fh.read()
+        if f"through {max_ev}" not in wc_text:
+            res.fail_with(f"19-works-cited.md evidence range is out of sync (expected 'through {max_ev}')")
+
+    # Verify no stale unresolved confound phrasing when EV is resolved
+    if "EV-020" in ev_ids:
+        for p in sorted(glob.glob(os.path.join(SRC_DIR, "*.md"))):
+            base = os.path.basename(p)
+            with open(p, encoding="utf-8") as fh:
+                content = fh.read()
+            if "unresolved confound" in content.lower():
+                res.fail_with(f"{base} contains stale 'unresolved confound' claim (resolved by EV-020)")
+
+    if res.passed:
+        res.pass_with(f"evidence range ({ev_ids[0]}..{max_ev}) and confound resolutions synchronized across all modules")
 
     return res
 
@@ -442,6 +572,8 @@ CHECKS = {
     "links": ("Relative Markdown Links", check_relative_markdown_links),
     "evidence": ("Live Evidence Grounding", check_evidence_citations),
     "schemas": ("Native Schema Integrity", check_native_schemas),
+    "parity": ("Schema-to-Doc Property Parity", check_schema_property_parity),
+    "consistency": ("Cross-Module Evidence Consistency", check_evidence_consistency),
 }
 
 

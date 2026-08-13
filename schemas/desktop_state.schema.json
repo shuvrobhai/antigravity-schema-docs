@@ -10,34 +10,86 @@
       "description": "Unique installation UUID for the desktop application."
     },
     "post_onboarding": {
-      "type": "boolean",
-      "description": "Whether the primary onboarding sequence has been completed."
+      "type": "object",
+      "properties": {
+        "completed_steps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "POST_ONBOARDING_STEP_TYPE_MANAGER_WELCOME",
+              "POST_ONBOARDING_STEP_TYPE_USAGE_MODE",
+              "POST_ONBOARDING_STEP_TYPE_AGENT_CONFIGURATION",
+              "POST_ONBOARDING_STEP_TYPE_ADD_WORKSPACE"
+            ]
+          },
+          "description": "Array of completed post-onboarding walkthrough phases."
+        }
+      },
+      "description": "Onboarding walkthrough completion status."
     },
     "seen_nuxs": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "List of new-user experience (NUX) dialog IDs acknowledged by the user."
+      "type": "object",
+      "properties": {
+        "uids": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "List of numeric New User Experience (NUX) prompt IDs acknowledged by user."
+        }
+      },
+      "description": "Set of acknowledged NUX feature discovery callouts."
     },
     "agent_onboarding_completed": {
-      "type": "boolean",
-      "description": "Whether agent persona onboarding walkthrough has finished."
+      "type": "string",
+      "enum": [
+        "AGENT_ONBOARDING_STATE_COMPLETED",
+        "AGENT_ONBOARDING_STATE_PENDING",
+        "AGENT_ONBOARDING_STATE_UNSPECIFIED"
+      ],
+      "description": "Agent persona onboarding walkthrough status."
     },
     "last_selected_agent_model": {
       "type": "string",
       "description": "Most recently chosen model identifier in the UI."
     },
     "migrate_convos_into_projects": {
-      "type": "boolean",
-      "description": "Flag indicating legacy conversation migration status."
+      "type": "string",
+      "enum": [
+        "MIGRATION_STATUS_COMPLETED",
+        "MIGRATION_STATUS_FAILED",
+        "MIGRATION_STATUS_IN_PROGRESS",
+        "MIGRATION_STATUS_UNSPECIFIED"
+      ],
+      "description": "Conversation-to-project schema migration state."
     },
     "migrate_retroactive_projects": {
-      "type": "boolean",
-      "description": "Flag indicating project retroactive auto-discovery migration status."
+      "type": "string",
+      "enum": [
+        "RETROACTIVE_MIGRATION_STATUS_COMPLETED_UNNECESSARY",
+        "RETROACTIVE_MIGRATION_STATUS_COMPLETED",
+        "RETROACTIVE_MIGRATION_STATUS_PENDING"
+      ],
+      "description": "Retroactive project auto-grouping migration state."
     },
     "migrations": {
       "type": "array",
-      "items": { "type": ["string", "object"] },
-      "description": "List of applied database/state migration identifiers."
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "integer", "description": "Database or state migration schema version number." },
+          "value": {
+            "type": "string",
+            "enum": [
+              "MIGRATION_STATUS_COMPLETED",
+              "MIGRATION_STATUS_FAILED",
+              "MIGRATION_STATUS_IN_PROGRESS"
+            ],
+            "description": "Execution status of the specific migration step."
+          }
+        },
+        "required": ["key", "value"]
+      },
+      "description": "Sequential history of applied database and state migration steps."
     }
   },
   "additionalProperties": true

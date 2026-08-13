@@ -9,7 +9,7 @@ The `antigravity-schemas` toolkit provides automated schema extraction, validati
 2. **Audit Domain Locality (`AuditReport`)**: `SystemAuditor` returns strongly-typed `AuditReport` objects and `CategoryAuditResult` items (`src/antigravity_schemas/auditor.py`). Presentation logic (Rich table formatting) lives inside domain models rather than CLI handlers.
 3. **Contextual Spec Synchronization (`DocSyncInspector`)**: `DocSyncInspector` (`src/antigravity_schemas/doc_inspector.py`) parses Markdown files into section blocks, ensuring field documentation coverage is validated strictly within each schema's dedicated section rather than globally.
 
-### 20.2 Complete 17 Native Schemas Inventory Matrix
+### 20.2 Complete 18 Native Schemas Inventory Matrix
 
 | # | Key | Schema Name | Pydantic Model Class | Exported JSON Schema File | Category | Target File / Location |
 |---|---|---|---|---|---|---|
@@ -30,6 +30,7 @@ The `antigravity-schemas` toolkit provides automated schema extraction, validati
 | 15 | `cli_state` | **CLI Installation State** | `CLIStateSchema` | `schemas/cli_state.schema.json` | Runtime State | `~/.gemini/antigravity-cli/state.json` |
 | 16 | `history` | **CLI Prompt History Entry** | `CLIHistoryEntrySchema` | `schemas/history_entry.schema.json` | Runtime State | `~/.gemini/antigravity-cli/history.jsonl` |
 | 17 | `trusted_hooks` | **Trusted Security Hooks** | `TrustedHooksSchema` | `schemas/trusted_hooks.schema.json` | Lifecycle | `~/.gemini/trusted_hooks.json` |
+| 18 | `import_manifest` | **Import History Manifest** | `ImportManifestSchema` | `schemas/import_manifest.schema.json` | Ecosystem Migration | `~/.gemini/config/import_manifest.json` |
 
 ### 20.3 Programmatic Python Usage Examples
 
@@ -65,7 +66,7 @@ from pathlib import Path
 from antigravity_schemas.doc_inspector import DocSyncInspector
 
 inspector = DocSyncInspector(
-    doc_path=Path("SCHEMA_REFERENCE.md"),
+    doc_path=Path("reference/05-configuration-system.md"),
     schemas_dir=Path("schemas")
 )
 results = inspector.inspect()

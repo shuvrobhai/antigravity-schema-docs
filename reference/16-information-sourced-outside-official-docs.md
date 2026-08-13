@@ -25,7 +25,7 @@ All live corrections in this revision come from direct observation of a user-con
 | `config.json` `userSettings` and enums | EV-014 | Grounds master config schema |
 | Three permission scopes | EV-015 | Adds project/shared/global model |
 | `/hooks` returns empty despite hook files | EV-016 | New behavioral gap |
-| Headless `-p` did not fire workspace `PreToolUse` hooks | EV-017, EV-018 | New unresolved confound |
+| Headless `-p` omits workspace `PreToolUse` hooks | EV-017, EV-018, EV-020 | Confound resolved: headless mode architecturally omits workspace hooks |
 
 ### From Google-Owned, Non-Antigravity Sources `[GOOGLE]`
 

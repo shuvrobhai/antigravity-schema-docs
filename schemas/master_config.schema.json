@@ -12,18 +12,61 @@
     "userSettings": {
       "type": "object",
       "properties": {
-        "artifactReviewMode": { "type": "string" },
-        "autoExecutionPolicy": { "type": "string" },
-        "browserJsExecutionPolicy": { "type": "string" },
-        "enableTerminalSandbox": { "type": "boolean" },
-        "globalPermissionGrants": {
-          "type": "array",
-          "items": { "type": "string" }
+        "artifactReviewMode": {
+          "type": "string",
+          "enum": ["ARTIFACT_REVIEW_MODE_TURBO", "ARTIFACT_REVIEW_MODE_DEFAULT", "ARTIFACT_REVIEW_MODE_STRICT"],
+          "description": "Global artifact review mode."
         },
-        "nonWorkspaceFileAccessPolicy": { "type": "string" },
-        "queuedMessageDeliveryStrategy": { "type": "string" },
-        "remoteControlHostname": { "type": "string" },
-        "themeMode": { "type": "string" }
+        "autoExecutionPolicy": {
+          "type": "string",
+          "enum": ["CASCADE_COMMANDS_AUTO_EXECUTION_OFF", "CASCADE_COMMANDS_AUTO_EXECUTION_ON"],
+          "description": "Autonomous command cascading execution policy."
+        },
+        "browserJsExecutionPolicy": {
+          "type": "string",
+          "enum": ["BROWSER_JS_EXECUTION_POLICY_TURBO", "BROWSER_JS_EXECUTION_POLICY_DEFAULT", "BROWSER_JS_EXECUTION_POLICY_RESTRICTED"],
+          "description": "Execution policy for JavaScript in browser subagent actions."
+        },
+        "enableTerminalSandbox": {
+          "type": "boolean",
+          "description": "Whether to enforce terminal OS sandboxing."
+        },
+        "globalPermissionGrants": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "List of global allow rules (e.g. unsandboxed(bin), command(git status), read_url(domain))."
+            },
+            "deny": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "List of global deny rules (e.g. mcp(server/tool), read_file(path))."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Global allow and deny authorization rules across tools and commands."
+        },
+        "nonWorkspaceFileAccessPolicy": {
+          "type": "string",
+          "enum": ["AGENT_SETTING_POLICY_ALLOW", "AGENT_SETTING_POLICY_DENY", "AGENT_SETTING_POLICY_ASK"],
+          "description": "Access policy for reading/modifying files outside workspace roots."
+        },
+        "queuedMessageDeliveryStrategy": {
+          "type": "string",
+          "enum": ["MESSAGE_DELIVERY_STRATEGY_NEXT_INVOCATION", "MESSAGE_DELIVERY_STRATEGY_IMMEDIATE"],
+          "description": "Delivery cadence for background and user-queued messages."
+        },
+        "remoteControlHostname": {
+          "type": "string",
+          "description": "Hostname for remote control agent bridge."
+        },
+        "themeMode": {
+          "type": "string",
+          "enum": ["THEME_MODE_LIGHT", "THEME_MODE_DARK", "THEME_MODE_SYSTEM"],
+          "description": "System UI color theme mode."
+        }
       },
       "additionalProperties": true
     },

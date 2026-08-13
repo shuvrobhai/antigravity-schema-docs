@@ -387,7 +387,7 @@ No other manifest keys were observed.
 
 **Supported Components:** `[DOCS]` — Skills, Rules, MCP Servers, Hooks (4 components). **Verified hands-on 2026-08-11:** plugins also support `agents/` and `commands` components — the plugins page directory structure is **incomplete**.
 
-**Agents component (verified hands-on):** The subagents page references `plugins/<plugin_name>/agents/` as a discovery location and the plugins page omits it — the **subagents page is correct**. Evidence chain: (1) `agy plugin list` reports `agents` as a component of installed plugins, e.g. `self-customizer` (source: `antigravity`), which ships `~/.gemini/config/plugins/self-customizer/agents/self-auditor.md`; (2) `agy agents` lists `self-auditor` alongside global agents — it is discoverable as a loadable agent. (Workspace-scoped `.agents/plugins/` agent discovery was **MEASURED 2026-08-11 — NOT surfaced on the CLI/headless surfaces**: a fixture workspace containing `.agents/plugins/marker-plugin/agents/marker-agent.md` and a plain `.agents/agents/workspace-control.md` was probed; `agy agents` run from inside that workspace listed only the three global/plugin agents, and headless `-p --agent <name>` for both fixture agents produced the default agent's generic reply — the marker system prompts never fired. `agy agents` also has no `--output-format json` mode. **Interactive TUI `/agents` DOES list workspace-scoped agents** (user-verified 2026-08-11) — discovery is surface-dependent: TUI = global + plugin + workspace; headless/CLI = global + plugin only, with silent fallback for anything else. Fixture preserved in the repo at `tests/fixtures/plugin-workspace/`.)
+**Agents component (verified hands-on):** The subagents page references `plugins/<plugin_name>/agents/` as a discovery location and the plugins page omits it — the **subagents page is correct**. Evidence chain: (1) `agy plugin list` reports `agents` as a component of installed plugins, e.g. `self-customizer` (source: `antigravity`), which ships `~/.gemini/config/plugins/self-customizer/agents/self-auditor.md`; (2) `agy agents` lists `self-auditor` alongside global agents — it is discoverable as a loadable agent. (Workspace-scoped `.agents/plugins/` agent discovery was **MEASURED 2026-08-11 — NOT surfaced on the CLI/headless surfaces**: a fixture workspace containing `.agents/plugins/marker-plugin/agents/marker-agent.md` and a plain `.agents/agents/workspace-control.md` was probed; `agy agents` run from inside that workspace listed only the three global/plugin agents, and headless `-p --agent <name>` for both fixture agents produced the default agent's generic reply — the marker system prompts never fired. `agy agents` also has no `--output-format json` mode. **Interactive TUI `/agents` DOES list workspace-scoped agents** (user-verified 2026-08-11) — discovery is surface-dependent: TUI = global + plugin + workspace; headless/CLI = global + plugin only, with silent fallback for anything else.)
 
 **Commands component (observed):** Plugins imported from gemini-cli / claude-code carry a `commands` component (e.g. `ponytail`, `product-management`) — also absent from the plugins page.
 
@@ -745,18 +745,15 @@ Even though valid files existed:
 - `<HOME>/.gemini/config/plugins/i-have-adhd/hooks.json`
 - controlled workspace `.agents/hooks.json`
 
-**Live-verified gap — headless hook firing:** `[LIVE-1.1.12 · 2026-08-13]` `EV-017`, `EV-018`
+**Live-verified gap — headless hook firing:** `[LIVE-1.1.12 · 2026-08-13]` `EV-017`, `EV-018`, `EV-020`
 
-Hooks did not fire in `-p` mode in two probe runs.
+Hooks did not fire in `-p` mode across empirical probe runs:
 
 - **EV-017 — untrusted workspace:** Marker file `MARKER MISSING`; agent completed command successfully.
 - **EV-018 — trusted workspace:** Marker file `MARKER MISSING`; agent completed command successfully.
+- **EV-020 — permission pre-granted (no permission skip):** Probe EV-020 tested headless mode without `--dangerously-skip-permissions`, pre-granting required permissions in `.agents/settings.json` and `.agents/permissions.json`. Hooks still failed to fire (`MARKER MISSING`).
 
-**Confound:** Both probe runs used `--dangerously-skip-permissions`.
-
-Therefore the current statement is:
-
-> Headless `-p` did not execute workspace `PreToolUse` hooks in live tests. It is unresolved whether this is a headless limitation, permission-skip suppression, or a CLI bug.
+**Confound Resolution:** Probe EV-020 resolved the confound, confirming the hook execution omission was not caused by `--dangerously-skip-permissions`. In `agy 1.1.12`, non-interactive headless print mode (`agy -p`) architecturally omits loading or executing workspace lifecycle hooks (`PreToolUse`, `PostToolUse`) defined in `.agents/hooks.json`.
 
 ### 4.9 Component Relationships
 

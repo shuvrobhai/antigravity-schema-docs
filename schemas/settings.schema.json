@@ -21,6 +21,12 @@
       "default": "asks-for-review",
       "description": "Approval requirement policy before creating or modifying artifacts."
     },
+    "commandExecutionPolicy": {
+      "type": "string",
+      "enum": ["sandbox", "auto", "eager", "off"],
+      "default": "sandbox",
+      "description": "Shell command execution policy and OS containment mode."
+    },
     "enableTerminalSandbox": {
       "type": "boolean",
       "default": false,
