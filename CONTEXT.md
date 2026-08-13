@@ -48,9 +48,21 @@ _Avoid_: schema sync check, field audit
 Automated validation verifying live evidence range alignment across works-cited/summary tables and prohibiting stale confound phrasing once an EV is marked `RESOLVED`.
 _Avoid_: proof checker, ev linter
 
-**MarkdownDoc Inspector**:
-Pure-stdlib semantic Markdown AST and table parsing module (`scripts/lib/docInspector.ts`) encapsulating section slicing, column extraction, citation discovery, and heading hierarchy verification behind a unified object interface.
+**MarkdownDoc Core**:
+The pure, browser-safe Markdown parser (`src/lib/markdownCore.ts`) — headings, sections, tables, code blocks, frontmatter, and anchor slugs behind one object interface. Single home for the slug rule.
 _Avoid_: markdown helper, regex utils
+
+**MarkdownDoc Inspector**:
+The CLI adapter over the MarkdownDoc Core (`scripts/lib/docInspector.ts`) — adds `MarkdownDoc.fromFile()` file I/O and re-exports the core's classes unchanged.
+_Avoid_: markdown parser, md util
+
+**Reference Corpus store**:
+The narrow read-only seam (`src/lib/documentStore.ts`) that the Integrity Gate checks cross. Two adapters implement it: the CLI's fs-backed store (`scripts/validate.ts`) and the web app's glob-backed store (`src/data/repository.ts`).
+_Avoid_: repository, data layer
+
+**Integrity Gate**:
+The 12-check validation suite (`src/lib/integrityGate.ts`) implemented as pure functions over the Reference Corpus store, so the CLI gate and the web app's Validation Console cross one seam. Checks report `pass` | `fail` | `na` (n/a = needs disk access the browser lacks).
+_Avoid_: validation engine, validator
 
 **Evidence Registry**:
 Domain catalog and verification module (`scripts/lib/evidenceRegistry.ts`) providing an immutable query interface over Section 19 citations, empirical evidence probes (EV-001..EV-020), snapshot path resolution, and `index.md` manifest verification.

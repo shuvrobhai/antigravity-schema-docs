@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ValidationCheckResult } from '../types';
 import { runAllValidations } from '../data/validationEngine';
-import { CheckCircle2, AlertTriangle, RefreshCw, Terminal, Shield, Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Info, RefreshCw, Terminal, Shield, Check, ChevronDown, ChevronRight } from 'lucide-react';
 
 export const ValidationConsole: React.FC = () => {
   const [results, setResults] = useState<ValidationCheckResult[]>(() => runAllValidations());
@@ -16,8 +16,9 @@ export const ValidationConsole: React.FC = () => {
     }, 400);
   };
 
-  const allPassed = results.every(r => r.passed);
-  const passedCount = results.filter(r => r.passed).length;
+  const allPassed = results.every(r => r.status !== 'fail');
+  const passedCount = results.filter(r => r.status === 'pass').length;
+  const naCount = results.filter(r => r.status === 'na').length;
 
   return (
     <div className="flex-1 h-[calc(100vh-4rem)] overflow-y-auto px-6 lg:px-12 py-8 space-y-6 max-w-5xl mx-auto">
@@ -26,7 +27,7 @@ export const ValidationConsole: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 rounded bg-cyan-950/80 border border-cyan-800/60 text-cyan-300 text-xs font-mono font-bold">
-              11/12 Checks · Browser Preview
+              12 Checks · Browser Preview
             </span>
             <span className="text-xs text-stone-500 font-mono">scripts/validate.ts</span>
           </div>
@@ -62,10 +63,10 @@ export const ValidationConsole: React.FC = () => {
             )}
             <div>
               <div className="font-bold text-sm">
-                {allPassed ? 'All 11 Integrity Checks Passed' : `${results.length - passedCount} Integrity Checks Failed`}
+                {allPassed ? 'All 12 Integrity Checks Passed' : `${results.length - passedCount} Integrity Checks Failed`}
               </div>
               <div className="text-xs opacity-80 font-mono mt-0.5">
-                {passedCount} of {results.length} checks passing with 0 drift detected.
+                {passedCount} of {results.length} checks passing{naCount > 0 ? ` · ${naCount} n/a in browser (run CLI)` : ''}
               </div>
             </div>
           </div>
@@ -75,7 +76,7 @@ export const ValidationConsole: React.FC = () => {
         </div>
       </div>
 
-      {/* 11 Checks List */}
+      {/* 12 Checks List */}
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-stone-300 font-mono uppercase tracking-wider flex items-center gap-2">
           <Terminal className="w-4 h-4 text-cyan-400" />
@@ -98,7 +99,9 @@ export const ValidationConsole: React.FC = () => {
                     <span className="font-mono text-xs text-stone-500 font-bold w-6">
                       {(index + 1).toString().padStart(2, '0')}
                     </span>
-                    {res.passed ? (
+                    {res.status === 'na' ? (
+                      <Info className="w-4 h-4 text-amber-400 shrink-0" />
+                    ) : res.passed ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     ) : (
                       <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />

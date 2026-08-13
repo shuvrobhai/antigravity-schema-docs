@@ -30,6 +30,7 @@ help:
 
 test:
 	$(TSX) scripts/test_schemas.ts
+	$(TSX) scripts/test_integrity_gate.ts
 	$(TSX) scripts/audit_workspace.ts --dir test/fixtures/workspaces/valid-agent-workspace
 	$(TSX) scripts/lib/evidenceRegistry.ts
 

@@ -142,6 +142,8 @@ export interface ValidationCheckResult {
   name: string;
   category: string;
   passed: boolean;
+  /** 'pass' | 'fail' | 'na' — n/a means the check needs disk access only the CLI has. */
+  status: 'pass' | 'fail' | 'na';
   messages: string[];
   details: string[];
 }

@@ -4,7 +4,11 @@ import {
   indexSourceReferenceLocations,
   computeSourceArchiveStats,
   SourceArchiveStats,
+  parseSourceFrontmatter,
 } from './sourceProcessing';
+import { extractHeadings as parseHeadings } from '../lib/markdownCore';
+import { flattenCitations, normalizePath } from '../lib/documentStore';
+import type { DocumentStore, CitationDoc } from '../lib/documentStore';
 
 // Load all reference markdown files
 const rawReferenceModules = import.meta.glob('/reference/*.md', { query: '?raw', eager: true }) as Record<string, { default: string } | string>;
@@ -21,29 +25,12 @@ const rawEvidenceDocs = import.meta.glob('/evidence/**/*.md', { query: '?raw', e
 // Load composed parent document
 const rawParentDoc = import.meta.glob('/antigravity-reference.md', { query: '?raw', eager: true }) as Record<string, { default: string } | string>;
 
+// Load README for relative-link scanning (shared with the Integrity Gate)
+const rawReadme = import.meta.glob('/README.md', { query: '?raw', eager: true }) as Record<string, { default: string } | string>;
+
 function extractContent(fileData: { default: string } | string): string {
   if (typeof fileData === 'string') return fileData;
   return fileData?.default || '';
-}
-
-function extractHeadings(markdown: string) {
-  const lines = markdown.split('\n');
-  const headings: { level: number; title: string; id: string }[] = [];
-
-  for (const line of lines) {
-    const match = line.match(/^(#{1,6})\s+(.+)$/);
-    if (match) {
-      const level = match[1].length;
-      const rawTitle = match[2].trim();
-      const cleanTitle = rawTitle.replace(/\*\*/g, '').replace(/`([^`]+)`/g, '$1');
-      const slugId = cleanTitle
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-');
-      headings.push({ level, title: cleanTitle, id: slugId });
-    }
-  }
-  return headings;
 }
 
 // 1. Process Reference Modules
@@ -55,7 +42,7 @@ export const referenceModules: ReferenceModule[] = Object.entries(rawReferenceMo
     const num = match ? parseInt(match[1], 10) : 0;
     const slug = match ? match[2] : filename.replace('.md', '');
 
-    const headings = extractHeadings(rawContent);
+    const headings = parseHeadings(rawContent);
     // Find top-level title (H1 or first H2)
     const titleHeading = headings.find(h => h.level === 1) || headings.find(h => h.level === 2) || { title: slug };
 
@@ -104,7 +91,7 @@ export const adrRecords: AdrRecord[] = Object.entries(rawAdrs)
     const num = match ? parseInt(match[1], 10) : 0;
     const slug = match ? match[2] : filename.replace('.md', '');
 
-    const headings = extractHeadings(rawContent);
+    const headings = parseHeadings(rawContent);
     const title = headings[0]?.title || slug;
 
     // extract status & date if present
@@ -229,3 +216,64 @@ export const sourceArchiveStats: SourceArchiveStats = computeSourceArchiveStats(
 );
 
 export const parentComposedDocument = extractContent(rawParentDoc['/antigravity-reference.md'] || '');
+
+// ---------------------------------------------------------------------------
+// Reference Corpus store — the browser adapter for the Integrity Gate.
+// The named exports above remain a thin facade over this seam; the gate and
+// the Validation Console cross it exclusively.
+// ---------------------------------------------------------------------------
+
+const buildFlatCitations = (): CitationDoc[] =>
+  flattenCitations(rawSourceInputs, raw => parseSourceFrontmatter(raw));
+
+const knownPaths = new Set<string>();
+for (const p of Object.keys(rawReferenceModules)) knownPaths.add(normalizePath(p));
+for (const p of Object.keys(rawSchemas)) knownPaths.add(normalizePath(p));
+for (const p of Object.keys(rawAdrs)) knownPaths.add(normalizePath(p));
+for (const p of Object.keys(rawEvidenceDocs)) knownPaths.add(normalizePath(p));
+for (const p of Object.keys(rawParentDoc)) knownPaths.add(normalizePath(p));
+for (const p of Object.keys(rawReadme)) knownPaths.add(normalizePath(p));
+
+const documentMap = new Map<string, string>();
+for (const [p, c] of Object.entries(rawReadme)) documentMap.set(normalizePath(p), extractContent(c));
+for (const [p, c] of Object.entries(rawReferenceModules)) documentMap.set(normalizePath(p), extractContent(c));
+for (const [p, c] of Object.entries(rawEvidenceDocs)) documentMap.set(normalizePath(p), extractContent(c));
+for (const [p, c] of Object.entries(rawParentDoc)) documentMap.set(normalizePath(p), extractContent(c));
+
+const snapshotHeaders = new Map<string, { status: string; fetched: string; license?: string }>();
+for (const input of rawSourceInputs) {
+  const meta = parseSourceFrontmatter(input.rawContent);
+  snapshotHeaders.set(normalizePath(input.path), {
+    status: String(meta.status),
+    fetched: meta.fetched,
+    license: meta.license,
+  });
+}
+
+/** The browser adapter for the Integrity Gate — glob-backed, read-only. */
+export const documentStore: DocumentStore = {
+  getModules: () =>
+    referenceModules.map(m => ({
+      filename: m.id,
+      number: m.number,
+      slug: m.slug,
+      title: m.title,
+      rawContent: m.rawContent,
+    })),
+  getSchemas: () => jsonSchemas.map(s => ({ filename: s.filename, schema: s.schema })),
+  getProbes: () =>
+    evidenceProbes.map(p => ({
+      evId: p.id,
+      number: parseInt(p.id.replace('EV-', ''), 10) || 0,
+      title: p.title,
+      status: p.status,
+    })),
+  getCitations: buildFlatCitations,
+  getSnapshotFiles: () => rawSourceInputs.map(i => normalizePath(i.path)),
+  getSnapshotHeader: snapshotPath => snapshotHeaders.get(normalizePath(snapshotPath)) ?? null,
+  getManifestText: () => extractContent(rawEvidenceDocs['/evidence/sources/index.md'] || '') || null,
+  getParentComposed: () => parentComposedDocument || null,
+  getDocument: relPath => documentMap.get(normalizePath(relPath)) ?? null,
+  canResolvePath: relPath => knownPaths.has(normalizePath(relPath)),
+  // checkEvidenceIndexSync intentionally omitted — regenerates files on disk.
+};

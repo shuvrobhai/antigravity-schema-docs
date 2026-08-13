@@ -13,7 +13,7 @@ make build-check             # verify parent doc in sync (CI mode, no write)
 make watch                   # live-rebuild on module changes
 make validate                # full 12-check integrity suite (npx tsx scripts/validate.ts)
 make validate-fix            # auto-repair drift (rebuild parent, sync evidence, prune orphans)
-make test                    # schema fixture tests + auditor smoke test + EvidenceRegistry self-tests
+make test                    # schema fixtures + Integrity Gate suite (102 asserts) + auditor smoke + EvidenceRegistry self-tests
 make all                     # test + validate + build-check (full gate)
 make fetch-sources           # snapshot missing §19 citations (npx tsx scripts/fetch_sources.ts)
 make check-sources           # verify source archive in sync
@@ -24,8 +24,9 @@ Run a single validation check: `npx tsx scripts/validate.ts --only <modules|buil
 Run a single test:
 
 ```bash
-npx tsx scripts/test_schemas.ts          # JSON fixture tests
-npx tsx scripts/lib/evidenceRegistry.ts  # EvidenceRegistry unit tests
+npx tsx scripts/test_schemas.ts           # JSON fixture tests
+npx tsx scripts/test_integrity_gate.ts    # Integrity Gate suite (fixture corpus + parity)
+npx tsx scripts/lib/evidenceRegistry.ts   # EvidenceRegistry unit tests
 ```
 
 Web app (Vite + React 18 + Tailwind v4, port 3000):
@@ -44,8 +45,9 @@ npm run audit -- --dir <path> [--fix] [--json]   # CLI workspace auditor
 - `reference/NN-slug.md` — source-of-truth modules (`00-preamble.md` … `20-schema-toolkit-and-native-schemas.md`). `scripts/build.ts` composes them into the root **`antigravity-reference.md` build artifact**.
 - `schemas/` — 18 standalone JSON Schema files (Draft 2020-12), cataloged in the §20.2 matrix table of `reference/20-schema-toolkit-and-native-schemas.md`.
 - `evidence/` — grounding layer: `agy-1.1.12/evidence.md` (EV-001..EV-020 probes), `sources/` (fetched citation snapshots + generated `index.md` manifest), plus `probes/`, `reports/`, `artifacts/`, `templates/`.
-- `scripts/` — TS toolchain: `build.ts`, `validate.ts` (12 checks), `generate_evidence.ts`, `audit_workspace.ts`, `fetch_sources.ts`, `lib/docInspector.ts` (Markdown AST/table parser), `lib/evidenceRegistry.ts` (citation/probe catalog). Each `scripts/lib/*.ts` doubles as a self-testing executable (assert-and-throw harness invoked by `make test`).
-- `src/` — the web app. `src/data/repository.ts` loads all Markdown/schemas at build time via `import.meta.glob(..., { query: '?raw', eager: true })` (new reference modules are picked up automatically). `src/data/validationEngine.ts` is an in-browser reimplementation of the 12 checks (Validation Console tab). `src/schema/{auditor,validator}.ts` (AJV-based) is shared between the WorkspaceAuditor UI and the `npm run audit` CLI. `src/components/*.tsx` map 1:1 to app tabs; tab keys are `TabType` in `src/types.ts`.
+- `src/lib/` — the shared core both seams import: `markdownCore.ts` (pure Markdown parser — headings/sections/tables/frontmatter/slugs), `documentStore.ts` (the Reference Corpus store interface + pure compose/manifest builders), `integrityGate.ts` (all 12 checks as pure functions; `pass`/`fail`/`na` status).
+- `scripts/` — TS toolchain: `build.ts`, `validate.ts` (thin fs-backed adapter over the Integrity Gate; the only place `--fix` repair lives), `generate_evidence.ts`, `audit_workspace.ts`, `fetch_sources.ts`, `lib/docInspector.ts` (fs adapter over the MarkdownDoc Core), `lib/evidenceRegistry.ts` (citation/probe catalog). Each `scripts/lib/*.ts` doubles as a self-testing executable (assert-and-throw harness invoked by `make test`).
+- `src/` — the web app. `src/data/repository.ts` loads all Markdown/schemas at build time via `import.meta.glob(..., { query: '?raw', eager: true })` (new reference modules are picked up automatically) and exposes the glob-backed `documentStore` adapter. `src/data/validationEngine.ts` delegates the Validation Console to the shared Integrity Gate (check 12 reports `na` in-browser — it regenerates files on disk). `src/schema/{auditor,validator}.ts` (AJV-based) is shared between the WorkspaceAuditor UI and the `npm run audit` CLI. `src/components/*.tsx` map 1:1 to app tabs; tab keys are `TabType` in `src/types.ts`.
 - `docs/adr/` — Architecture Decision Records; ADR-0005 documents the Python→TS port.
 
 ## Conventions

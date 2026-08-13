@@ -7,6 +7,7 @@ import {
   AdrRecord,
   JsonSchemaItem,
 } from '../types';
+import { parseFrontmatterMap } from '../lib/markdownCore';
 
 /**
  * Normalizes a URL for canonical matching and duplicate detection.
@@ -61,23 +62,8 @@ export function parseSourceFrontmatter(rawContent: string): {
   license: string;
   checksum?: string;
 } {
-  const frontmatterMatch = rawContent.match(/^---\s*[\r\n]+([\s\S]*?)[\r\n]+---/);
-  const meta: Record<string, string> = {};
-
-  if (frontmatterMatch) {
-    const yamlBody = frontmatterMatch[1];
-    const lines = yamlBody.split('\n');
-    for (const line of lines) {
-      const match = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*(.*)$/);
-      if (match) {
-        const key = match[1].trim();
-        let val = match[2].trim();
-        // Remove surrounding quotes
-        val = val.replace(/^["']|["']$/g, '');
-        meta[key] = val;
-      }
-    }
-  }
+  // Single home for frontmatter parsing — the MarkdownDoc Core.
+  const meta = parseFrontmatterMap(rawContent);
 
   // Fallback searches in body if not in frontmatter
   const urlInBody = rawContent.match(/URL:\s*(https?:\/\/[^\s\n\r]+)/i) || rawContent.match(/Source:\s*(https?:\/\/[^\s\n\r]+)/i);

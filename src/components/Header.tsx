@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'evidence', label: 'Evidence & Logs', icon: ShieldCheck, count: evidenceCount },
     { id: 'sources', label: 'Web Sources', icon: Database, count: sourceCount },
     { id: 'adrs', label: 'ADRs', icon: FileText, count: adrCount },
-    { id: 'validation', label: 'Integrity Suite', icon: CheckCircle2, count: 11 },
+    { id: 'validation', label: 'Integrity Suite', icon: CheckCircle2, count: 12 },
     { id: 'composed', label: 'Parent Doc', icon: FileCode },
   ];
 
