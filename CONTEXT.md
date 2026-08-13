@@ -37,7 +37,7 @@ _Avoid_: saved sites, web snapshot, cached sources
 _Avoid_: source index, sources table
 
 **Native schema catalog**:
-`schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 17 core native schemas documented in section 20; validated against drift by `scripts/validate.py`.
+`schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 18 core native schemas documented in section 20; validated against drift by `scripts/validate.py`.
 _Avoid_: json templates, config definitions
 
 **Schema-to-Doc Parity Gate**:
@@ -47,3 +47,7 @@ _Avoid_: schema sync check, field audit
 **Evidence Consistency Checker**:
 Automated validation verifying live evidence range alignment across works-cited/summary tables and prohibiting stale confound phrasing once an EV is marked `RESOLVED`.
 _Avoid_: proof checker, ev linter
+
+**MarkdownDoc Inspector**:
+Pure-stdlib semantic Markdown AST and table parsing module (`scripts/lib/doc_inspector.py`) encapsulating section slicing, column extraction, citation discovery, and heading hierarchy verification behind a unified object interface.
+_Avoid_: markdown helper, regex utils

@@ -11,7 +11,8 @@ help:
 	@echo "  make watch               Watch reference/*.md and rebuild automatically on change"
 	@echo ""
 	@echo "Validation & Quality:"
-	@echo "  make validate            Run the 9-stage repository validation suite"
+	@echo "  make test                Run standalone unit tests for internal toolchain libraries"
+	@echo "  make validate            Run the 11-stage repository validation suite"
 	@echo "  make validate-verbose    Run validation with detailed per-check breakdown"
 	@echo "  make validate-fix        Auto-repair drift (rebuild parent & clean orphaned snapshots)"
 	@echo ""
@@ -23,9 +24,12 @@ help:
 	@echo "Environment & Maintenance:"
 	@echo "  make install             Install required Python dependencies"
 	@echo "  make clean               Remove __pycache__, .pyc files, and build temp files"
-	@echo "  make all                 Run full validation and build verification"
+	@echo "  make all                 Run full test, validation and build verification"
 
-all: validate build-check
+test:
+	$(PYTHON) scripts/lib/doc_inspector.py
+
+all: test validate build-check
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
