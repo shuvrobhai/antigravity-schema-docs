@@ -1,0 +1,9 @@
+# Freebuff app runtime state (database, logs) and generated preview artifacts
+.freebuff/
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store

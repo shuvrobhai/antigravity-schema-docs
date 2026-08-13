@@ -1,0 +1,29 @@
+# Reference Documentation Context
+
+The workspace maintains the Google Antigravity technical reference (`antigravity-reference.md`) as a modular document: content lives in per-section source files under `reference/`, and a composition build regenerates the monolithic parent.
+
+## Language
+
+**Module**:
+A child file under `reference/` holding exactly one TOC section (or the preamble). Named `NN-slug.md`; the number defines composition order and must be contiguous.
+_Avoid_: section file, child doc, chapter file
+
+**Preamble**:
+Module `00-preamble.md` — everything before Section 1: title block, "What This Is", changelog, "How This Report Was Built", and the table of contents.
+_Avoid_: header, front matter
+
+**Parent**:
+The generated `antigravity-reference.md` at the repo root, composed from the modules by `build.py`. Never hand-edited; carries a generated-file HTML comment.
+_Avoid_: main doc, master file
+
+**Composition build**:
+`build.py` regenerating the parent from modules (`--watch` for live rebuilds, `--check` for sync verification).
+_Avoid_: compile, merge
+
+**Source tag**:
+The authority marker on each claim — `[DOCS]`, `[GOOGLE]`, `[LIVE-1.1.12 · 2026-08-13]`, `[PROTOCOL]`, `[COMMUNITY]`, `[INFERRED]` — with `[DOCS] > [LIVE] > [GOOGLE] > [PROTOCOL] > [COMMUNITY] > [INFERRED]` precedence.
+_Avoid_: citation, footnote
+
+**Evidence file**:
+`evidence/agy-1.1.12/evidence.md` — the master record of EV-001–EV-019 live observations that ground `[LIVE-1.1.12 · 2026-08-13]` claims.
+_Avoid_: log, proof
