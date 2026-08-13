@@ -30,6 +30,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from lib.doc_inspector import MarkdownDoc
+from lib.evidence_registry import EvidenceRegistry
 
 SRC_DIR = os.path.join(ROOT, "reference")
 PARENT_DOC = os.path.join(ROOT, "antigravity-reference.md")
@@ -202,82 +203,37 @@ def check_heading_hierarchy(fix: bool, verbose: bool) -> ValidationResult:
 # --- Check 5: Source Archive & Manifest Sync ---
 def check_source_archive_sync(fix: bool, verbose: bool) -> ValidationResult:
     res = ValidationResult("Source Archive Sync")
-    try:
-        import fetch_sources
-    except ImportError as e:
-        res.fail_with(f"could not import fetch_sources.py: {e}")
-        return res
-
-    citations = fetch_sources.load_citations()
-    if not citations:
+    reg = EvidenceRegistry.load(ROOT)
+    if not reg.citations:
         res.fail_with("no citations loaded from 19-works-cited.md")
         return res
 
-    fetch_sources.resolve_duplicates(citations)
-    fetch_sources.assign_slugs(citations)
-
-    missing = [
-        fetch_sources.snapshot_path(rec)
-        for n, rec in sorted(citations.items())
-        if not rec.get("duplicate_of") and not os.path.exists(fetch_sources.snapshot_path(rec))
-    ]
-
-    index_text = fetch_sources.generate_index(citations)
-    index_sync = os.path.exists(INDEX_PATH) and open(INDEX_PATH, encoding="utf-8").read() == index_text
-
+    missing = reg.find_missing_snapshots()
     if missing:
         for p in missing:
             res.fail_with(f"missing snapshot: {os.path.relpath(p, ROOT)}")
 
-    if not index_sync:
+    if not reg.is_manifest_in_sync():
         if fix:
-            with open(INDEX_PATH, "w", encoding="utf-8") as fh:
-                fh.write(index_text)
-            res.pass_with(f"fixed: regenerated {os.path.relpath(INDEX_PATH, ROOT)}")
+            reg.sync_manifest_file()
+            res.pass_with(f"fixed: regenerated {os.path.relpath(reg.index_path, ROOT)}")
         else:
-            res.fail_with(f"archive manifest {os.path.relpath(INDEX_PATH, ROOT)} out of sync (run fetch_sources.py)")
+            res.fail_with(f"archive manifest {os.path.relpath(reg.index_path, ROOT)} out of sync (run fetch_sources.py)")
     else:
-        active_count = len([c for c in citations.values() if not c.get("duplicate_of")])
-        res.pass_with(f"all {len(citations)} citations archived and index.md is in sync")
+        res.pass_with(f"all {len(reg.citations)} citations archived and index.md is in sync")
 
     if verbose:
-        for n, rec in sorted(citations.items()):
-            dup = f" (dup of #{rec['duplicate_of']})" if rec.get("duplicate_of") else ""
-            res.add_detail(f"citation #{n:02d} [{rec['category']}] {rec['title']}{dup}")
+        for c in reg.citations:
+            dup = f" (dup of #{c.duplicate_of})" if c.is_duplicate else ""
+            res.add_detail(f"citation #{c.number:02d} [{c.category}] {c.title}{dup}")
     return res
 
 
 # --- Check 6: Orphan Snapshot Detection ---
 def check_orphan_snapshots(fix: bool, verbose: bool) -> ValidationResult:
     res = ValidationResult("Orphan Snapshots")
-    if not os.path.exists(ARCHIVE_DIR):
-        res.fail_with(f"archive directory missing: {os.path.relpath(ARCHIVE_DIR, ROOT)}")
-        return res
-
-    try:
-        import fetch_sources
-    except ImportError as e:
-        res.fail_with(f"could not import fetch_sources.py: {e}")
-        return res
-
-    citations = fetch_sources.load_citations()
-    fetch_sources.resolve_duplicates(citations)
-    fetch_sources.assign_slugs(citations)
-    valid_paths = {
-        os.path.abspath(fetch_sources.snapshot_path(rec))
-        for rec in citations.values()
-        if not rec.get("duplicate_of")
-    }
-
-    all_files = []
-    for cat in ["docs", "google", "protocol", "community"]:
-        cat_dir = os.path.join(ARCHIVE_DIR, cat)
-        if os.path.exists(cat_dir):
-            for f in os.listdir(cat_dir):
-                if f.endswith(".md"):
-                    all_files.append(os.path.abspath(os.path.join(cat_dir, f)))
-
-    orphans = [p for p in all_files if p not in valid_paths]
+    reg = EvidenceRegistry.load(ROOT)
+    orphans = reg.find_orphan_snapshots()
     if orphans:
         if fix:
             for p in orphans:
@@ -347,8 +303,8 @@ def check_evidence_citations(fix: bool, verbose: bool) -> ValidationResult:
         res.fail_with(f"master evidence file missing: {os.path.relpath(EVIDENCE_FILE, ROOT)}")
         return res
 
-    evidence_doc = MarkdownDoc.from_file(EVIDENCE_FILE)
-    defined_evs = evidence_doc.find_all_ev_ids()
+    reg = EvidenceRegistry.load(ROOT)
+    defined_evs = {p.ev_id for p in reg.probes}
 
     # Discover cited EV IDs in reference/ modules
     cited_evs = {}
@@ -550,15 +506,13 @@ def check_evidence_consistency(fix: bool, verbose: bool) -> ValidationResult:
         res.fail_with(f"master evidence file missing: {os.path.relpath(EVIDENCE_FILE, ROOT)}")
         return res
 
-    evidence_doc = MarkdownDoc.from_file(EVIDENCE_FILE)
-    ev_ids = evidence_doc.find_all_ev_ids()
-    ev_nums = [int(ev.split("-")[1]) for ev in ev_ids]
-    if not ev_nums:
+    reg = EvidenceRegistry.load(ROOT)
+    max_ev = reg.max_evidence_number
+    if max_ev == 0:
         res.fail_with(f"no EV-### identifiers discovered in {os.path.basename(EVIDENCE_FILE)}")
         return res
 
-    max_ev = max(ev_nums)
-    expected_range = f"EV-001..EV-{max_ev:03d}"
+    expected_range = reg.evidence_range
     expected_count = max_ev
 
     # Verify 19-works-cited.md summary header
@@ -577,14 +531,13 @@ def check_evidence_consistency(fix: bool, verbose: bool) -> ValidationResult:
     # Verify no stale unresolved confound claims exist for resolved probes (e.g. EV-020)
     resolved_probes = ["EV-020"]
     for probe in resolved_probes:
-        if probe in ev_ids:
-            probe_entry = re.search(rf"^###\s+{probe}\b[\s\S]*?(?=^###\s+EV-|\Z)", evidence_doc.text, re.M)
-            if probe_entry and "CONFIRMED" in probe_entry.group(0):
-                # Search modules for stale ungrounded claims
-                for p in glob.glob(os.path.join(SRC_DIR, "*.md")):
-                    mod_doc = MarkdownDoc.from_file(p)
-                    if f"{probe} confound unresolved" in mod_doc.text.lower():
-                        res.fail_with(f"{mod_doc.filename} retains stale 'unresolved confound' text for {probe}")
+        probe_obj = reg.get_probe(probe)
+        if probe_obj and probe_obj.status == "CONFIRMED":
+            # Search modules for stale ungrounded claims
+            for p in glob.glob(os.path.join(SRC_DIR, "*.md")):
+                mod_doc = MarkdownDoc.from_file(p)
+                if f"{probe} confound unresolved" in mod_doc.text.lower():
+                    res.fail_with(f"{mod_doc.filename} retains stale 'unresolved confound' text for {probe}")
 
     if res.passed:
         res.pass_with(f"evidence range ({expected_range}) and confound resolutions synchronized across all modules")

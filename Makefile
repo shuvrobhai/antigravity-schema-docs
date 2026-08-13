@@ -28,6 +28,7 @@ help:
 
 test:
 	$(PYTHON) scripts/lib/doc_inspector.py
+	$(PYTHON) scripts/lib/evidence_registry.py
 
 all: test validate build-check
 

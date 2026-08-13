@@ -51,3 +51,8 @@ _Avoid_: proof checker, ev linter
 **MarkdownDoc Inspector**:
 Pure-stdlib semantic Markdown AST and table parsing module (`scripts/lib/doc_inspector.py`) encapsulating section slicing, column extraction, citation discovery, and heading hierarchy verification behind a unified object interface.
 _Avoid_: markdown helper, regex utils
+
+**Evidence Registry**:
+Domain catalog and verification module (`scripts/lib/evidence_registry.py`) providing an immutable query interface over Section 19 citations, empirical evidence probes (EV-001..EV-020), snapshot path resolution, and `index.md` manifest verification.
+_Avoid_: citation helper, source parser
+

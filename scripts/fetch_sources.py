@@ -82,13 +82,11 @@ TABLE_ROW = re.compile(r"^\| (\d+) \| `?\[([A-Z0-9-]+)\]`? \| (.+?) \| (https?:/
 FRONT = re.compile(r"^---\n(.*?)\n---\n", re.S)
 
 
-def make_ssl_context(insecure: bool = False) -> ssl.SSLContext:
-    """Return an SSL context for HTTPS fetching.
+from lib.evidence_registry import EvidenceRegistry, Citation, TAG_FOLDER, GEN_NOTE, read_snapshot_header
 
-    Prefers certifi when available because Python on macOS sometimes cannot
-    find the system CA bundle. `insecure` disables verification and should
-    only be used for local debugging.
-    """
+
+def make_ssl_context(insecure: bool = False) -> ssl.SSLContext:
+    """Return an SSL context for HTTPS fetching."""
     if insecure:
         return ssl._create_unverified_context()
     if HAS_CERTIFI:
@@ -97,55 +95,27 @@ def make_ssl_context(insecure: bool = False) -> ssl.SSLContext:
 
 
 def load_citations() -> dict:
-    """Parse every numbered citation in the Works Cited module.
-
-    Dynamically tracks the active source category from markdown section
-    headings (e.g. `### Official Docs [DOCS]`).
-    """
-    with open(WORKS_CITED, encoding="utf-8") as fh:
-        lines = fh.read().splitlines()
-
-    citations = {}
-    current_cat = None
-    for raw in lines:
-        line = raw.strip()
-        # Category section heading: "### Official Docs `[DOCS]`"
-        hm = re.search(r"^###\s+.*?`?\[([A-Z0-9-]+)\]`?", line)
-        if hm:
-            tag = hm.group(1).upper()
-            current_cat = TAG_FOLDER.get(tag)
-            continue
-        m = LIST_ITEM.match(line)
-        if m:
-            n = int(m.group(1))
-            if current_cat:
-                url = m.group(3).strip().rstrip(".,;:!?")
-                citations[n] = {
-                    "number": n,
-                    "title": m.group(2).strip(),
-                    "url": url,
-                    "category": current_cat,
-                }
-            continue
-        m = TABLE_ROW.match(line)
-        if m:
-            n = int(m.group(1))
-            folder = TAG_FOLDER.get(m.group(2).upper())
-            if folder:
-                citations[n] = {
-                    "number": n,
-                    "title": m.group(3).strip(),
-                    "url": m.group(4).strip(),
-                    "category": folder,
-                }
-    return citations
+    """Parse every numbered citation in the Works Cited module via EvidenceRegistry."""
+    reg = EvidenceRegistry.load(ROOT)
+    out = {}
+    for c in reg.citations:
+        out[c.number] = {
+            "number": c.number,
+            "title": c.title,
+            "url": c.url,
+            "category": c.category,
+            "slug": c.slug,
+            "duplicate_of": c.duplicate_of,
+        }
+    return out
 
 
 def get_existing_snapshots() -> list:
     """Return paths of all existing snapshot markdown files in category folders."""
+    reg = EvidenceRegistry.load(ROOT)
     existing = []
     for cat in TAG_FOLDER.values():
-        cat_dir = os.path.join(ARCHIVE_DIR, cat)
+        cat_dir = os.path.join(reg.archive_dir, cat)
         if os.path.isdir(cat_dir):
             for name in sorted(os.listdir(cat_dir)):
                 if name.endswith(".md") and name != "index.md":
@@ -153,61 +123,31 @@ def get_existing_snapshots() -> list:
     return existing
 
 
-def find_orphans(citations: dict) -> list:
+def find_orphans(citations: Optional[dict] = None) -> list:
     """Find snapshot files on disk that are not referenced in citations."""
-    expected = {
-        snapshot_path(rec)
-        for n, rec in citations.items()
-        if not rec.get("duplicate_of")
-    }
-    existing = set(get_existing_snapshots())
-    return sorted(existing - expected)
+    reg = EvidenceRegistry.load(ROOT)
+    return reg.find_orphan_snapshots()
 
 
 def resolve_duplicates(citations: dict) -> None:
-    """Mark citations whose URL is already archived under a lower number."""
-    by_url = {}
-    for n in sorted(citations):
-        url = citations[n]["url"]
-        if url in by_url:
-            citations[n]["duplicate_of"] = by_url[url]
-        else:
-            by_url[url] = n
-
-
-def slugify_title(title: str) -> str:
-    s = re.sub(r"[^a-z0-9]+", "-", title.lower())
-    return s.strip("-")
-
-
-def slug_for(rec: dict) -> str:
-    """Descriptive tail of the filename, derived from the URL path.
-
-    Falls back to the citation title when the path has no usable segments
-    (e.g. the landing page) or ends in a numeric id (e.g. a support article).
-    """
-    path = urlparse(rec["url"]).path.rstrip("/")
-    segs = [s for s in path.split("/") if s]
-    if segs and segs[0] == "docs":
-        segs = segs[1:]
-    if segs and segs[-1].isdigit():
-        return slugify_title(rec["title"])
-    if not segs:
-        return "landing"
-    return "-".join(segs[-2:]).lower()
+    """No-op for backward-compatibility; duplicates are resolved in EvidenceRegistry."""
+    pass
 
 
 def assign_slugs(citations: dict) -> None:
-    """Assign a slug to every non-duplicate citation.
+    """No-op for backward-compatibility; slugs are assigned in EvidenceRegistry."""
+    pass
 
-    The citation number prefix guarantees unique filenames; the slug only
-    provides a descriptive tail.
-    """
-    for n in sorted(citations):
-        rec = citations[n]
-        if rec.get("duplicate_of"):
-            continue
-        rec["slug"] = slug_for(rec)
+
+def generate_index(citations: Optional[dict] = None) -> str:
+    """Generate the complete archive manifest via EvidenceRegistry."""
+    reg = EvidenceRegistry.load(ROOT)
+    return reg.generate_manifest_text()
+
+
+def snapshot_path(rec: dict) -> str:
+    """Return expected snapshot file path for a citation."""
+    return os.path.join(ARCHIVE_DIR, rec["category"], f"{rec['number']:02d}-{rec['slug']}.md")
 
 
 SOFT_404_URL_PATTERNS = [
