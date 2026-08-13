@@ -31,7 +31,7 @@ All live corrections in this revision come from direct observation of a user-con
 
 | Information | Source | Why Included |
 |---|---|---|
-| Written in Go, Gemini 3.5 Flash optimized | Codelab: Getting Started `[GOOGLE]` | Not stated on official docs pages |
+| Gemini 3.5 Flash optimized | Codelab: Getting Started `[GOOGLE]` | Not stated on official docs pages |
 | Progressive disclosure token costs (~100/skill Phase 1, <5000 Phase 2) | Codelab: Skills 101 `[GOOGLE]` | Official docs describe pattern but omit quantitative details |
 | `scripts/`, `references/`, `assets/` subdirectories (Codelab names) | Codelab: Skills 101 `[GOOGLE]` | Superseded by official docs page which uses `scripts/`, `examples/`, `resources/` |
 | 7-level configuration precedence | Gemini CLI Configuration docs `[GOOGLE]` | Not stated in Antigravity docs; likely inherited but unconfirmed |
@@ -41,9 +41,7 @@ All live corrections in this revision come from direct observation of a user-con
 | `policyPaths`, `adminPolicyPaths` | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
 | Migration path mapping (`~/.gemini/skills/` → `~/.gemini/config/skills/`) | Migration docs `[GOOGLE]` | Provides critical path correction for users migrating from Gemini CLI |
 | `AfterAgent`/`AfterTool` event names | Claude-Mem integration docs `[COMMUNITY]` | Official hooks docs list `PreInvocation`/`PostInvocation`; naming discrepancy unresolved |
-| Nano Banana 2 model for image generation | LinkedIn blog post `[GOOGLE]` | Not mentioned in official docs |
 | `/goal` command and subagent loop patterns | LinkedIn blog post `[GOOGLE]` | `/goal` now confirmed on official landing page; loop patterns are user experience |
-| `serverUrl` replaces legacy `url`/`httpUrl` | Migration docs `[GOOGLE]` | Critical migration detail |
 | `/schedule` one-time timers capped at 900 s | Google Cloud Medium tutorial (Antigravity CLI series) `[GOOGLE]` | Hard behavioral cap absent from official docs |
 
 ### From Third-Party Sources `[COMMUNITY]`
@@ -54,8 +52,7 @@ All live corrections in this revision come from direct observation of a user-con
 | Security: hidden Unicode instructions can survive human review | Embrace The Red `[COMMUNITY]` | Official docs don't address this security concern |
 | `disable-model-invocation` frontmatter attribute | Embrace The Red `[COMMUNITY]` | Not in official docs; may not exist — included only as security concern reference |
 | 30-day usage patterns, `/goal` command usage | LinkedIn `[COMMUNITY]` | First-person user experience with CLI |
-| `/export` CLI→Desktop session handoff | aibuilderclub `[COMMUNITY]`, dev.to hands-on `[COMMUNITY]`, neurals.ca `[COMMUNITY]` | Cross-product workflow absent from official CLI reference |
-| Open VSX IDE extension marketplace (not official VS Code Marketplace) | `microsoft/vscode-dotnettools#2557` `[COMMUNITY]`, mslinn.com `[COMMUNITY]`, BleepingComputer `[COMMUNITY]` | C# Dev Kit and other non-mirrored extensions unavailable |
+| Open VSX Registry extension limitations (e.g. C# Dev Kit missing) | `microsoft/vscode-dotnettools#2557` `[COMMUNITY]`, mslinn.com `[COMMUNITY]`, BleepingComputer `[COMMUNITY]` | Specific Microsoft extensions unavailable on Open VSX |
 | `agy` + `gemini` binary coexistence | aibuilderclub `[COMMUNITY]`, harshrastogi.tech `[COMMUNITY]`, how2shout `[COMMUNITY]` | Resolves binary-conflict ambiguity in §3.4 migration |
 | SDK Go harness over WebSockets | Karl Weinmeister developer guide (LinkedIn) `[COMMUNITY]` | Transport detail; author is Google Cloud Developer Advocate |
 | `Ctrl+Z`-suspend / `e` / `Ctrl+Y` keybinding claims | Community round-up `[COMMUNITY]` | Rejected after official reference check (see §5.7) |

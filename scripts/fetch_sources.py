@@ -27,6 +27,7 @@ Usage:
   fetch_sources.py --category docs --category google
   fetch_sources.py --force               re-fetch even when the file exists
   fetch_sources.py --check               exit 0 if the archive is in sync, 1 if not
+  fetch_sources.py --insecure            disable SSL certificate verification (debug only)
 """
 import argparse
 import datetime
@@ -37,9 +38,18 @@ import re
 import shutil
 import subprocess
 import sys
+import ssl
 import urllib.error
 import urllib.request
 from urllib.parse import urlparse
+
+from bs4 import BeautifulSoup
+
+try:
+    import certifi
+    HAS_CERTIFI = True
+except ImportError:
+    HAS_CERTIFI = False
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKS_CITED = os.path.join(ROOT, "reference", "19-works-cited.md")
@@ -54,10 +64,10 @@ FETCH_TIMEOUT = 30
 
 # Citation-number ranges in the Works Cited module that encode the source tag.
 RANGES = {
-    "docs": range(1, 30),
-    "google": range(30, 37),
-    "protocol": range(37, 38),
-    "community": range(38, 53),
+    "docs": range(1, 31),
+    "google": range(31, 39),
+    "protocol": range(39, 40),
+    "community": range(40, 55),
 }
 TAG_FOLDER = {
     "DOCS": "docs",
@@ -73,6 +83,20 @@ LIST_ITEM = re.compile(r"^(\d+)\. (.+?) — (https?://\S+?)(?=\s|$)")
 # "| 53 | `[DOCS]` | /agents Panel Documentation | https://... |"
 TABLE_ROW = re.compile(r"^\| (\d+) \| `?\[([A-Z0-9-]+)\]`? \| (.+?) \| (https?://\S+) \|$")
 FRONT = re.compile(r"^---\n(.*?)\n---\n", re.S)
+
+
+def make_ssl_context(insecure: bool = False) -> ssl.SSLContext:
+    """Return an SSL context for HTTPS fetching.
+
+    Prefers certifi when available because Python on macOS sometimes cannot
+    find the system CA bundle. `insecure` disables verification and should
+    only be used for local debugging.
+    """
+    if insecure:
+        return ssl._create_unverified_context()
+    if HAS_CERTIFI:
+        return ssl.create_default_context(cafile=certifi.where())
+    return ssl.create_default_context()
 
 
 def load_citations() -> dict:
@@ -93,10 +117,12 @@ def load_citations() -> dict:
             n = int(m.group(1))
             cat = next((folder for folder, rng in RANGES.items() if n in rng), None)
             if cat:
+                # Strip common trailing punctuation from captured URL
+                url = m.group(3).strip().rstrip(".,;:!?")
                 citations[n] = {
                     "number": n,
                     "title": m.group(2).strip(),
-                    "url": m.group(3).strip(),
+                    "url": url,
                     "category": cat,
                 }
             continue
@@ -148,30 +174,51 @@ def slug_for(rec: dict) -> str:
 
 
 def assign_slugs(citations: dict) -> None:
-    used = {}
+    """Assign a slug to every non-duplicate citation.
+
+    The citation number prefix guarantees unique filenames; the slug only
+    provides a descriptive tail.
+    """
     for n in sorted(citations):
         rec = citations[n]
         if rec.get("duplicate_of"):
             continue
-        base = slug_for(rec)
-        slug, i = base, 2
-        while slug in used:
-            slug, i = f"{base}-{i}", i + 1
-        used[slug] = n
-        rec["slug"] = slug
+        rec["slug"] = slug_for(rec)
 
 
-def fetch(url: str) -> tuple:
+SOFT_404_URL_PATTERNS = [
+    "trk=article_not_found",
+    "/404",
+    "page_not_found",
+    "article_not_found",
+    "/error/404",
+]
+SOFT_404_TEXT_PATTERNS = [
+    "we can’t find the page",
+    "we cannot find the page",
+    "page you’re looking for may have been moved",
+    "404 not found",
+    "404: this page could not be found",
+]
+
+
+def fetch(url: str, ssl_context: ssl.SSLContext) -> tuple:
+    """Fetch URL and return (status, final_url, decoded_html)."""
     req = urllib.request.Request(
         url,
-        headers={"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml", "Accept-Encoding": "gzip"},
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Encoding": "gzip, deflate",
+        },
     )
-    with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
+    with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT, context=ssl_context) as resp:
         status = resp.status
         final = resp.geturl()
         raw = resp.read()
         charset = resp.headers.get_content_charset() or "utf-8"
-        encoding = resp.headers.get("Content-Encoding", "")
+        encoding = resp.headers.get("Content-Encoding", "").lower()
+
     if "gzip" in encoding:
         raw = gzip.decompress(raw)
     elif "deflate" in encoding:
@@ -179,16 +226,95 @@ def fetch(url: str) -> tuple:
             raw = zlib.decompress(raw)
         except zlib.error:
             raw = zlib.decompress(raw, -zlib.MAX_WBITS)
-    return status, final, raw.decode(charset, errors="replace")
+    decoded = raw.decode(charset, errors="replace")
+
+    # Soft-404 detection
+    final_lower = final.lower()
+    text_lower = decoded.lower()
+    if any(pattern in final_lower for pattern in SOFT_404_URL_PATTERNS) or any(
+        pattern in text_lower for pattern in SOFT_404_TEXT_PATTERNS
+    ):
+        raise urllib.error.HTTPError(final, 404, "Soft 404 (Page Not Found)", resp.headers, None)
+
+    return status, final, decoded
+
+
+def extract_main_content(html: str) -> str:
+    """Isolate primary content from full HTML and strip presentational markup.
+
+    Supports docs platforms (Astro, Mintlify, Docusaurus, GitBook, Dev.to, Reddit).
+    """
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Decompose site chrome, navigation, sidebars, scripts, styles, SVGs, data-URIs, and anchors
+    for selector in [
+        "header", "nav", "footer", "script", "style", "noscript", "svg",
+        "img[src^='data:']", "a.deep-link-anchor", ".header", ".docs-nav",
+        ".page-nav-overlay", ".mobile-menu", ".dropdown-overlay", ".dropdown",
+        ".logo-container", ".logo-context-menu", ".header-actions",
+        ".header-actions-right", ".docs-section-nav", ".docs-page-nav",
+        "#table-of-contents", "#table-of-contents-layout", ".toc", "aside",
+        ".breadcrumbs", ".share-buttons"
+    ]:
+        for tag in soup.select(selector):
+            tag.decompose()
+
+    # Prioritized content container selectors for various documentation / blog platforms
+    node = None
+    for selector in [
+        "#content-area", "#content", "div.markdown-content", ".main-content",
+        "main", "article", "div[role='main']", ".theme-doc-markdown",
+        ".markdown-body", "#article-body", ".article-body", "[data-test-id='post-content']"
+    ]:
+        node = soup.select_one(selector)
+        if node is not None:
+            break
+
+    if node is None:
+        node = soup.body or soup
+
+    # Strip ALL attributes except href on <a> links and src/alt on <img> tags
+    for tag in node.find_all(True):
+        allowed = {}
+        if tag.name == "a" and "href" in tag.attrs:
+            allowed["href"] = tag.attrs["href"]
+        elif tag.name == "img":
+            if "src" in tag.attrs:
+                allowed["src"] = tag.attrs["src"]
+            if "alt" in tag.attrs:
+                allowed["alt"] = tag.attrs["alt"]
+        tag.attrs = allowed
+
+    # Unwrap presentational structural containers (div, span, section, etc.)
+    for tag in list(node.find_all(["div", "span", "section", "aside", "header", "footer"])):
+        tag.unwrap()
+
+    # Remove empty elements (except standalone void elements like img, hr, br)
+    for tag in list(node.find_all(True)):
+        if (
+            tag.name not in ["img", "hr", "br"]
+            and not tag.get_text(strip=True)
+            and not tag.find_all(["img", "hr", "br"])
+        ):
+            tag.decompose()
+
+    return node.decode_contents() if hasattr(node, "decode_contents") else str(node)
 
 
 def html_to_markdown(html: str) -> str:
+    """Convert fetched HTML to GitHub Flavored Markdown using pandoc.
+
+    Only the main content area is converted; site chrome is discarded.
+    """
     pandoc = shutil.which("pandoc")
     if not pandoc:
         sys.exit("error: pandoc not found on PATH (required for HTML -> Markdown conversion)")
+
+    content_html = extract_main_content(html)
+
     p = subprocess.run(
         [pandoc, "-f", "html", "-t", "gfm", "--wrap=none", "-"],
-        input=html,
+        input=content_html,
         capture_output=True,
         text=True,
     )
@@ -198,12 +324,14 @@ def html_to_markdown(html: str) -> str:
 
 
 def yaml_scalar(s: str) -> str:
+    """Quote a string if it contains characters that would break YAML."""
     if '"' in s or ":" in s or "{" in s or "}" in s or s.strip() != s:
         return '"' + s.replace('"', '\\"') + '"'
     return s
 
 
 def write_snapshot(rec: dict, status, final_url: str, fetched: str, body: str) -> str:
+    """Write snapshot file and return its path."""
     folder = os.path.join(ARCHIVE_DIR, rec["category"])
     os.makedirs(folder, exist_ok=True)
     path = os.path.join(folder, f"{rec['number']:02d}-{rec['slug']}.md")
@@ -211,11 +339,11 @@ def write_snapshot(rec: dict, status, final_url: str, fetched: str, body: str) -
         [
             "---",
             f"source: {rec['number']}",
-            f"category: {rec['category']}",
+            f"category: {yaml_scalar(rec['category'])}",
             f"title: {yaml_scalar(rec['title'])}",
-            f"url: {rec['url']}",
-            f"final_url: {final_url}",
-            f"fetched: {fetched}",
+            f"url: {yaml_scalar(rec['url'])}",
+            f"final_url: {yaml_scalar(final_url)}",
+            f"fetched: {yaml_scalar(fetched)}",
             f"status: {status}",
             "---",
             "",
@@ -228,6 +356,7 @@ def write_snapshot(rec: dict, status, final_url: str, fetched: str, body: str) -
 
 
 def read_header(path: str) -> dict:
+    """Read YAML-style header from snapshot and return as dict."""
     with open(path, encoding="utf-8") as fh:
         text = fh.read()
     m = FRONT.match(text)
@@ -242,6 +371,11 @@ def read_header(path: str) -> dict:
 
 
 def generate_index(citations: dict) -> str:
+    """Generate the complete archive manifest.
+
+    Always operates on the full citation set, regardless of `--category`,
+    to ensure the index never drifts from the full archive.
+    """
     lines = [
         GEN_NOTE,
         "# Source Archive Index",
@@ -254,20 +388,27 @@ def generate_index(citations: dict) -> str:
     for n in sorted(citations):
         rec = citations[n]
         if rec.get("duplicate_of"):
-            lines.append(f"| {n} | {rec['category']} | {rec['title']} | — | duplicate of #{rec['duplicate_of']} | — |")
+            lines.append(
+                f"| {n} | {rec['category']} | {rec['title']} | — | duplicate of #{rec['duplicate_of']} | — |"
+            )
             continue
         name = f"{n:02d}-{rec['slug']}.md"
         path = os.path.join(ARCHIVE_DIR, rec["category"], name)
         if os.path.exists(path):
             h = read_header(path)
             link = f"[{name}]({rec['category']}/{name})"
-            lines.append(f"| {n} | {rec['category']} | {rec['title']} | {link} | {h.get('status', '?')} | {h.get('fetched', '?')} |")
+            lines.append(
+                f"| {n} | {rec['category']} | {rec['title']} | {link} | {h.get('status', '?')} | {h.get('fetched', '?')} |"
+            )
         else:
-            lines.append(f"| {n} | {rec['category']} | {rec['title']} | — | missing | — |")
+            lines.append(
+                f"| {n} | {rec['category']} | {rec['title']} | — | missing | — |"
+            )
     return "\n".join(lines) + "\n"
 
 
 def snapshot_path(rec: dict) -> str:
+    """Return expected snapshot file path for a citation."""
     return os.path.join(ARCHIVE_DIR, rec["category"], f"{rec['number']:02d}-{rec['slug']}.md")
 
 
@@ -281,7 +422,10 @@ def main() -> int:
     )
     ap.add_argument("--force", action="store_true", help="re-fetch pages even when the snapshot exists")
     ap.add_argument("--check", action="store_true", help="exit 0 if the archive is in sync, 1 if not (no writes)")
+    ap.add_argument("--insecure", action="store_true", help="disable SSL certificate verification (not recommended)")
     args = ap.parse_args()
+
+    ssl_context = make_ssl_context(args.insecure)
 
     citations = load_citations()
     if not citations:
@@ -289,22 +433,28 @@ def main() -> int:
     resolve_duplicates(citations)
     assign_slugs(citations)
 
-    scope = args.category or ["docs", "google", "protocol", "community"]
-    selected = {n: c for n, c in citations.items() if c["category"] in scope}
-    print(f"scope: {len(selected)} citations ({', '.join(scope)})")
-
+    # In --check mode, always validate the full archive, ignoring category filters.
     if args.check:
-        missing = [snapshot_path(rec) for n, rec in sorted(selected.items()) if not rec.get("duplicate_of") and not os.path.exists(snapshot_path(rec))]
-        index_text = generate_index(selected)
+        missing = [
+            snapshot_path(rec)
+            for n, rec in sorted(citations.items())
+            if not rec.get("duplicate_of") and not os.path.exists(snapshot_path(rec))
+        ]
+        index_text = generate_index(citations)
         index_sync = os.path.exists(INDEX_PATH) and open(INDEX_PATH, encoding="utf-8").read() == index_text
         for p in missing:
             print(f"missing: {os.path.relpath(p, ROOT)}", file=sys.stderr)
         if not index_sync:
             print("stale: evidence/sources/index.md differs from the archive (run fetch_sources.py)", file=sys.stderr)
         if not missing and index_sync:
-            print(f"ok: {len(selected)} citations in scope are archived and index.md is in sync")
+            print(f"ok: all {len(citations)} citations are archived and index.md is in sync")
             return 0
         return 1
+
+    # Normal fetch mode: apply category filter only to which pages we fetch.
+    scope = args.category or ["docs", "google", "protocol", "community"]
+    selected = {n: c for n, c in citations.items() if c["category"] in scope}
+    print(f"scope: {len(selected)} citations ({', '.join(scope)})")
 
     fetched_date = datetime.date.today().isoformat()
     ok = fail = skip = 0
@@ -317,7 +467,7 @@ def main() -> int:
             skip += 1
             continue
         try:
-            status, final, html = fetch(rec["url"])
+            status, final, html = fetch(rec["url"], ssl_context)
             body = html_to_markdown(html)
         except urllib.error.HTTPError as e:
             print(f"FAIL  #{n:02d} {rec['category']:<9} {rec['url']} -> HTTP {e.code}")
@@ -331,7 +481,8 @@ def main() -> int:
         print(f"ok    #{n:02d} {rec['category']:<9} {os.path.basename(path)} ({status}, {len(body.splitlines())} lines)")
         ok += 1
 
-    index_text = generate_index(selected)
+    # Always regenerate the full index.
+    index_text = generate_index(citations)
     with open(INDEX_PATH, "w", encoding="utf-8") as fh:
         fh.write(index_text)
     print(f"wrote {os.path.relpath(INDEX_PATH, ROOT)}")

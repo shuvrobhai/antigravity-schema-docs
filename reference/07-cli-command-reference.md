@@ -16,6 +16,7 @@
 | `/fork` | `/branch` | Clone conversation or fork to different project |
 | `/rename <name>` | — | Rename session |
 | `/rewind` | `/undo` | Roll back to previous message |
+| `/export` | — | Push the current terminal session into the Antigravity 2.0 desktop GUI to continue the same conversation in a richer surface (file diffs, graph views) `[DOCS]` |
 
 ### Configurations `[DOCS]`
 
@@ -79,13 +80,7 @@
 | `! <command>` | Direct bash execution (shell mode) |
 | `@ <path>` | File autocompletion overlay |
 
-### Cross-Product (community-observed) `[COMMUNITY]`
 
-| Command | Description |
-|---|---|
-| `/export` | Push the current terminal session into the Antigravity 2.0 desktop GUI to continue the same conversation in a richer surface (file diffs, graph views) `[COMMUNITY]` |
-
-**Verification note (2026-08-13):** `/export` is corroborated by multiple independent community sources (aibuilderclub CLI guide 2026-06-21; dev.to hands-on guide 2026-05-21; neurals.ca conversation-history guide) but is **absent from the official CLI reference page** (`antigravity.google/docs/cli/reference`) as of 2026-08-13 — treat as community-observed until officially documented or live-verified.
 
 ### Binary Subcommands
 

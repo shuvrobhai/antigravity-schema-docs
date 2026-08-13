@@ -2,24 +2,48 @@
 
 `[DOCS]`
 
-**Execution Modes:**
+Artifacts are structured deliverables created by agents to communicate progress, outline technical plans, present code diffs, render architecture diagrams, and capture visual media `[DOCS]`. As agents execute with high autonomy over long sessions, artifacts serve as the primary asynchronous co-steering mechanism `[DOCS]`.
 
-| Mode | Behavior | CLI |
+### Execution Modes
+
+| Mode | Command | Execution & Planning Behavior |
 |---|---|---|
-| Planning | Agent plans, produces artifacts, task groups | `/planning` |
-| Fast | Direct execution | `/fast` |
+| **Planning Mode** | `/planning` | Agent generates structured implementation plans, task groups, and architecture artifacts before executing filesystem changes `[DOCS]`. |
+| **Fast Mode** | `/fast` | Direct execution mode without intermediate planning halts `[DOCS]`. |
 
-**Artifacts:** Implementation plans, code diffs, architecture diagrams, images, browser recordings.
+### TUI Interactive Review Interface
 
-**Controls:** `Ctrl+R` or `/artifact` for picker. `y`/`n`/`Shift+A`/`Shift+R` for approval. `p` for preview.
+When an agent produces or modifies artifacts, the TUI status bar displays an active notification (`/artifact to review`). Pressing `Ctrl+R` opens the interactive review interface `[DOCS]`:
 
-**Review Policy (Desktop):**
+1. **Artifact Picker Panel Overlay**:
+   - A high-level checklist menu featuring status markers (`✓ approved`, `open`), quick preview toggles, and folder structures `[DOCS]`.
+2. **Artifact Detail Viewer**:
+   - A full-screen audit interface supporting syntax highlighting, inline line-level commenting, and diagram scaling `[DOCS]`.
+
+#### Panel Keybindings
+
+| Key | TUI Command | Action Behavior |
+|---|---|---|
+| `↑` / `↓` | `nav.scroll_line` | Navigate through list of artifact entries `[DOCS]`. |
+| `h` / `l` | `nav.switch_button` | Toggle row action buttons (**open**, **approve**, **reject**) `[DOCS]`. |
+| `p` | `confirm.preview` | Toggle 12-line inline code preview under selected row `[DOCS]`. |
+| `y` | `confirm.approve` | Instantly approve selected artifact `[DOCS]`. |
+| `n` | `confirm.reject` | Instantly reject selected artifact `[DOCS]`. |
+| `Shift+A` | `confirm.approve_all` | Approve all pending artifacts simultaneously `[DOCS]`. |
+| `Esc` | `nav.close` | Close picker overlay `[DOCS]`. |
+
+### Artifact Review Policy Settings
+
+The Desktop Hub and CLI support configurable review policies `[DOCS]`:
 
 | Policy | Behavior |
 |---|---|
-| Request Review (Recommended) | Agent halts for approval |
-| Always Proceed | Never halts |
+| **Request Review** *(Recommended)* | Agent halts at intermediate milestones for user inspection before writing changes to disk `[DOCS]`. |
+| **Always Proceed** | Agent proceeds continuously without halting for deliverable approvals `[DOCS]`. |
 
-**Implementation Plan Workflow:** Generate → Review (inline comments) → "Proceed" or "Review" → Agent iterates or implements.
+### Implementation Plan Co-Steering Workflow
 
-**Multimodal Feedback:** Screenshots via browser subagent, saved as artifacts, support commenting.
+1. **Generate**: Agent creates an `implementation_plan.md` artifact in the session artifact directory `[DOCS]`.
+2. **Review & Comment**: User inspects proposed architecture, adding line-level feedback comments `[DOCS]`.
+3. **Co-Steer**: User selects **"Proceed"** (approves implementation) or **"Review"** (requests revision based on feedback) `[DOCS]`.
+4. **Multimodal Feedback**: Screenshots captured by browser subagents are attached as visual artifacts supporting direct region-based feedback `[DOCS]`.

@@ -11,15 +11,15 @@ Google Antigravity comprises four products `[DOCS]`:
 | **Antigravity CLI** | Lightweight, fast, terminal-first surface for autonomous coding agents, shell execution, and background subagent management. | Terminal (`agy`) |
 | **Antigravity SDK** | Python SDK for programmatic integration, custom agent prototyping, and automated evaluations. | Python API |
 
-**IDE extension marketplace (2026-08-13):** Antigravity IDE does **not** use the official VS Code Marketplace; it sources extensions from the **Open VSX Registry** (Eclipse Foundation) `[COMMUNITY]` — the same constraint as other VS Code forks `[COMMUNITY]`. Compatibility is partial: extensions mirrored on Open VSX install and work (including some with the `ms-` publisher prefix, e.g. `ms-python`), but Microsoft-owned extensions absent from Open VSX (e.g. **C# Dev Kit** — confirmed unavailable via `microsoft/vscode-dotnettools#2557`) do not. First-hand reports describe manual VSIX installs from the official Marketplace as unreliable `[COMMUNITY]`. Evaluate extension availability on Open VSX before treating the IDE as a drop-in VS Code replacement.
+**IDE extension marketplace (2026-08-13):** Antigravity IDE does **not** use the official VS Code Marketplace; it sources extensions from the **Open VSX Registry** (Eclipse Foundation) `[DOCS]`. Compatibility is partial: extensions mirrored on Open VSX install and work (including some with the `ms-` publisher prefix, e.g. `ms-python`), but Microsoft-owned extensions absent from Open VSX (e.g. **C# Dev Kit** — confirmed unavailable via `microsoft/vscode-dotnettools#2557`) do not. First-hand reports describe manual VSIX installs from the official Marketplace as unreliable `[COMMUNITY]`. Evaluate extension availability on Open VSX before treating the IDE as a drop-in VS Code replacement.
 
 ### 3.2 CLI Technical Characteristics
 
-- **Language:** Written in Go `[GOOGLE]`
+- **Language:** Written in Go `[DOCS]`
 - **Optimized model:** Gemini 3.5 Flash, optimized for the Antigravity harness `[GOOGLE]`
-- **Architecture:** Asynchronous-first — subagents run in the background, commands execute asynchronously, terminal remains ready at all times `[GOOGLE]`
-- **Binary:** `agy` for CLI; `antigravity` for desktop IDE `[GOOGLE]`
-- **Config tree:** Reuses `~/.gemini/` directory for backward compatibility `[GOOGLE]`
+- **Architecture:** Asynchronous-first — subagents run in the background, allowing parallel parent/subagent execution `[DOCS]`; commands execute asynchronously `[GOOGLE]`
+- **Binary:** `agy` for CLI `[DOCS]`; `antigravity` for desktop IDE `[GOOGLE]`
+- **Config tree:** Uses `~/.gemini/` directory `[DOCS]`; reuse for backward compatibility is `[GOOGLE]`
 - **Live grounding:** `agy --version` reports `1.1.12` `[LIVE-1.1.12 · 2026-08-13]`, platform `Darwin ... RELEASE_ARM64_T8103 arm64` `EV-001`.
 
 ### 3.3 System Requirements
@@ -59,7 +59,7 @@ Starting June 18, 2026, Gemini Code Assist IDE extensions and Gemini CLI stopped
 | Claude Opus 4.6 (thinking) | Yes | Yes | Yes | **No** |
 | GPT-OSS-120b | Yes | Yes | Yes | **No** |
 
-**Nano Banana 2** is used internally for generative image tasks `[GOOGLE]`.
+**Nano Banana 2** is used internally for generative image tasks `[DOCS]`.
 
 Model selection is "sticky" within a conversation `[DOCS]`.
 

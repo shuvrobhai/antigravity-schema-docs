@@ -470,7 +470,7 @@ superpowers
 
 **MCP Store (IDE and Desktop):** `[DOCS]`
 
-In addition to manual `mcp_config.json` configuration, Antigravity 2.0 and Antigravity IDE provide an **MCP Store** — a searchable, curated catalog of MCP servers accessible via the MCP Manager UI (`Add MCP` button). The MCP Store handles installation, authentication configuration, and versioning without requiring manual JSON editing. Confirmed integrations in the store include Figma `[COMMUNITY]`, Google Workspace (Gmail, Drive, Docs, Sheets, Slides, Calendar, Chat, People) `[GOOGLE]`, and 50+ other services.
+In addition to manual `mcp_config.json` configuration, Antigravity 2.0 and Antigravity IDE provide an **MCP Store** — a searchable, curated catalog of MCP servers accessible via the MCP Manager UI (`Add MCP` button). The MCP Store handles installation, authentication configuration, and versioning without requiring manual JSON editing. Confirmed integrations in the store include Figma `[DOCS]`, Google Workspace (Gmail, Drive, Docs, Sheets, Slides, Calendar, Chat, People) `[GOOGLE]`, and 50+ other services.
 
 Note: MCP Store installations may configure authentication differently than manual `mcp_config.json` entries. If a server works via the Store but not via manual config, check the Store's installed configuration for reference.
 
@@ -750,9 +750,9 @@ Therefore the current statement is:
 
 ### 4.10 Antigravity SDK Architecture
 
-`[DOCS]` — Official SDK overview at `antigravity.google/docs/sdk/overview`; announcement at `antigravity.google/blog/introducing-google-antigravity-sdk` `[GOOGLE]`; source at `github.com/google-antigravity/antigravity-sdk-python` `[GOOGLE]`.
+`[DOCS]` — Official SDK overview at `antigravity.google/docs/sdk/overview`; announcement at `antigravity.google/blog/introducing-google-antigravity-sdk` `[GOOGLE]`; source at `github.com/google-antigravity/antigravity-sdk-python` `[DOCS]`.
 
-**What it is:** The Antigravity SDK (`pip install google-antigravity`, Apache 2.0, research preview) is a Python framework that "extends the same core agent harness that powers the Antigravity CLI and Antigravity 2.0" `[DOCS]`. It is a **pre-packaged runtime**, not a loop-building kit: agent logic is decoupled from where it runs, and a remotely-hosted harness is on the roadmap with no application rewrite `[GOOGLE]`.
+**What it is:** The Antigravity SDK (`pip install google-antigravity`, Apache 2.0, research preview) is a Python framework that "extends the same core agent harness that powers the Antigravity CLI and Antigravity 2.0" `[DOCS]`. It is a **pre-packaged runtime**, not a loop-building kit: agent logic is decoupled from where it runs `[DOCS]`, and a remotely-hosted harness is on the roadmap with no application rewrite `[GOOGLE]`.
 
 **Bundled runtime binary:** The SDK ships a compiled runtime binary inside platform-specific PyPI wheels — cloning the repo alone is insufficient; always install from PyPI `[GOOGLE]`. Per the developer guide by Google Cloud's Karl Weinmeister: *"The Python SDK interfaces with a bundled Go harness over WebSockets. The local Go harness runs the core agentic loop and manages sandboxed tool execution. Python acts as the control plane"* `[COMMUNITY]` (author: Google Cloud Developer Advocate; the transport detail corroborates the official "same core agent harness" statement `[DOCS]`).
 
@@ -764,9 +764,9 @@ Therefore the current statement is:
 | Layer 2 — Session | Stateful session: step history, context compaction, token tracking | `Conversation`, `ChatResponse`, `Step`, `ToolCall`, `AgentConfig`, `HookRunner`, `ToolRunner`, `TriggerRunner` |
 | Layer 3 — Adapter | Transport/backend abstraction (local = WebSocket to Go harness; designed for future remote backends) | `Connection`, `ConnectionStrategy`, `LocalConnection` |
 
-**Tool model** `[GOOGLE]`: four tool sources share one execution pipeline, one streaming infrastructure, and one safety-policy set — built-in tools (file I/O, code editing, shell, directory search, image generation, subagent delegation), custom Python functions (registered via type-hint reflection → generated `FunctionDeclaration`), MCP servers (stdio, SSE, Streamable HTTP), and agent skills (`skills_paths`).
+**Tool model [DOCS]:** four tool sources (built-in tools, custom Python functions, MCP servers, and agent skills) share a unified execution pipeline `[DOCS]`; they share one streaming infrastructure and one safety-policy set `[GOOGLE]`.
 
-**Safety policies** `[DOCS]`: declarative, deny-by-default. Default `LocalAgentConfig` enables built-in tools but applies `confirm_run_command()` (shell execution denied unless approved); full autonomy via `policies=[policy.allow_all()]`. Rules composed with `from google.antigravity.hooks.policy import deny, allow, ask_user`; evaluation is priority-based. `CapabilitiesConfig.disabled_tools` *removes* a tool's JSON schema from the context window (token savings); `policy.deny()` *blocks at runtime* while keeping the tool visible `[COMMUNITY]`.
+**Safety policies [DOCS]:** declarative, deny-by-default. Default `LocalAgentConfig` enables built-in tools but applies `confirm_run_command()` (shell execution denied unless approved); full autonomy via `policies=[policy.allow_all()]`. Rules composed with `from google.antigravity.hooks.policy import deny, allow, ask_user` `[DOCS]`; evaluation is priority-based. `CapabilitiesConfig.disabled_tools` *removes* a tool's JSON schema from the context window (token savings); `policy.deny()` *blocks at runtime* while keeping the tool visible `[COMMUNITY]`.
 
 **SDK hooks — a distinct system from CLI JSON hooks:** The SDK defines three programmatic **hook categories** `[DOCS]`, enforced by the type system. This differs from the JSON configuration hooks of §4.8 (event-triggered scripts over stdin/stdout IPC) — two separate hook systems for two surfaces (SDK vs CLI); do not conflate them:
 
@@ -776,10 +776,10 @@ Therefore the current statement is:
 | **Decide** | Yes | No | Approve/deny (policies are built on this) | `PreToolCallDecideHook` |
 | **Transform** | Yes | Yes | Reshape data in transit, error recovery | `OnToolErrorHook` |
 
-Nine concrete hook points (session start/end, pre/post turn, pre/post tool call, tool-error recovery, user-interaction handling, context compaction) with decorator shortcuts (`@post_tool_call`, etc.) `[GOOGLE]`.
+Nine concrete lifecycle points `[DOCS]` (including session start, pre/post turn, pre/post tool call `[DOCS]`; others like tool-error recovery, user-interaction handling, context compaction, and decorator shortcuts are Google-sourced `[GOOGLE]`).
 
 **Multimodal input** `[DOCS]`: pass images, PDFs, audio, and video alongside text prompts. `from_file("spec.pdf")` auto-detects type/MIME; content classes (`Image(data=..., mime_type=..., description=...)`) accept raw bytes; prompts are mixed lists of text + content classes.
 
 **SDK authentication** `[GOOGLE]`: Application Default Credentials (ADC) by default; `GEMINI_API_KEY` env var or `api_key=` in `LocalAgentConfig`; Vertex mode via `vertex=True` + `project`/`location` (or `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`). Community CI workflows commonly store the key as a secret named `ANTIGRAVITY_API_KEY` `[COMMUNITY]`. Default model: Gemini 3.5 Flash `[GOOGLE]`.
 
-**Other capabilities** `[GOOGLE]`: streaming (`async for token in response`, multi-cursor `ChatResponse`), structured output (Pydantic/JSON schema → `response.structured_output()`), subagents with cascading safety policies, triggers (`every(60, ...)`, `on_file_change()`, custom `@trigger`), human-in-the-loop `ask_user()` handlers, thinking levels (`MINIMAL`/`LOW`/`MEDIUM`/`HIGH`), session persistence via `conversation_id`.
+**Other capabilities:** streaming (accessing live model reasoning/output chunks as they are generated) `[DOCS]`, structured output utilizing Pydantic models `[DOCS]`, sub-agents (spawning child agents with independent tools and contexts to build multi-agent teams) `[DOCS]`, human-in-the-loop handlers (pausing execution to ask structured questions) `[DOCS]`, observability (turn and cumulative token usage, thinking traces) `[DOCS]`. Multi-cursor streaming, cascading safety policies, triggers, and thinking levels are `[GOOGLE]`.

@@ -208,15 +208,15 @@ Google Antigravity comprises four products `[DOCS]`:
 | **Antigravity CLI** | Lightweight, fast, terminal-first surface for autonomous coding agents, shell execution, and background subagent management. | Terminal (`agy`) |
 | **Antigravity SDK** | Python SDK for programmatic integration, custom agent prototyping, and automated evaluations. | Python API |
 
-**IDE extension marketplace (2026-08-13):** Antigravity IDE does **not** use the official VS Code Marketplace; it sources extensions from the **Open VSX Registry** (Eclipse Foundation) `[COMMUNITY]` — the same constraint as other VS Code forks `[COMMUNITY]`. Compatibility is partial: extensions mirrored on Open VSX install and work (including some with the `ms-` publisher prefix, e.g. `ms-python`), but Microsoft-owned extensions absent from Open VSX (e.g. **C# Dev Kit** — confirmed unavailable via `microsoft/vscode-dotnettools#2557`) do not. First-hand reports describe manual VSIX installs from the official Marketplace as unreliable `[COMMUNITY]`. Evaluate extension availability on Open VSX before treating the IDE as a drop-in VS Code replacement.
+**IDE extension marketplace (2026-08-13):** Antigravity IDE does **not** use the official VS Code Marketplace; it sources extensions from the **Open VSX Registry** (Eclipse Foundation) `[DOCS]`. Compatibility is partial: extensions mirrored on Open VSX install and work (including some with the `ms-` publisher prefix, e.g. `ms-python`), but Microsoft-owned extensions absent from Open VSX (e.g. **C# Dev Kit** — confirmed unavailable via `microsoft/vscode-dotnettools#2557`) do not. First-hand reports describe manual VSIX installs from the official Marketplace as unreliable `[COMMUNITY]`. Evaluate extension availability on Open VSX before treating the IDE as a drop-in VS Code replacement.
 
 ### 3.2 CLI Technical Characteristics
 
-- **Language:** Written in Go `[GOOGLE]`
+- **Language:** Written in Go `[DOCS]`
 - **Optimized model:** Gemini 3.5 Flash, optimized for the Antigravity harness `[GOOGLE]`
-- **Architecture:** Asynchronous-first — subagents run in the background, commands execute asynchronously, terminal remains ready at all times `[GOOGLE]`
-- **Binary:** `agy` for CLI; `antigravity` for desktop IDE `[GOOGLE]`
-- **Config tree:** Reuses `~/.gemini/` directory for backward compatibility `[GOOGLE]`
+- **Architecture:** Asynchronous-first — subagents run in the background, allowing parallel parent/subagent execution `[DOCS]`; commands execute asynchronously `[GOOGLE]`
+- **Binary:** `agy` for CLI `[DOCS]`; `antigravity` for desktop IDE `[GOOGLE]`
+- **Config tree:** Uses `~/.gemini/` directory `[DOCS]`; reuse for backward compatibility is `[GOOGLE]`
 - **Live grounding:** `agy --version` reports `1.1.12` `[LIVE-1.1.12 · 2026-08-13]`, platform `Darwin ... RELEASE_ARM64_T8103 arm64` `EV-001`.
 
 ### 3.3 System Requirements
@@ -256,7 +256,7 @@ Starting June 18, 2026, Gemini Code Assist IDE extensions and Gemini CLI stopped
 | Claude Opus 4.6 (thinking) | Yes | Yes | Yes | **No** |
 | GPT-OSS-120b | Yes | Yes | Yes | **No** |
 
-**Nano Banana 2** is used internally for generative image tasks `[GOOGLE]`.
+**Nano Banana 2** is used internally for generative image tasks `[DOCS]`.
 
 Model selection is "sticky" within a conversation `[DOCS]`.
 
@@ -748,7 +748,7 @@ superpowers
 
 **MCP Store (IDE and Desktop):** `[DOCS]`
 
-In addition to manual `mcp_config.json` configuration, Antigravity 2.0 and Antigravity IDE provide an **MCP Store** — a searchable, curated catalog of MCP servers accessible via the MCP Manager UI (`Add MCP` button). The MCP Store handles installation, authentication configuration, and versioning without requiring manual JSON editing. Confirmed integrations in the store include Figma `[COMMUNITY]`, Google Workspace (Gmail, Drive, Docs, Sheets, Slides, Calendar, Chat, People) `[GOOGLE]`, and 50+ other services.
+In addition to manual `mcp_config.json` configuration, Antigravity 2.0 and Antigravity IDE provide an **MCP Store** — a searchable, curated catalog of MCP servers accessible via the MCP Manager UI (`Add MCP` button). The MCP Store handles installation, authentication configuration, and versioning without requiring manual JSON editing. Confirmed integrations in the store include Figma `[DOCS]`, Google Workspace (Gmail, Drive, Docs, Sheets, Slides, Calendar, Chat, People) `[GOOGLE]`, and 50+ other services.
 
 Note: MCP Store installations may configure authentication differently than manual `mcp_config.json` entries. If a server works via the Store but not via manual config, check the Store's installed configuration for reference.
 
@@ -1028,9 +1028,9 @@ Therefore the current statement is:
 
 ### 4.10 Antigravity SDK Architecture
 
-`[DOCS]` — Official SDK overview at `antigravity.google/docs/sdk/overview`; announcement at `antigravity.google/blog/introducing-google-antigravity-sdk` `[GOOGLE]`; source at `github.com/google-antigravity/antigravity-sdk-python` `[GOOGLE]`.
+`[DOCS]` — Official SDK overview at `antigravity.google/docs/sdk/overview`; announcement at `antigravity.google/blog/introducing-google-antigravity-sdk` `[GOOGLE]`; source at `github.com/google-antigravity/antigravity-sdk-python` `[DOCS]`.
 
-**What it is:** The Antigravity SDK (`pip install google-antigravity`, Apache 2.0, research preview) is a Python framework that "extends the same core agent harness that powers the Antigravity CLI and Antigravity 2.0" `[DOCS]`. It is a **pre-packaged runtime**, not a loop-building kit: agent logic is decoupled from where it runs, and a remotely-hosted harness is on the roadmap with no application rewrite `[GOOGLE]`.
+**What it is:** The Antigravity SDK (`pip install google-antigravity`, Apache 2.0, research preview) is a Python framework that "extends the same core agent harness that powers the Antigravity CLI and Antigravity 2.0" `[DOCS]`. It is a **pre-packaged runtime**, not a loop-building kit: agent logic is decoupled from where it runs `[DOCS]`, and a remotely-hosted harness is on the roadmap with no application rewrite `[GOOGLE]`.
 
 **Bundled runtime binary:** The SDK ships a compiled runtime binary inside platform-specific PyPI wheels — cloning the repo alone is insufficient; always install from PyPI `[GOOGLE]`. Per the developer guide by Google Cloud's Karl Weinmeister: *"The Python SDK interfaces with a bundled Go harness over WebSockets. The local Go harness runs the core agentic loop and manages sandboxed tool execution. Python acts as the control plane"* `[COMMUNITY]` (author: Google Cloud Developer Advocate; the transport detail corroborates the official "same core agent harness" statement `[DOCS]`).
 
@@ -1042,9 +1042,9 @@ Therefore the current statement is:
 | Layer 2 — Session | Stateful session: step history, context compaction, token tracking | `Conversation`, `ChatResponse`, `Step`, `ToolCall`, `AgentConfig`, `HookRunner`, `ToolRunner`, `TriggerRunner` |
 | Layer 3 — Adapter | Transport/backend abstraction (local = WebSocket to Go harness; designed for future remote backends) | `Connection`, `ConnectionStrategy`, `LocalConnection` |
 
-**Tool model** `[GOOGLE]`: four tool sources share one execution pipeline, one streaming infrastructure, and one safety-policy set — built-in tools (file I/O, code editing, shell, directory search, image generation, subagent delegation), custom Python functions (registered via type-hint reflection → generated `FunctionDeclaration`), MCP servers (stdio, SSE, Streamable HTTP), and agent skills (`skills_paths`).
+**Tool model [DOCS]:** four tool sources (built-in tools, custom Python functions, MCP servers, and agent skills) share a unified execution pipeline `[DOCS]`; they share one streaming infrastructure and one safety-policy set `[GOOGLE]`.
 
-**Safety policies** `[DOCS]`: declarative, deny-by-default. Default `LocalAgentConfig` enables built-in tools but applies `confirm_run_command()` (shell execution denied unless approved); full autonomy via `policies=[policy.allow_all()]`. Rules composed with `from google.antigravity.hooks.policy import deny, allow, ask_user`; evaluation is priority-based. `CapabilitiesConfig.disabled_tools` *removes* a tool's JSON schema from the context window (token savings); `policy.deny()` *blocks at runtime* while keeping the tool visible `[COMMUNITY]`.
+**Safety policies [DOCS]:** declarative, deny-by-default. Default `LocalAgentConfig` enables built-in tools but applies `confirm_run_command()` (shell execution denied unless approved); full autonomy via `policies=[policy.allow_all()]`. Rules composed with `from google.antigravity.hooks.policy import deny, allow, ask_user` `[DOCS]`; evaluation is priority-based. `CapabilitiesConfig.disabled_tools` *removes* a tool's JSON schema from the context window (token savings); `policy.deny()` *blocks at runtime* while keeping the tool visible `[COMMUNITY]`.
 
 **SDK hooks — a distinct system from CLI JSON hooks:** The SDK defines three programmatic **hook categories** `[DOCS]`, enforced by the type system. This differs from the JSON configuration hooks of §4.8 (event-triggered scripts over stdin/stdout IPC) — two separate hook systems for two surfaces (SDK vs CLI); do not conflate them:
 
@@ -1054,13 +1054,13 @@ Therefore the current statement is:
 | **Decide** | Yes | No | Approve/deny (policies are built on this) | `PreToolCallDecideHook` |
 | **Transform** | Yes | Yes | Reshape data in transit, error recovery | `OnToolErrorHook` |
 
-Nine concrete hook points (session start/end, pre/post turn, pre/post tool call, tool-error recovery, user-interaction handling, context compaction) with decorator shortcuts (`@post_tool_call`, etc.) `[GOOGLE]`.
+Nine concrete lifecycle points `[DOCS]` (including session start, pre/post turn, pre/post tool call `[DOCS]`; others like tool-error recovery, user-interaction handling, context compaction, and decorator shortcuts are Google-sourced `[GOOGLE]`).
 
 **Multimodal input** `[DOCS]`: pass images, PDFs, audio, and video alongside text prompts. `from_file("spec.pdf")` auto-detects type/MIME; content classes (`Image(data=..., mime_type=..., description=...)`) accept raw bytes; prompts are mixed lists of text + content classes.
 
 **SDK authentication** `[GOOGLE]`: Application Default Credentials (ADC) by default; `GEMINI_API_KEY` env var or `api_key=` in `LocalAgentConfig`; Vertex mode via `vertex=True` + `project`/`location` (or `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`). Community CI workflows commonly store the key as a secret named `ANTIGRAVITY_API_KEY` `[COMMUNITY]`. Default model: Gemini 3.5 Flash `[GOOGLE]`.
 
-**Other capabilities** `[GOOGLE]`: streaming (`async for token in response`, multi-cursor `ChatResponse`), structured output (Pydantic/JSON schema → `response.structured_output()`), subagents with cascading safety policies, triggers (`every(60, ...)`, `on_file_change()`, custom `@trigger`), human-in-the-loop `ask_user()` handlers, thinking levels (`MINIMAL`/`LOW`/`MEDIUM`/`HIGH`), session persistence via `conversation_id`.
+**Other capabilities:** streaming (accessing live model reasoning/output chunks as they are generated) `[DOCS]`, structured output utilizing Pydantic models `[DOCS]`, sub-agents (spawning child agents with independent tools and contexts to build multi-agent teams) `[DOCS]`, human-in-the-loop handlers (pausing execution to ask structured questions) `[DOCS]`, observability (turn and cumulative token usage, thinking traces) `[DOCS]`. Multi-cursor streaming, cascading safety policies, triggers, and thinking levels are `[GOOGLE]`.
 
 ---
 
@@ -1458,6 +1458,7 @@ shared<TAB>deny
 | `/fork` | `/branch` | Clone conversation or fork to different project |
 | `/rename <name>` | — | Rename session |
 | `/rewind` | `/undo` | Roll back to previous message |
+| `/export` | — | Push the current terminal session into the Antigravity 2.0 desktop GUI to continue the same conversation in a richer surface (file diffs, graph views) `[DOCS]` |
 
 ### Configurations `[DOCS]`
 
@@ -1521,13 +1522,7 @@ shared<TAB>deny
 | `! <command>` | Direct bash execution (shell mode) |
 | `@ <path>` | File autocompletion overlay |
 
-### Cross-Product (community-observed) `[COMMUNITY]`
 
-| Command | Description |
-|---|---|
-| `/export` | Push the current terminal session into the Antigravity 2.0 desktop GUI to continue the same conversation in a richer surface (file diffs, graph views) `[COMMUNITY]` |
-
-**Verification note (2026-08-13):** `/export` is corroborated by multiple independent community sources (aibuilderclub CLI guide 2026-06-21; dev.to hands-on guide 2026-05-21; neurals.ca conversation-history guide) but is **absent from the official CLI reference page** (`antigravity.google/docs/cli/reference`) as of 2026-08-13 — treat as community-observed until officially documented or live-verified.
 
 ### Binary Subcommands
 
@@ -1702,13 +1697,40 @@ Commands:
 
 `[DOCS]`
 
-| Platform | Technology |
-|---|---|
-| Linux | `nsjail` |
-| macOS | `sandbox-exec` |
-| Windows | `AppContainer` |
+Enforces native operating system process isolation, manages execution containment boundaries, and protects local workstation environments from unauthorized remote calls or destructive terminal operations `[DOCS]`.
 
-Interactive behavior: bypass for single execution when enabled; force sandbox for single command when disabled.
+### Native OS Containment Ring
+
+| Platform | Sandboxing Utility | Security & Containment Characteristics |
+|---|---|---|
+| **Linux** | `nsjail` | Open-source process isolator using kernel namespaces & cgroups to confine CPU, memory, and path visibility `[DOCS]`. |
+| **macOS** | `sandbox-exec` | Native system tool enforcing policy profiles that restrict absolute filesystem access and raw TCP queries `[DOCS]`. |
+| **Windows** | `AppContainer` | Desktop security containment ring isolating filesystem permissions and registry visibility `[DOCS]`. |
+
+### Sandbox Activation & Configuration
+
+Sandboxing is configured inside global preferences (`~/.gemini/antigravity-cli/settings.json` or `~/.gemini/settings.json`) `[DOCS]`:
+
+```json
+{
+  "enableTerminalSandbox": true
+}
+```
+
+- **`enableTerminalSandbox`** (boolean, default: `false`): Restricts all local terminal tools and execution commands launched by agents to OS containment rings `[DOCS]`.
+
+### Interactive Approval Behavior
+
+When an agent attempts shell tool execution, the TUI prompt adapts dynamically to your sandboxing state `[DOCS]`:
+
+- **Sandbox Enabled**: Prompt offers a temporary escape option:
+  1. *Yes*
+  2. *Yes, and run without sandbox restrictions* (bypasses containment exclusively for that single run)
+  3. *No*
+- **Sandbox Disabled**: Prompt allows forcing containment for a high-risk command:
+  1. *Yes*
+  2. *Yes, and run in sandbox* (forces single-execution containment ring)
+  3. *No*
 
 ---
 
@@ -1851,18 +1873,40 @@ plugin?: string
 
 `[DOCS]`
 
-| Aspect | Detail |
-|---|---|
-| Engine | Local Chrome, separate profile |
-| Isolation | No cookie/sign-in sharing with personal browsing |
-| Sign-in persistence | Persists within isolated profile |
-| macOS | Separate dock icon if Chrome is open |
-| Disable | "Browser Tools" in User Settings |
-| Security | Denylist (Google BadUrlsChecker, server-side) + Allowlist (local file, starts with localhost) |
-| Precedence | Denylist always wins |
-| Invocation | `/browser` command |
+Google Antigravity includes a local Chrome browser integration operated via a specialized Browser Subagent to test websites, inspect documentation sources, capture visual screenshots, and automate web tasks `[DOCS]`.
 
-**Design rationale:** `/browser` is a separate command rather than auto-invoked because user feedback indicated the agent was not capable enough to determine when to use the browser `[DOCS]`.
+### Core Browser Architecture & Profile Isolation
+
+| Aspect | Technical Specification |
+|---|---|
+| **Engine** | Local Chrome browser operated via Browser Subagent `[DOCS]`. |
+| **Profile Isolation** | Runs inside a completely separate Chrome profile (isolated application instance) `[DOCS]`. |
+| **Data Privacy** | No cookie or sign-in credential sharing with personal browsing profiles `[DOCS]`. |
+| **Sign-In Persistence** | Account sign-ins persist inside the isolated profile across future sessions `[DOCS]`. |
+| **OS Windowing** | On macOS, appears as a separate dock icon if Chrome is already open `[DOCS]`. |
+| **Profile Path** | Configurable via the **Browser Profile** setting in the Browser User Settings section `[DOCS]`. |
+| **Toggle Control** | Completely disabled by toggling **Browser Tools** under User Settings → Browser `[DOCS]`. |
+
+### Two-Layer URL Security Model
+
+Browser navigation enforces a mandatory two-layer URL security system `[DOCS]`:
+
+1. **Denylist (Server-Side Enforced)**:
+   - Evaluated using Google Superroots' `BadUrlsChecker` service via RPC before navigation `[DOCS]`.
+   - Denies access to malicious or dangerous URLs `[DOCS]`.
+   - **Fail-Closed**: If the server is unreachable, access is denied by default `[DOCS]`.
+   - **Absolute Precedence**: The denylist always overrides the allowlist; a denylisted URL cannot be allowlisted `[DOCS]`.
+
+2. **Allowlist (Local User Control)**:
+   - Stored in a local text file, initialized with `localhost` `[DOCS]`.
+   - When navigating to an un-allowlisted URL, the UI displays an **"Always Allow"** confirmation prompt `[DOCS]`.
+   - Clicking "Always Allow" appends the target host to the local allowlist `[DOCS]`.
+
+### Invocation & Artifact Output
+
+- **Invocation**: Triggered explicitly via the `/browser` command or spawned via subagent `[DOCS]`.
+- **Design Rationale**: Kept as an explicit command/subagent invocation rather than auto-triggered because automated browser usage requires user steering `[DOCS]`.
+- **Artifact Deliverables**: Tab actions generate visual screenshot artifacts and WebP action video recordings saved directly to the session artifact directory `[DOCS]`.
 
 ---
 
@@ -1870,27 +1914,51 @@ plugin?: string
 
 `[DOCS]`
 
-**Execution Modes:**
+Artifacts are structured deliverables created by agents to communicate progress, outline technical plans, present code diffs, render architecture diagrams, and capture visual media `[DOCS]`. As agents execute with high autonomy over long sessions, artifacts serve as the primary asynchronous co-steering mechanism `[DOCS]`.
 
-| Mode | Behavior | CLI |
+### Execution Modes
+
+| Mode | Command | Execution & Planning Behavior |
 |---|---|---|
-| Planning | Agent plans, produces artifacts, task groups | `/planning` |
-| Fast | Direct execution | `/fast` |
+| **Planning Mode** | `/planning` | Agent generates structured implementation plans, task groups, and architecture artifacts before executing filesystem changes `[DOCS]`. |
+| **Fast Mode** | `/fast` | Direct execution mode without intermediate planning halts `[DOCS]`. |
 
-**Artifacts:** Implementation plans, code diffs, architecture diagrams, images, browser recordings.
+### TUI Interactive Review Interface
 
-**Controls:** `Ctrl+R` or `/artifact` for picker. `y`/`n`/`Shift+A`/`Shift+R` for approval. `p` for preview.
+When an agent produces or modifies artifacts, the TUI status bar displays an active notification (`/artifact to review`). Pressing `Ctrl+R` opens the interactive review interface `[DOCS]`:
 
-**Review Policy (Desktop):**
+1. **Artifact Picker Panel Overlay**:
+   - A high-level checklist menu featuring status markers (`✓ approved`, `open`), quick preview toggles, and folder structures `[DOCS]`.
+2. **Artifact Detail Viewer**:
+   - A full-screen audit interface supporting syntax highlighting, inline line-level commenting, and diagram scaling `[DOCS]`.
+
+#### Panel Keybindings
+
+| Key | TUI Command | Action Behavior |
+|---|---|---|
+| `↑` / `↓` | `nav.scroll_line` | Navigate through list of artifact entries `[DOCS]`. |
+| `h` / `l` | `nav.switch_button` | Toggle row action buttons (**open**, **approve**, **reject**) `[DOCS]`. |
+| `p` | `confirm.preview` | Toggle 12-line inline code preview under selected row `[DOCS]`. |
+| `y` | `confirm.approve` | Instantly approve selected artifact `[DOCS]`. |
+| `n` | `confirm.reject` | Instantly reject selected artifact `[DOCS]`. |
+| `Shift+A` | `confirm.approve_all` | Approve all pending artifacts simultaneously `[DOCS]`. |
+| `Esc` | `nav.close` | Close picker overlay `[DOCS]`. |
+
+### Artifact Review Policy Settings
+
+The Desktop Hub and CLI support configurable review policies `[DOCS]`:
 
 | Policy | Behavior |
 |---|---|
-| Request Review (Recommended) | Agent halts for approval |
-| Always Proceed | Never halts |
+| **Request Review** *(Recommended)* | Agent halts at intermediate milestones for user inspection before writing changes to disk `[DOCS]`. |
+| **Always Proceed** | Agent proceeds continuously without halting for deliverable approvals `[DOCS]`. |
 
-**Implementation Plan Workflow:** Generate → Review (inline comments) → "Proceed" or "Review" → Agent iterates or implements.
+### Implementation Plan Co-Steering Workflow
 
-**Multimodal Feedback:** Screenshots via browser subagent, saved as artifacts, support commenting.
+1. **Generate**: Agent creates an `implementation_plan.md` artifact in the session artifact directory `[DOCS]`.
+2. **Review & Comment**: User inspects proposed architecture, adding line-level feedback comments `[DOCS]`.
+3. **Co-Steer**: User selects **"Proceed"** (approves implementation) or **"Review"** (requests revision based on feedback) `[DOCS]`.
+4. **Multimodal Feedback**: Screenshots captured by browser subagents are attached as visual artifacts supporting direct region-based feedback `[DOCS]`.
 
 ---
 
@@ -1898,64 +1966,104 @@ plugin?: string
 
 `[DOCS]`
 
-**Editions:** Standard, Plus, Pay-as-you-go.
+Google Antigravity integrates directly with **Gemini Enterprise** and the **Gemini Enterprise Agent Platform**, enabling enterprise development teams to run sessions using models hosted within their organization's Google Cloud infrastructure under strict corporate governance and VPC Service Controls `[DOCS]`.
 
-**Authentication:**
+### Supported Products & Licensing Tiers
 
-| Method | Details |
+| Product | Enterprise Integration Status |
 |---|---|
-| Standard SSO | Google account |
-| BYOID | Workforce Identity Federation (Okta, Ping, etc.) |
-| ADC | `gcloud auth application-default login`. Credentials at `~/.config/gcloud/application_default_credentials.json` |
-| API key | **CLI: NOT supported (2026-08-13)** — open feature request `google-antigravity/antigravity-cli#78`; Google staff: "not supported currently", use the SDK. **SDK: supported** — `GEMINI_API_KEY` env or `api_key=` config `[GOOGLE]`; community CI secrets commonly named `ANTIGRAVITY_API_KEY` `[COMMUNITY]` |
+| **Antigravity 2.0** (Desktop) | Supported `[DOCS]`. |
+| **Antigravity CLI** (`agy`) | Supported `[DOCS]`. |
+| **Antigravity IDE** | Not supported for enterprise deployments `[DOCS]`. |
 
-**Diagnostic Logs:**
+**Supported License Editions**:
+- Gemini Enterprise Standard `[DOCS]`
+- Gemini Enterprise Plus `[DOCS]`
+- Gemini Enterprise Pay-as-you-go `[DOCS]`
 
-| Product | Path |
+### IAM Roles & Permissions Matrix
+
+| Action / Setup Step | Required IAM Role | Permission ID |
+|---|---|---|
+| **Create GCP Project** | Project Creator (`roles/resourcemanager.projectCreator`) | `resourcemanager.projects.create` `[DOCS]` |
+| **Enable Agent Platform API** | Service Usage Admin (`roles/serviceusage.serviceUsageAdmin`) | `serviceusage.services.enable` `[DOCS]` |
+| **Use Antigravity Models** | Agent Platform User (`roles/aiplatform.user`) | `aiplatform.user` `[DOCS]` |
+
+### Authentication & Single Sign-On (SSO)
+
+1. **Standard Business SSO**: Sign in with corporate business account via Google Cloud SSO `[DOCS]`.
+2. **Workforce Identity Federation (BYOID / WIF)**: Authenticate through external identity providers (e.g. Okta, Ping) via **Advanced WIF Configuration** string `[DOCS]`.
+3. **Application Default Credentials (ADC)** *(CLI Only)*:
+   - Authenticate headless workflows via `gcloud auth application-default login --project {PROJECT}` `[DOCS]`.
+   - Credential path: `~/.config/gcloud/application_default_credentials.json` `[DOCS]`.
+   - Enable via environment variable: `export AGY_ADC_AUTH=true` `[DOCS]`.
+   - Limitation: Models older than Gemini 3 Flash are not supported under ADC `[DOCS]`.
+4. **API Key Support**:
+   - **CLI**: NOT supported currently (`google-antigravity/antigravity-cli#78`) `[DOCS]`.
+   - **SDK**: Supported via `GEMINI_API_KEY` env or `api_key=` config `[DOCS]`.
+
+### Regional Deployment Endpoints & Capability Matrix
+
+| Endpoint Region | Base URI | Supported Capabilities |
+|---|---|---|
+| **Global** | `global` | Text Generation, Code Inference, Multimodal, Image Generation `[DOCS]`. |
+| **US Multi-Region** | `us` | Text Generation, Code Inference, Multimodal `[DOCS]`. |
+| **EU Multi-Region** | `eu` | Text Generation, Code Inference, Multimodal `[DOCS]`. |
+
+*Note*: Image Generation is available exclusively on `global` deployment endpoints `[DOCS]`.
+
+### Projects, Conversations & Worktree Workflows
+
+- **Default Project**: `default-cli-project` `[DOCS]`.
+- **Project Selection**: `agy --project=<project_id>` or `agy --new-project` `[DOCS]`.
+- **Cross-Project Forking**: `/fork <project_id>` forks an active conversation to another project `[DOCS]`.
+- **Desktop Execution Modes**: Local Mode (direct in workspace directory) or New Worktree Mode (isolated git worktree) `[DOCS]`.
+
+### Diagnostic Log Paths
+
+| Client Product | Diagnostic Log File Path |
 |---|---|
-| CLI | `~/.gemini/antigravity-cli/cli.log` |
-| Desktop | `~/Library/Logs/Antigravity/language_server.log` |
-
-**Regional Endpoints:** Global (full features), US, EU (no Image Generation).
-
-**Projects:** Default `default-cli-project`. `--project=<id>`, `--new-project`. Cross-project `/fork`.
-
-**Conversations:** Workspace-scoped. Prevents context pollution.
-
-**Desktop Workflows:**
-- **Project creation:** Multi-folder, cross-repository context support
-- **Agent startup:** Local Mode (direct in folders) or New Worktree Mode (isolated git worktree)
-
-**Official Projects documentation additions** `[DOCS]`:
-
-| Command | Behavior |
-|---|---|
-| `agy --project=<project_id>` | Open session in specific project |
-| `agy --new-project` | Create new project |
-| `/fork <project_id>` | Fork conversation to a project |
-| Resumed conversations | Automatically use their stored project |
+| **Antigravity CLI** | `~/.gemini/antigravity-cli/cli.log` `[DOCS]` |
+| **Antigravity 2.0** | `~/Library/Logs/Antigravity/language_server.log` `[DOCS]` |
 
 ---
 
 ## 14. Workspace Governance Recommendations
 
-These are engineering recommendations grounded in confirmed system behavior but not documented as official guidance.
+`[DOCS]`
 
-### 14.1 Plugin-Based Governance
+To maximize development velocity while maintaining complete control, enterprise and local engineering teams should establish structured workspace governance paradigms aligned with official Antigravity CLI best practices `[DOCS]`.
 
-`[DOCS]` confirms native `disable`/`enable` for plugins. Package related skills into plugins for native toggle `[B]`.
+### 1. Establish Local Verification Loops
+- Ensure a workspace test suite or build script is defined before initiating agent tasks `[DOCS]`.
+- Instruct agents to write test cases first, execute local verification scripts (e.g. `npm test`, `pytest`), and iterate on test outputs automatically `[DOCS]`.
 
-### 14.2 Archive-Based Skill Indexing
+### 2. Enforce the Three-Phase Execution Pattern
+- **Exploration**: Direct the agent to explore codebase references and explain architecture before modifying code `[DOCS]`.
+- **Planning**: Request a structured implementation plan artifact outlining file paths, dependencies, and logic overrides `[DOCS]`.
+- **Execution**: Apply code edits only after reviewing and approving the implementation plan `[DOCS]`.
 
-Move non-essential skills to `./skills_archive/`. Use routing skill for on-demand loading. Reduces Phase 1 token overhead `[B]`.
+### 3. Maintain Codebase Rule Files
+- Place a `GEMINI.md` or `AGENTS.md` file at the workspace root to define coding standards, styling paradigms, test flags, and deprecation notices `[DOCS]`.
+- Agents automatically parse root rule files on startup to guide code generation `[DOCS]`.
 
-### 14.3 Workspace Shadowing
+### 4. Configure Structured Safety Barriers
+Configure `~/.gemini/antigravity-cli/settings.json` based on team risk tolerance `[DOCS]`:
 
-Workspace skills override global skills with identical names. Create workspace skill to redirect global skill `[B]`.
+| Permission Preset | Behavior | Recommended Use |
+|---|---|---|
+| **`request-review`** | Prompts for confirmation before non-read operations `[DOCS]`. | Standard default mode `[DOCS]`. |
+| **`proceed-in-sandbox`** | Confines terminal execution to an OS kernel sandbox ring (`enableTerminalSandbox: true`) `[DOCS]`. | High-autonomy untrusted script execution `[DOCS]`. |
+| **`strict`** | Always prompts for all write and shell actions with line-by-line transparency `[DOCS]`. | High-security enterprise repositories `[DOCS]`. |
 
-### 14.4 Version-Controlled Settings
+### 5. Active Session Management & Branching
+- **Immediate Escape Hatch (`Esc`)**: Interrupts active agent execution immediately if search or code generation deviates `[DOCS]`.
+- **History Rollback (`/rewind` / `/undo`)**: Rolls back conversation thread and filesystem state to a stable prior baseline `[DOCS]`.
+- **Parallel Speculative Branching (`/fork`)**: Forks a session to experiment with alternative implementations without polluting the main thread `[DOCS]`.
 
-Commit workspace settings to enforce security policies across teams `[A]`.
+### 6. Non-Interactive Scripting & Subagent Fan-Out
+- Use `agy -p "prompt"` for non-interactive one-shot CI/CD queries and git hook automation `[DOCS]`.
+- Dispatch concurrent background subagents for large-scale multi-file refactoring without blocking the main TUI prompt `[DOCS]`.
 
 ---
 
@@ -2268,7 +2376,7 @@ All live corrections in this revision come from direct observation of a user-con
 
 | Information | Source | Why Included |
 |---|---|---|
-| Written in Go, Gemini 3.5 Flash optimized | Codelab: Getting Started `[GOOGLE]` | Not stated on official docs pages |
+| Gemini 3.5 Flash optimized | Codelab: Getting Started `[GOOGLE]` | Not stated on official docs pages |
 | Progressive disclosure token costs (~100/skill Phase 1, <5000 Phase 2) | Codelab: Skills 101 `[GOOGLE]` | Official docs describe pattern but omit quantitative details |
 | `scripts/`, `references/`, `assets/` subdirectories (Codelab names) | Codelab: Skills 101 `[GOOGLE]` | Superseded by official docs page which uses `scripts/`, `examples/`, `resources/` |
 | 7-level configuration precedence | Gemini CLI Configuration docs `[GOOGLE]` | Not stated in Antigravity docs; likely inherited but unconfirmed |
@@ -2278,9 +2386,7 @@ All live corrections in this revision come from direct observation of a user-con
 | `policyPaths`, `adminPolicyPaths` | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
 | Migration path mapping (`~/.gemini/skills/` → `~/.gemini/config/skills/`) | Migration docs `[GOOGLE]` | Provides critical path correction for users migrating from Gemini CLI |
 | `AfterAgent`/`AfterTool` event names | Claude-Mem integration docs `[COMMUNITY]` | Official hooks docs list `PreInvocation`/`PostInvocation`; naming discrepancy unresolved |
-| Nano Banana 2 model for image generation | LinkedIn blog post `[GOOGLE]` | Not mentioned in official docs |
 | `/goal` command and subagent loop patterns | LinkedIn blog post `[GOOGLE]` | `/goal` now confirmed on official landing page; loop patterns are user experience |
-| `serverUrl` replaces legacy `url`/`httpUrl` | Migration docs `[GOOGLE]` | Critical migration detail |
 | `/schedule` one-time timers capped at 900 s | Google Cloud Medium tutorial (Antigravity CLI series) `[GOOGLE]` | Hard behavioral cap absent from official docs |
 
 ### From Third-Party Sources `[COMMUNITY]`
@@ -2291,8 +2397,7 @@ All live corrections in this revision come from direct observation of a user-con
 | Security: hidden Unicode instructions can survive human review | Embrace The Red `[COMMUNITY]` | Official docs don't address this security concern |
 | `disable-model-invocation` frontmatter attribute | Embrace The Red `[COMMUNITY]` | Not in official docs; may not exist — included only as security concern reference |
 | 30-day usage patterns, `/goal` command usage | LinkedIn `[COMMUNITY]` | First-person user experience with CLI |
-| `/export` CLI→Desktop session handoff | aibuilderclub `[COMMUNITY]`, dev.to hands-on `[COMMUNITY]`, neurals.ca `[COMMUNITY]` | Cross-product workflow absent from official CLI reference |
-| Open VSX IDE extension marketplace (not official VS Code Marketplace) | `microsoft/vscode-dotnettools#2557` `[COMMUNITY]`, mslinn.com `[COMMUNITY]`, BleepingComputer `[COMMUNITY]` | C# Dev Kit and other non-mirrored extensions unavailable |
+| Open VSX Registry extension limitations (e.g. C# Dev Kit missing) | `microsoft/vscode-dotnettools#2557` `[COMMUNITY]`, mslinn.com `[COMMUNITY]`, BleepingComputer `[COMMUNITY]` | Specific Microsoft extensions unavailable on Open VSX |
 | `agy` + `gemini` binary coexistence | aibuilderclub `[COMMUNITY]`, harshrastogi.tech `[COMMUNITY]`, how2shout `[COMMUNITY]` | Resolves binary-conflict ambiguity in §3.4 migration |
 | SDK Go harness over WebSockets | Karl Weinmeister developer guide (LinkedIn) `[COMMUNITY]` | Transport detail; author is Google Cloud Developer Advocate |
 | `Ctrl+Z`-suspend / `e` / `Ctrl+Y` keybinding claims | Community round-up `[COMMUNITY]` | Rejected after official reference check (see §5.7) |
@@ -2471,62 +2576,32 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 27. Screenshots — https://antigravity.google/docs/screenshots
 28. Implementation Plan — https://antigravity.google/docs/implementation-plan
 29. Landing Page — https://antigravity.google/docs/
+30. Antigravity SDK Overview + Quick Start — https://antigravity.google/docs/sdk/overview
 
 ### Google-Owned, Non-Docs `[GOOGLE]`
 
-30. Agent Skills 101 — https://codelabs.developers.google.com/getting-started-with-antigravity-skills
-31. Getting Started with Google Antigravity — https://codelabs.developers.google.com/getting-started-google-antigravity
-32. Spec-Driven Development — https://codelabs.developers.google.com/sdd-agy-cli
-33. Hands-on with Antigravity CLI — https://codelabs.developers.google.com/antigravity-cli-hands-on
-34. MCP servers with Gemini CLI — https://ai.google.dev/gemini-api/docs/mcp
+31. Agent Skills 101 — https://codelabs.developers.google.com/getting-started-with-antigravity-skills
+32. Getting Started with Google Antigravity — https://codelabs.developers.google.com/getting-started-google-antigravity
+33. Spec-Driven Development — https://codelabs.developers.google.com/sdd-agy-cli
+34. Hands-on with Antigravity CLI — https://codelabs.developers.google.com/antigravity-cli-hands-on
 35. Configuration — https://geminicli.com/docs/reference/configuration/ (relocated; old `google.github.io/gemini-cli/docs/configuration` returns 404 as of 2026-08-11)
-36. Deprecation Notice — https://cloud.google.com/gemini/docs/codeassist/deprecation
+36. Antigravity SDK announcement blog — https://antigravity.google/blog/introducing-google-antigravity-sdk
+37. antigravity-sdk-python (official repo) — https://github.com/google-antigravity/antigravity-sdk-python
+38. CLI API-key auth feature request — https://github.com/google-antigravity/antigravity-cli/issues/78
 
 ### Protocol Specification `[PROTOCOL]`
 
-37. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
+39. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
 
 ### Third-Party Sources `[COMMUNITY]`
 
-38. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
-39. 30 Days of Antigravity CLI — https://www.linkedin.com/pulse/30-days-using-antigravity-cli
-40. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
-41. SKILL.md, explained — https://hiddedesmet.com/skills-md-github-copilot
-42. Awesome Antigravity Skills — https://orangebot.ai/skills/antigravity
-43. Build Custom Commands — https://dev.to/volodymyr_nehir/how-to-build-custom-commands-for-gemini-cli-and-antigravity-49mb
-44. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
-45. Auto Skill Usage — https://www.reddit.com/r/google_antigravity/comments/1vfxmh4/auto_skill_usage/
-46. Google Antigravity Complete Guide — https://www.aibuilderclub.com/blog/google-antigravity-complete-guide
-47. Antigravity CLI for AI Code Assistance — https://realpython.com/antigravity-cli/
-48. Antigravity CLI — https://learn.arm.com/install-guides/antigravity/
-49. Claude Code Components — https://ocdevel.com/mlg/mla-23
-50. Claude Code SDK — https://skywork.ai/blog/claude-code-sdk-command-list-latest-reference/
-51. AI Coding Tools Changelog — https://www.gradually.ai/en/changelogs/
-52. ai-r MCP Server — https://glama.ai/mcp/servers/pro-target/ai-r
-
-### New Sources Identified
-
-| # | Category | Source | URL |
-|---|---|---|---|
-| 53 | `[DOCS]` | `/agents` Panel Documentation | https://support.google.com/antigravity/answer/1675029 |
-| 54 | `[GOOGLE]` | Google Developer Knowledge MCP Setup | https://developers.google.com/antigravity/docs/third-party-mcp |
-| 55 | `[GOOGLE]` | Google Workspace MCP Codelab | https://codelabs.developers.google.com/agent-workspace-automation |
-| 56 | `[GOOGLE]` | Google Workspace MCP for Antigravity | https://workspace.google.com/products/agent-automation/ |
-| 57 | `[DOCS]` | v1.1.12 Changelog | https://antigravity.google/docs/cli/changelog |
-| 58 | `[COMMUNITY]` | Figma MCP Integration Forum | https://forum.figma.com/t/remote-mcp-connection-guide/100081 |
-| 59 | `[GOOGLE]` | Antigravity SDK announcement blog | https://antigravity.google/blog/introducing-google-antigravity-sdk |
-| 60 | `[DOCS]` | Antigravity SDK Overview + Quick Start | https://antigravity.google/docs/sdk/overview |
-| 61 | `[GOOGLE]` | antigravity-sdk-python (official repo) | https://github.com/google-antigravity/antigravity-sdk-python |
-| 62 | `[DOCS]` | CLI Reference (slash commands + keybindings) | https://antigravity.google/docs/cli/reference |
-| 63 | `[COMMUNITY]` | Google Antigravity SDK: The developer guide (K. Weinmeister) | https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc |
-| 64 | `[COMMUNITY]` | Antigravity CLI (agy): Commands, Modes, and Auto-Approve | https://www.aibuilderclub.com/blog/antigravity-cli-guide |
-| 65 | `[COMMUNITY]` | Antigravity CLI hands-on guide (dev.to) | https://dev.to/arindam_1729/antigravity-cli-a-hands-on-guide-to-googles-terminal-coding-agent-5bc7 |
-| 66 | `[GOOGLE]` | Antigravity CLI Tutorial Series (Medium, google-cloud) | https://medium.com/google-cloud/antigravity-cli-tutorial-series-12b46cfe3bf2 |
-| 67 | `[COMMUNITY]` | C# Dev Kit not available in Google Antigravity IDE | https://github.com/microsoft/vscode-dotnettools/issues/2557 |
-| 68 | `[COMMUNITY]` | Sessions & conversation history (neurals.ca) | https://neurals.ca/tech/gemini/antigravity/conversation-history/ |
-| 69 | `[COMMUNITY]` | Antigravity SDK API key in CI (GitHub Action) | https://github.com/rsamborski/run-agy-sdk |
-| 70 | `[GOOGLE]` | CLI API-key auth feature request | https://github.com/google-antigravity/antigravity-cli/issues/78 |
-| 71 | `[COMMUNITY]` | 15-Minute Migration to Antigravity CLI | https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide |
+40. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
+41. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
+42. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
+43. Google Antigravity SDK: The developer guide (K. Weinmeister) — https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc
+44. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
+45. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
+46. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
 
 ---
 
