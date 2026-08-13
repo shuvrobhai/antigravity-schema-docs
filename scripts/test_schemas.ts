@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Ajv2020 from 'ajv/dist/2020.js';
+import addFormats from 'ajv-formats';
 import type { AnySchemaObject } from 'ajv';
 
 interface TestFixture {
@@ -14,6 +15,9 @@ const ajv = new Ajv2020({
   allErrors: true,
   strict: false,
 });
+// Register standard format validators (uri, email, etc.) so schema `format`
+// keywords actually validate instead of being silently ignored.
+addFormats(ajv);
 
 const SCHEMAS_DIR = path.resolve('schemas');
 const FIXTURES_DIR = path.resolve('test/fixtures');
