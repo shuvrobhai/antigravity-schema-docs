@@ -357,14 +357,27 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
   for (const agent of discoveredAgents) {
     for (const reqSkill of agent.requiredSkills) {
       if (!discoveredSkills.has(reqSkill)) {
+        const skillPath = `.agents/skills/${reqSkill}/SKILL.md`;
+        const skillScaffold = `---
+name: ${reqSkill}
+description: Automated scaffold for ${reqSkill} skill.
+metadata:
+  version: 1.0.0
+---
+# ${reqSkill.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+
+Operational instructions and procedures for the ${reqSkill} skill.
+`;
         crossArtifactFindings.push({
           id: `cross_missing_skill_${agent.name}_${reqSkill}`,
           file: agent.file,
           rule: 'broken_skill_reference',
-          message: `Agent '${agent.name}' references skill '${reqSkill}', but no matching skill definition was found in workspace (expected .agents/skills/${reqSkill}/SKILL.md).`,
+          message: `Agent '${agent.name}' references skill '${reqSkill}', but no matching skill definition was found in workspace (expected ${skillPath}).`,
           severity: 'ERROR',
-          fixable: false,
-          suggestedFix: `Create .agents/skills/${reqSkill}/SKILL.md or remove '${reqSkill}' from agent skills list.`,
+          fixable: true,
+          suggestedFix: `Scaffold missing skill at ${skillPath}.`,
+          fixedFile: skillPath,
+          fixedContent: skillScaffold,
         });
       }
     }
@@ -450,7 +463,7 @@ export function applyAutoFixes(files: WorkspaceFileItem[], fixViolationIds?: str
   for (const cf of report.crossArtifactFindings) {
     if (cf.fixable && cf.fixedContent) {
       if (!fixViolationIds || fixViolationIds.includes(cf.id)) {
-        fixMap.set(cf.file, cf.fixedContent);
+        fixMap.set(cf.fixedFile || cf.file, cf.fixedContent);
       }
     }
   }

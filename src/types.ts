@@ -16,6 +16,7 @@ export interface AuditViolation {
   fixable: boolean;
   suggestedFix?: string;
   fixedContent?: string;
+  fixedFile?: string;
 }
 
 export interface WorkspaceFileItem {

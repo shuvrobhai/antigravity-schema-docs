@@ -31,7 +31,9 @@ import {
   Terminal,
   Shield,
   Folder,
-  X
+  X,
+  Edit2,
+  ArrowRight
 } from 'lucide-react';
 import { auditWorkspaceFiles, applyAutoFixes } from '../schema/auditor';
 import type { WorkspaceFileItem, AuditViolation } from '../types';
@@ -376,6 +378,13 @@ const IGNORED_DIRECTORIES = new Set([
   '.cache'
 ]);
 
+interface AutoFixDiffItem {
+  path: string;
+  isNew: boolean;
+  oldContent?: string;
+  newContent: string;
+}
+
 export const WorkspaceAuditor: React.FC = () => {
   const [currentPresetId, setCurrentPresetId] = useState<string>('drifted-legacy');
   const [files, setFiles] = useState<WorkspaceFileItem[]>(PRESET_WORKSPACES[1].files);
@@ -401,8 +410,19 @@ export const WorkspaceAuditor: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('settings');
   const [customNewPath, setCustomNewPath] = useState<string>('settings.json');
 
-  // Diff Confirmation Modal State
+  // Rename File Modal State
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [renameOldPath, setRenameOldPath] = useState<string>('');
+  const [renameNewPath, setRenameNewPath] = useState<string>('');
+
+  // Diff Confirmation Modal State for Save to Disk
   const [isDiffModalOpen, setIsDiffModalOpen] = useState(false);
+
+  // Auto-Fix Preview Diff Modal State
+  const [isAutoFixModalOpen, setIsAutoFixModalOpen] = useState(false);
+  const [pendingAutoFixCandidate, setPendingAutoFixCandidate] = useState<WorkspaceFileItem[]>([]);
+  const [pendingAutoFixDiffs, setPendingAutoFixDiffs] = useState<AutoFixDiffItem[]>([]);
+  const [pendingAutoFixTitle, setPendingAutoFixTitle] = useState<string>('');
 
   const folderInputRef = useRef<HTMLInputElement>(null);
 
@@ -479,7 +499,6 @@ export const WorkspaceAuditor: React.FC = () => {
   // Open Local Directory via File System Access API
   const handleOpenLocalDirectory = async () => {
     if (!('showDirectoryPicker' in window)) {
-      // Trigger fallback input
       folderInputRef.current?.click();
       return;
     }
@@ -552,7 +571,6 @@ export const WorkspaceAuditor: React.FC = () => {
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       let relPath = file.webkitRelativePath || file.name;
-      // Strip root folder name from relative path
       if (relPath.includes('/')) {
         relPath = relPath.split('/').slice(1).join('/');
       }
@@ -594,25 +612,86 @@ export const WorkspaceAuditor: React.FC = () => {
     );
   };
 
-  // Apply Single Auto-Fix
-  const handleApplySingleFix = (violationId: string) => {
-    const updated = applyAutoFixes(files, [violationId]);
-    setFiles(updated);
+  // Jump to relevant file from diagnostic finding
+  const handleJumpToFile = (targetFilePath: string) => {
+    if (files.some(f => f.path === targetFilePath)) {
+      setSelectedFilePath(targetFilePath);
+    }
   };
 
-  // Apply All Auto-Fixes
-  const handleApplyAllFixes = () => {
+  // Prepare & Preview Auto-Fix Diff (Single Fix)
+  const handlePreviewSingleFix = (violation: AuditViolation) => {
+    const updated = applyAutoFixes(files, [violation.id]);
+    const diffs: AutoFixDiffItem[] = [];
+
+    for (const u of updated) {
+      const orig = files.find(f => f.path === u.path);
+      if (!orig) {
+        diffs.push({ path: u.path, isNew: true, newContent: u.content });
+      } else if (orig.content !== u.content) {
+        diffs.push({ path: u.path, isNew: false, oldContent: orig.content, newContent: u.content });
+      }
+    }
+
+    setPendingAutoFixCandidate(updated);
+    setPendingAutoFixDiffs(diffs);
+    setPendingAutoFixTitle(`Auto-Fix: ${violation.rule} (${violation.file})`);
+    setIsAutoFixModalOpen(true);
+  };
+
+  // Prepare & Preview Auto-Fix Diff (All Fixes)
+  const handlePreviewAllFixes = () => {
     const updated = applyAutoFixes(files);
-    setFiles(updated);
+    const diffs: AutoFixDiffItem[] = [];
+
+    for (const u of updated) {
+      const orig = files.find(f => f.path === u.path);
+      if (!orig) {
+        diffs.push({ path: u.path, isNew: true, newContent: u.content });
+      } else if (orig.content !== u.content) {
+        diffs.push({ path: u.path, isNew: false, oldContent: orig.content, newContent: u.content });
+      }
+    }
+
+    setPendingAutoFixCandidate(updated);
+    setPendingAutoFixDiffs(diffs);
+    setPendingAutoFixTitle(`Auto-Fix All: ${diffs.length} File(s) Remediated`);
+    setIsAutoFixModalOpen(true);
   };
 
-  // Handle Save to Local Disk
+  // Confirm Auto-Fixes and apply to workspace
+  const handleConfirmApplyAutoFixes = () => {
+    if (pendingAutoFixCandidate.length > 0) {
+      setFiles(pendingAutoFixCandidate);
+      if (pendingAutoFixDiffs.length > 0) {
+        setSelectedFilePath(pendingAutoFixDiffs[0].path);
+      }
+    }
+    setIsAutoFixModalOpen(false);
+  };
+
+  // Handle Save to Local Disk (rewriting real files)
   const handleConfirmSaveToDisk = async () => {
-    if (!localDirHandle) {
-      // Fallback export as JSON
-      handleExportBundle();
-      setIsDiffModalOpen(false);
-      return;
+    let targetHandle = localDirHandle;
+
+    if (!targetHandle) {
+      if ('showDirectoryPicker' in window) {
+        try {
+          targetHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+          setLocalDirHandle(targetHandle);
+          setLocalDirName(targetHandle.name);
+        } catch (err: any) {
+          if (err.name === 'AbortError') return;
+          // Fallback export as JSON
+          handleExportBundle();
+          setIsDiffModalOpen(false);
+          return;
+        }
+      } else {
+        handleExportBundle();
+        setIsDiffModalOpen(false);
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -621,7 +700,7 @@ export const WorkspaceAuditor: React.FC = () => {
       for (const change of dirtyChanges) {
         if (change.status === 'modified' || change.status === 'added') {
           const segments = change.path.split('/');
-          let curHandle = localDirHandle;
+          let curHandle = targetHandle;
           for (let i = 0; i < segments.length - 1; i++) {
             curHandle = await curHandle.getDirectoryHandle(segments[i], { create: true });
           }
@@ -631,7 +710,7 @@ export const WorkspaceAuditor: React.FC = () => {
           await writable.close();
         } else if (change.status === 'deleted') {
           const segments = change.path.split('/');
-          let curHandle = localDirHandle;
+          let curHandle = targetHandle;
           for (let i = 0; i < segments.length - 1; i++) {
             curHandle = await curHandle.getDirectoryHandle(segments[i], { create: false });
           }
@@ -654,6 +733,34 @@ export const WorkspaceAuditor: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Open Rename Modal
+  const handleOpenRenameModal = (oldPath: string) => {
+    setRenameOldPath(oldPath);
+    setRenameNewPath(oldPath);
+    setIsRenameModalOpen(true);
+  };
+
+  // Confirm Rename File
+  const handleConfirmRename = () => {
+    const cleanNew = renameNewPath.trim();
+    if (!cleanNew) {
+      alert('Please enter a valid file path.');
+      return;
+    }
+    if (cleanNew !== renameOldPath && files.some(f => f.path === cleanNew)) {
+      alert(`File "${cleanNew}" already exists in workspace.`);
+      return;
+    }
+
+    setFiles(prev =>
+      prev.map(f => (f.path === renameOldPath ? { ...f, path: cleanNew } : f))
+    );
+    if (selectedFilePath === renameOldPath) {
+      setSelectedFilePath(cleanNew);
+    }
+    setIsRenameModalOpen(false);
   };
 
   // Open Add Template Modal
@@ -805,7 +912,7 @@ export const WorkspaceAuditor: React.FC = () => {
               <button
                 onClick={() => setIsDiffModalOpen(true)}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-all flex items-center gap-1.5 shadow-md animate-pulse cursor-pointer"
-                title="Review pending changes and save back to local filesystem"
+                title="Review pending changes and save directly back to local filesystem"
               >
                 <Save className="w-3.5 h-3.5" />
                 Save Changes ({dirtyChanges.length})
@@ -814,7 +921,7 @@ export const WorkspaceAuditor: React.FC = () => {
 
             {saveSuccess && (
               <span className="text-xs text-emerald-400 font-medium flex items-center gap-1 px-2 py-1 bg-emerald-950/60 border border-emerald-800 rounded-lg">
-                <Check className="w-3.5 h-3.5" /> Saved!
+                <Check className="w-3.5 h-3.5" /> Saved to Disk!
               </span>
             )}
 
@@ -847,7 +954,7 @@ export const WorkspaceAuditor: React.FC = () => {
           </div>
         </div>
 
-        {/* Diagnostic Health Score Bar */}
+        {/* Diagnostic Health Score Bar (Clickable Stat Cards) */}
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-stone-800/60">
           {/* Score Card */}
           <div className={`p-3 rounded-lg border ${scoreBadge.bg} ${scoreBadge.border} flex items-center justify-between`}>
@@ -862,8 +969,16 @@ export const WorkspaceAuditor: React.FC = () => {
             </span>
           </div>
 
-          {/* Total Files */}
-          <div className="p-3 rounded-lg border border-stone-800 bg-stone-900/30 flex items-center gap-3">
+          {/* Total Files Card (Click to show ALL) */}
+          <div
+            onClick={() => setFilterSeverity('ALL')}
+            className={`p-3 rounded-lg border transition-all cursor-pointer ${
+              filterSeverity === 'ALL'
+                ? 'border-cyan-500/50 bg-stone-850 shadow-sm'
+                : 'border-stone-800 bg-stone-900/30 hover:border-stone-700'
+            } flex items-center gap-3`}
+            title="Click to view all diagnoses"
+          >
             <div className="p-2 rounded bg-stone-800/50 text-stone-300">
               <FileCode className="w-4 h-4" />
             </div>
@@ -873,8 +988,16 @@ export const WorkspaceAuditor: React.FC = () => {
             </div>
           </div>
 
-          {/* Errors */}
-          <div className="p-3 rounded-lg border border-stone-800 bg-stone-900/30 flex items-center gap-3">
+          {/* Errors Card (Click to filter ERRORS) */}
+          <div
+            onClick={() => setFilterSeverity('ERROR')}
+            className={`p-3 rounded-lg border transition-all cursor-pointer ${
+              filterSeverity === 'ERROR'
+                ? 'border-rose-500/60 bg-rose-950/30 shadow-sm'
+                : 'border-stone-800 bg-stone-900/30 hover:border-rose-900/50'
+            } flex items-center gap-3`}
+            title="Click to filter error diagnoses"
+          >
             <div className={`p-2 rounded ${auditReport.errorCount > 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-stone-800/50 text-stone-400'}`}>
               <XCircle className="w-4 h-4" />
             </div>
@@ -886,8 +1009,16 @@ export const WorkspaceAuditor: React.FC = () => {
             </div>
           </div>
 
-          {/* Warnings */}
-          <div className="p-3 rounded-lg border border-stone-800 bg-stone-900/30 flex items-center gap-3">
+          {/* Warnings Card (Click to filter WARNINGS) */}
+          <div
+            onClick={() => setFilterSeverity('WARNING')}
+            className={`p-3 rounded-lg border transition-all cursor-pointer ${
+              filterSeverity === 'WARNING'
+                ? 'border-amber-500/60 bg-amber-950/30 shadow-sm'
+                : 'border-stone-800 bg-stone-900/30 hover:border-amber-900/50'
+            } flex items-center gap-3`}
+            title="Click to filter warning diagnoses"
+          >
             <div className={`p-2 rounded ${auditReport.warningCount > 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-stone-800/50 text-stone-400'}`}>
               <AlertTriangle className="w-4 h-4" />
             </div>
@@ -907,9 +1038,9 @@ export const WorkspaceAuditor: React.FC = () => {
             </div>
             {fixableCount > 0 && (
               <button
-                onClick={handleApplyAllFixes}
+                onClick={handlePreviewAllFixes}
                 className="px-2 py-1 bg-cyan-500 hover:bg-cyan-400 text-stone-950 font-bold text-xs rounded transition-all shadow-sm flex items-center gap-1 cursor-pointer"
-                title="Apply all automated remediations"
+                title="Preview diff and apply all automated remediations"
               >
                 <Zap className="w-3.5 h-3.5" /> Fix All
               </button>
@@ -954,7 +1085,7 @@ export const WorkspaceAuditor: React.FC = () => {
                   onClick={() => setSelectedFilePath(f.path)}
                   className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-stone-800 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                      ? 'bg-stone-800 text-cyan-300 border border-cyan-500/40 shadow-sm ring-1 ring-cyan-500/20'
                       : 'bg-stone-900/60 text-stone-400 border border-stone-800/80 hover:bg-stone-800/60 hover:text-stone-200'
                   }`}
                 >
@@ -969,16 +1100,30 @@ export const WorkspaceAuditor: React.FC = () => {
                   {(isFileDirty || isFileNew) && (
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Modified / Unsaved" />
                   )}
+
+                  {/* Rename File Icon */}
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleOpenRenameModal(f.path);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 hover:text-cyan-400 transition-opacity ml-1 cursor-pointer"
+                    title="Rename path"
+                  >
+                    <Edit2 className="w-2.5 h-2.5" />
+                  </button>
+
+                  {/* Delete File Icon */}
                   {files.length > 1 && (
                     <button
                       onClick={e => {
                         e.stopPropagation();
                         handleDeleteFile(f.path);
                       }}
-                      className="opacity-0 group-hover:opacity-100 hover:text-rose-400 transition-opacity ml-1 cursor-pointer"
+                      className="opacity-0 group-hover:opacity-100 hover:text-rose-400 transition-opacity cursor-pointer"
                       title="Delete file from workspace"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-2.5 h-2.5" />
                     </button>
                   )}
                 </div>
@@ -993,7 +1138,16 @@ export const WorkspaceAuditor: React.FC = () => {
                 <FileCode className="w-3.5 h-3.5 text-stone-500" />
                 {selectedFile?.path}
               </span>
-              <span className="text-[11px] text-stone-500">Live schema validation as you type</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleOpenRenameModal(selectedFile?.path)}
+                  className="text-[11px] text-stone-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+                >
+                  <Edit2 className="w-3 h-3" /> Rename
+                </button>
+                <span className="text-[11px] text-stone-600">|</span>
+                <span className="text-[11px] text-stone-500">Live schema validation</span>
+              </div>
             </div>
             <textarea
               value={selectedFile?.content || ''}
@@ -1034,7 +1188,7 @@ export const WorkspaceAuditor: React.FC = () => {
             </div>
           </div>
 
-          {/* Diagnostic Findings List */}
+          {/* Diagnostic Findings List (Click Card to Jump to File) */}
           <div className="flex-1 p-4 space-y-3 overflow-y-auto">
             {filteredViolations.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-emerald-500/20 rounded-xl bg-emerald-950/10">
@@ -1055,12 +1209,15 @@ export const WorkspaceAuditor: React.FC = () => {
                 return (
                   <div
                     key={item.id || idx}
-                    className={`p-4 rounded-xl border transition-all ${
+                    onClick={() => handleJumpToFile(item.file)}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                      selectedFilePath === item.file ? 'ring-1 ring-cyan-500/40' : ''
+                    } ${
                       isError
-                        ? 'bg-rose-950/10 border-rose-500/30'
+                        ? 'bg-rose-950/10 border-rose-500/30 hover:border-rose-500/60'
                         : isWarning
-                        ? 'bg-amber-950/10 border-amber-500/30'
-                        : 'bg-cyan-950/10 border-cyan-500/30'
+                        ? 'bg-amber-950/10 border-amber-500/30 hover:border-amber-500/60'
+                        : 'bg-cyan-950/10 border-cyan-500/30 hover:border-cyan-500/60'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -1074,7 +1231,7 @@ export const WorkspaceAuditor: React.FC = () => {
                         )}
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono text-xs font-bold text-stone-200">{item.file}</span>
+                            <span className="font-mono text-xs font-bold text-stone-200 hover:underline">{item.file}</span>
                             <span
                               className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-semibold ${
                                 isError
@@ -1102,10 +1259,13 @@ export const WorkspaceAuditor: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Auto Fix Button */}
+                      {/* Auto Fix Button (Opens Diff Preview First) */}
                       {item.fixable && (
                         <button
-                          onClick={() => handleApplySingleFix(item.id)}
+                          onClick={e => {
+                            e.stopPropagation();
+                            handlePreviewSingleFix(item);
+                          }}
                           className="px-2.5 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0 transition-colors shadow-sm cursor-pointer"
                         >
                           <Zap className="w-3.5 h-3.5 text-cyan-400" />
@@ -1237,7 +1397,170 @@ export const WorkspaceAuditor: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 2. Save Changes & Diff Confirmation Modal                                 */}
+      {/* 2. Rename File Path Modal                                                 */}
+      {/* ========================================================================= */}
+      {isRenameModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-stone-900 border border-stone-750 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 sm:px-6 border-b border-stone-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <Edit2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-stone-100">Rename File Path</h3>
+                  <p className="text-xs text-stone-400">Update file location or rename folder segments.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsRenameModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:px-6 space-y-3 font-mono">
+              <div>
+                <label className="text-[11px] text-stone-400 block mb-1">Current Path</label>
+                <div className="text-xs text-stone-400 bg-stone-950 p-2 rounded border border-stone-800 truncate">
+                  {renameOldPath}
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] text-stone-300 block mb-1 font-bold">New Path</label>
+                <input
+                  type="text"
+                  value={renameNewPath}
+                  onChange={e => setRenameNewPath(e.target.value)}
+                  className="w-full px-3 py-2 bg-stone-950 border border-stone-750 rounded-lg text-xs font-mono text-stone-100 focus:outline-none focus:border-cyan-500/60"
+                  placeholder="e.g. .agents/skills/code-reviewer/SKILL.md"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 sm:px-6 border-t border-stone-800 bg-stone-900/50 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setIsRenameModalOpen(false)}
+                className="px-3 py-1.5 text-xs text-stone-400 hover:text-stone-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmRename}
+                className="px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-stone-950 font-bold text-xs rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                Rename
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. Auto-Fix Diff Preview & Confirmation Modal                             */}
+      {/* ========================================================================= */}
+      {isAutoFixModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-stone-900 border border-stone-750 rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="p-4 sm:px-6 border-b border-stone-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-stone-100">{pendingAutoFixTitle}</h3>
+                  <p className="text-xs text-stone-400">
+                    Review automated diff before applying changes to workspace files.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAutoFixModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Diffs List */}
+            <div className="p-4 sm:px-6 overflow-y-auto flex-1 space-y-4 font-mono">
+              {pendingAutoFixDiffs.length === 0 ? (
+                <div className="p-4 text-xs text-stone-400 text-center">No changes generated.</div>
+              ) : (
+                pendingAutoFixDiffs.map((diff, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-stone-950 border border-stone-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs pb-2 border-b border-stone-850">
+                      <span className="font-bold text-stone-200 flex items-center gap-2">
+                        <FileCode className="w-3.5 h-3.5 text-cyan-400" />
+                        {diff.path}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                          diff.isNew
+                            ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                            : 'bg-cyan-950 text-cyan-400 border border-cyan-800'
+                        }`}
+                      >
+                        {diff.isNew ? 'New Scaffold' : 'Auto-Repaired'}
+                      </span>
+                    </div>
+
+                    {/* Side by side / diff preview */}
+                    {!diff.isNew && diff.oldContent && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                          <div className="text-[10px] uppercase font-bold text-rose-400 mb-1">Before (Original)</div>
+                          <pre className="p-2.5 rounded bg-rose-950/20 border border-rose-900/40 text-rose-300 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                            {diff.oldContent}
+                          </pre>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase font-bold text-emerald-400 mb-1">After (Fixed)</div>
+                          <pre className="p-2.5 rounded bg-emerald-950/20 border border-emerald-900/40 text-emerald-300 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                            {diff.newContent}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {diff.isNew && (
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-emerald-400 mb-1">New File Content</div>
+                        <pre className="p-2.5 rounded bg-emerald-950/20 border border-emerald-900/40 text-emerald-300 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                          {diff.newContent}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 sm:px-6 border-t border-stone-800 bg-stone-900/50 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setIsAutoFixModalOpen(false)}
+                className="px-3 py-1.5 text-xs text-stone-400 hover:text-stone-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmApplyAutoFixes}
+                className="px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-stone-950 font-bold text-xs rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                Confirm & Apply Fixes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 4. Save Changes & Diff Confirmation Modal (Physical Disk Writer)          */}
       {/* ========================================================================= */}
       {isDiffModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/80 backdrop-blur-sm p-4 animate-in fade-in">
@@ -1307,7 +1630,7 @@ export const WorkspaceAuditor: React.FC = () => {
                 {localDirHandle ? (
                   <span>Will update files directly in <strong>{localDirName}</strong>.</span>
                 ) : (
-                  <span>Will export updated workspace JSON bundle.</span>
+                  <span>Will prompt folder destination on your computer to save physical files.</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -1323,7 +1646,7 @@ export const WorkspaceAuditor: React.FC = () => {
                   className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  {isSaving ? 'Saving...' : 'Confirm & Save'}
+                  {isSaving ? 'Saving...' : 'Confirm & Save to Disk'}
                 </button>
               </div>
             </div>
