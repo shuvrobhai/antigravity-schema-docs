@@ -16,11 +16,11 @@ Every claim is tagged with its source origin:
 
 | Tag | Scope | Authority |
 |---|---|---|
-| `[DOCS]` | `antigravity.google/docs/*` | Official product documentation. Primary authority. |
-| `[LIVE-1.1.12 · 2026-08-13]` | Direct observation of `agy 1.1.12` on user-configured macOS Darwin 25.4.0 / arm64 | Empirical evidence from a live install. Included when live behavior disagrees with docs/changelog or fills a gap. |
-| `[GOOGLE]` | Other Google-owned sources (Codelabs at `codelabs.developers.google.com`, Gemini CLI docs at `google.github.io/gemini-cli`, Google AI for Developers at `ai.google.dev`, Google Cloud at `cloud.google.com`) | High reliability. May lag behind main docs or reflect legacy behavior. |
-| `[PROTOCOL]` | `modelcontextprotocol.io` | Official MCP specification. Authoritative for MCP protocol details. |
-| `[COMMUNITY]` | Third-party sources (blogs, tutorials, security research, Reddit, GitHub, partner docs) | Variable reliability. Included only when official docs are silent. Explicitly called out. |
+| `[DOCS]` / `[DOCS:NN]` | `antigravity.google/docs/*` (Source `#NN` in §19) | Official product documentation. Primary authority. |
+| `[LIVE-1.1.12 · 2026-08-13]` | Direct observation of `agy 1.1.12` on user-configured macOS Darwin 25.4.0 / arm64 | Empirical evidence from a live install. Included when live behavior disagrees with docs/changelog or fills a gap. Cites `EV-###`. |
+| `[GOOGLE]` / `[GOOGLE:NN]` | Other Google-owned sources (Codelabs, SDK repositories, announcement blogs; Sources `#31..38` in §19) | High reliability. May lag behind main docs or reflect legacy behavior. |
+| `[PROTOCOL]` / `[PROTOCOL:NN]` | `modelcontextprotocol.io` (Source `#39` in §19) | Official MCP specification. Authoritative for MCP protocol details. |
+| `[COMMUNITY]` / `[COMMUNITY:NN]` | Third-party sources (Sources `#40..46` in §19) | Variable reliability. Included only when official docs are silent. Explicitly called out. |
 | `[INFERRED]` | Logical inference from confirmed data | Lowest authority. Always called out when used. |
 
 Tag priority:

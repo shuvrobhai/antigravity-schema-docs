@@ -6,11 +6,11 @@ The official docs (`antigravity.google/docs/*`) leave the following behavioral q
 
 | Question | Context | Impact |
 |---|---|---|
-| What does `commandExecutionPolicy: "eager"` do vs `auto` vs `sandbox` vs `off`? | Agent frontmatter lists 4 values but defines none | Developers cannot choose between policies without testing |
-| What does `artifactReviewPolicy: "agent-decides"` trigger on? | Listed as valid option in settings | Unpredictable review behavior in production |
-| What does `runningLightSpeed: "fast"` change vs `medium`/`slow`/`off`? | All 4 values listed in settings | Users cannot meaningfully configure rendering speed |
-| What counts as a "read" tool for `toolPermission: "strict"`? | `strict` prompts for "all non-read tools" | Is `grep_search` a read? Is `list_dir` a read? Is `search_web` a read? |
-| What happens when `enableTerminalSandbox: true` and the OS sandbox technology is unavailable? | Three technologies listed but fallback behavior undocumented | Potential silent security gap |
+| What does `commandExecutionPolicy: "eager"` do vs `auto` vs `sandbox` vs `off`? | Official docs explain `auto` (permits autonomous test/compilation while gating high-risk actions), but `eager`, `sandbox`, and `off` are not defined | Developers cannot choose between policies without testing |
+| What does `artifactReviewPolicy: "agent-decides"` trigger on? | Official docs state it dynamically prompts based on change complexity, but the algorithmic heuristics and thresholds are not defined | Unpredictable review behavior in production |
+| What does `runningLightSpeed: "fast"` change vs `medium`/`slow`/`off`? | Official docs clarify this as "Animation Speed" for the TUI progress indicator/spinner, but frame-rate and timing specs are omitted | Users cannot meaningfully predict animation intervals |
+| What counts as a "read" tool for `toolPermission: "strict"`? | `strict` prompts for "all non-read tools"; temp directory and `.git` are granted read, but exhaustive built-in tool classification is omitted | Is `grep_search` a read? Is `list_dir` a read? Is `search_web` a read? |
+| What happens when `enableTerminalSandbox: true` and the OS sandbox technology is unavailable? | Three technologies listed (nsjail, sandbox-exec, AppContainer) but fallback behavior undocumented | Potential silent security gap |
 
 ### Extensibility Behavioral Gaps
 

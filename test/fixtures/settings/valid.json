@@ -1,0 +1,10 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/settings.schema.json",
+  "toolPermission": "request-review",
+  "artifactReviewPolicy": "asks-for-review",
+  "commandExecutionPolicy": "sandbox",
+  "enableTerminalSandbox": true,
+  "allowNonWorkspaceAccess": false,
+  "colorScheme": "tokyo night",
+  "trustedWorkspaces": ["/home/user/projects/antigravity"]
+}

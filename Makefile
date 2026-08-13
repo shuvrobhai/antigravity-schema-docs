@@ -1,6 +1,6 @@
-.PHONY: help install build build-check watch validate validate-verbose validate-fix fetch-sources check-sources force-fetch-sources clean all
+.PHONY: help install build build-check watch test test-schemas audit validate validate-verbose validate-fix generate-evidence check-evidence fetch-sources check-sources force-fetch-sources clean all
 
-PYTHON ?= python3
+TSX ?= npx tsx
 
 help:
 	@echo "Google Antigravity Schema & Technical Reference Toolchain"
@@ -12,57 +12,70 @@ help:
 	@echo ""
 	@echo "Validation & Quality:"
 	@echo "  make test                Run standalone unit tests for internal toolchain libraries"
-	@echo "  make validate            Run the 11-stage repository validation suite"
+	@echo "  make validate            Run the repository validation suite (12 checks)"
 	@echo "  make validate-verbose    Run validation with detailed per-check breakdown"
-	@echo "  make validate-fix        Auto-repair drift (rebuild parent & clean orphaned snapshots)"
+	@echo "  make validate-fix        Auto-repair drift (rebuild parent, sync evidence & clean orphans)"
 	@echo ""
 	@echo "Evidence & Sources:"
+	@echo "  make generate-evidence   Generate all probe, report, and master evidence indexes"
+	@echo "  make check-evidence      Check if evidence indexes and aggregate are in sync"
 	@echo "  make fetch-sources       Fetch missing citations from §19 into evidence/sources/"
 	@echo "  make check-sources       Check if evidence/sources/ is in sync with §19 citations"
 	@echo "  make force-fetch-sources Re-fetch all §19 citations and refresh snapshots"
 	@echo ""
 	@echo "Environment & Maintenance:"
-	@echo "  make install             Install required Python dependencies"
-	@echo "  make clean               Remove __pycache__, .pyc files, and build temp files"
+	@echo "  make install             Install dependencies"
+	@echo "  make clean               Remove build temp files"
 	@echo "  make all                 Run full test, validation and build verification"
 
 test:
-	$(PYTHON) scripts/lib/doc_inspector.py
-	$(PYTHON) scripts/lib/evidence_registry.py
+	$(TSX) scripts/test_schemas.ts
+	$(TSX) scripts/audit_workspace.ts --dir test/fixtures/workspaces/valid-agent-workspace
+	$(TSX) scripts/lib/evidenceRegistry.ts
+
+test-schemas:
+	$(TSX) scripts/test_schemas.ts
+
+audit:
+	$(TSX) scripts/audit_workspace.ts
 
 all: test validate build-check
 
 install:
-	$(PYTHON) -m pip install -r requirements.txt
+	npm install
 
 build:
-	$(PYTHON) scripts/build.py
+	$(TSX) scripts/build.ts
 
 build-check:
-	$(PYTHON) scripts/build.py --check
+	$(TSX) scripts/build.ts --check
 
 watch:
-	$(PYTHON) scripts/build.py --watch
+	$(TSX) scripts/build.ts --watch
 
 validate:
-	$(PYTHON) scripts/validate.py
+	$(TSX) scripts/validate.ts
 
 validate-verbose:
-	$(PYTHON) scripts/validate.py --verbose
+	$(TSX) scripts/validate.ts --verbose
 
 validate-fix:
-	$(PYTHON) scripts/validate.py --fix
+	$(TSX) scripts/validate.ts --fix
+
+generate-evidence:
+	$(TSX) scripts/generate_evidence.ts
+
+check-evidence:
+	$(TSX) scripts/generate_evidence.ts --check
 
 fetch-sources:
-	$(PYTHON) scripts/fetch_sources.py
+	$(TSX) scripts/fetch_sources.ts
 
 check-sources:
-	$(PYTHON) scripts/fetch_sources.py --check
+	$(TSX) scripts/fetch_sources.ts --check
 
 force-fetch-sources:
-	$(PYTHON) scripts/fetch_sources.py --force
+	$(TSX) scripts/fetch_sources.ts --force
 
 clean:
-	find . -name "__pycache__" -type d -prune -exec rm -rf {} +
-	find . -name "*.pyc" -delete
 	rm -f antigravity-reference.md.tmp

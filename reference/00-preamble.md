@@ -79,7 +79,7 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 18. Remaining Hard Gaps
     18.1 Transcript Schema (verified hands-on, 2026-08-11)
 19. Works Cited
-20. Automated Schema Toolkit & 17 Native Schemas Reference Architecture
+20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
     20.1 Toolkit Architecture (SchemaRegistry, AuditReport, DocSyncInspector)
-    20.2 Complete 17 Native Schema Matrix
+    20.2 Complete 18 Native Schema Matrix
     20.3 Detailed Pydantic Specifications & Usage Examples

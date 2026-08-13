@@ -1,0 +1,7 @@
+{
+  "name": "git-tools",
+  "description": "Git automation tools and workflow extensions for Antigravity.",
+  "version": "1.0.0",
+  "author": "Antigravity Ecosystem",
+  "homepage": "https://github.com/google/antigravity"
+}

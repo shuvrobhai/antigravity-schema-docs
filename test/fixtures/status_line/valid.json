@@ -1,0 +1,15 @@
+{
+  "cwd": "/workspace/antigravity",
+  "conversation_id": "conv-12345",
+  "transcript_path": "/workspace/.system_generated/transcript.jsonl",
+  "product": "antigravity",
+  "version": "1.1.12",
+  "model": {
+    "id": "gemini-3.7-flash",
+    "display_name": "Gemini 3.7 Flash"
+  },
+  "workspace": {
+    "current_dir": "/workspace",
+    "project_dir": "/workspace"
+  }
+}

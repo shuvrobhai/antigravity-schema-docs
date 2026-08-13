@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "badServer": {
+      "command": "node",
+      "args": 12345,
+      "disabled": "not-a-boolean"
+    }
+  }
+}

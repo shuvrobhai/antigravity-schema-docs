@@ -1,11 +1,21 @@
-## 20. Automated Schema Toolkit & 17 Native Schemas Reference Architecture
+## 20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
 
 ### 20.1 Toolkit Architecture & Design Seams
 
-The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 17 original native configuration and runtime artifacts across the Google Antigravity Ecosystem.
+The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 18 native configuration and runtime artifacts across the Google Antigravity Ecosystem.
+
+#### Architecture Decision Records (ADRs)
+The evolution of the schema engine and reference repository is governed by formal ADRs:
+- [ADR-0001: Modular Reference with Composed Parent](../docs/adr/0001-modular-reference-with-composed-parent.md)
+- [ADR-0002: Archive Cited Sources as Local Markdown Snapshots](../docs/adr/0002-archive-cited-sources.md)
+- [ADR-0003: Standalone JSON Schema Catalog with Automated Drift Validation](../docs/adr/0003-standalone-json-schema-catalog.md)
+- [ADR-0004: AST-Driven Table and Schema Linter for Automated Drift Prevention](../docs/adr/0004-ast-table-and-schema-linter.md)
+- [ADR-0005: TypeScript Port of Build and Validation Toolchain](../docs/adr/0005-convert-scripts-to-typescript.md)
+- [ADR-0006: OKF Indexed Citation Badges and Source Tag Deduplication](../docs/adr/0006-indexed-citation-badges-and-deduplication.md)
+- [ADR-0007: Evidence Hierarchy and Reports Reorganization](../docs/adr/0007-evidence-hierarchy-and-reports-reorganization.md)
 
 #### Core Architectural Patterns
-1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 17 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
+1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 18 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
 2. **Audit Domain Locality (`AuditReport`)**: `SystemAuditor` returns strongly-typed `AuditReport` objects and `CategoryAuditResult` items (`src/antigravity_schemas/auditor.py`). Presentation logic (Rich table formatting) lives inside domain models rather than CLI handlers.
 3. **Contextual Spec Synchronization (`DocSyncInspector`)**: `DocSyncInspector` (`src/antigravity_schemas/doc_inspector.py`) parses Markdown files into section blocks, ensuring field documentation coverage is validated strictly within each schema's dedicated section rather than globally.
 
@@ -32,9 +42,31 @@ The `antigravity-schemas` toolkit provides automated schema extraction, validati
 | 17 | `trusted_hooks` | **Trusted Security Hooks** | `TrustedHooksSchema` | `schemas/trusted_hooks.schema.json` | Lifecycle | `~/.gemini/trusted_hooks.json` |
 | 18 | `import_manifest` | **Import History Manifest** | `ImportManifestSchema` | `schemas/import_manifest.schema.json` | Ecosystem Migration | `~/.gemini/config/import_manifest.json` |
 
-### 20.3 Programmatic Python Usage Examples
+### 20.3 Programmatic Toolkit Usage Examples
 
-#### 1. Querying Schema Registry
+#### 1. TypeScript / Node.js Engine (`src/schema/validator.ts`)
+```typescript
+import { validateAntigravityPayload, schemaRegistry } from './schema/validator';
+
+// Lookup schema metadata descriptor
+const settingsDescriptor = schemaRegistry.get('settings');
+console.log(settingsDescriptor?.filename); // "settings.schema.json"
+
+// Validate live configuration payload using compiled Ajv validator
+const result = validateAntigravityPayload('settings', {
+  commandExecutionPolicy: 'ALWAYS_ALLOW',
+  geminiModel: 'gemini-3.7-flash',
+  theme: 'system'
+});
+
+if (!result.valid) {
+  console.error(`Validation failed for ${result.schemaName}:`, result.errors);
+} else {
+  console.log(`✓ Configuration valid for ${result.schemaName}`);
+}
+```
+
+#### 2. Python Architecture Specification & Exporter
 ```python
 from antigravity_schemas import registry
 
@@ -43,11 +75,11 @@ settings_desc = registry.get("settings")
 print(settings_desc.model_cls)  # <class 'antigravity_schemas.models.settings.SettingsSchema'>
 print(settings_desc.filename)   # "settings.schema.json"
 
-# Export all 17 JSON schemas to disk
+# Export all 18 JSON schemas to disk
 exported_paths = registry.export_all(output_dir=Path("schemas"))
 ```
 
-#### 2. Running Live System Audit
+#### 3. Live System Audit Engine
 ```python
 from pathlib import Path
 from antigravity_schemas.auditor import SystemAuditor
@@ -60,7 +92,7 @@ for row in report.to_table_rows():
     print(row)
 ```
 
-#### 3. Contextual Document Synchronization Check
+#### 4. Contextual Document Synchronization Check
 ```python
 from pathlib import Path
 from antigravity_schemas.doc_inspector import DocSyncInspector

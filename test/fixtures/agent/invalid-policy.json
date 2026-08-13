@@ -1,0 +1,5 @@
+{
+  "name": "reviewer",
+  "description": "Agent with invalid policy",
+  "commandExecutionPolicy": "run_as_root_everywhere"
+}

@@ -81,9 +81,9 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 18. Remaining Hard Gaps
     18.1 Transcript Schema (verified hands-on, 2026-08-11)
 19. Works Cited
-20. Automated Schema Toolkit & 17 Native Schemas Reference Architecture
+20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
     20.1 Toolkit Architecture (SchemaRegistry, AuditReport, DocSyncInspector)
-    20.2 Complete 17 Native Schema Matrix
+    20.2 Complete 18 Native Schema Matrix
     20.3 Detailed Pydantic Specifications & Usage Examples
 
 ---
@@ -118,11 +118,11 @@ Every claim is tagged with its source origin:
 
 | Tag | Scope | Authority |
 |---|---|---|
-| `[DOCS]` | `antigravity.google/docs/*` | Official product documentation. Primary authority. |
-| `[LIVE-1.1.12 · 2026-08-13]` | Direct observation of `agy 1.1.12` on user-configured macOS Darwin 25.4.0 / arm64 | Empirical evidence from a live install. Included when live behavior disagrees with docs/changelog or fills a gap. |
-| `[GOOGLE]` | Other Google-owned sources (Codelabs at `codelabs.developers.google.com`, Gemini CLI docs at `google.github.io/gemini-cli`, Google AI for Developers at `ai.google.dev`, Google Cloud at `cloud.google.com`) | High reliability. May lag behind main docs or reflect legacy behavior. |
-| `[PROTOCOL]` | `modelcontextprotocol.io` | Official MCP specification. Authoritative for MCP protocol details. |
-| `[COMMUNITY]` | Third-party sources (blogs, tutorials, security research, Reddit, GitHub, partner docs) | Variable reliability. Included only when official docs are silent. Explicitly called out. |
+| `[DOCS]` / `[DOCS:NN]` | `antigravity.google/docs/*` (Source `#NN` in §19) | Official product documentation. Primary authority. |
+| `[LIVE-1.1.12 · 2026-08-13]` | Direct observation of `agy 1.1.12` on user-configured macOS Darwin 25.4.0 / arm64 | Empirical evidence from a live install. Included when live behavior disagrees with docs/changelog or fills a gap. Cites `EV-###`. |
+| `[GOOGLE]` / `[GOOGLE:NN]` | Other Google-owned sources (Codelabs, SDK repositories, announcement blogs; Sources `#31..38` in §19) | High reliability. May lag behind main docs or reflect legacy behavior. |
+| `[PROTOCOL]` / `[PROTOCOL:NN]` | `modelcontextprotocol.io` (Source `#39` in §19) | Official MCP specification. Authoritative for MCP protocol details. |
+| `[COMMUNITY]` / `[COMMUNITY:NN]` | Third-party sources (Sources `#40..46` in §19) | Variable reliability. Included only when official docs are silent. Explicitly called out. |
 | `[INFERRED]` | Logical inference from confirmed data | Lowest authority. Always called out when used. |
 
 Tag priority:
@@ -1746,22 +1746,21 @@ Commands:
 ---
 
 ## 9. Sandbox
+[DOCS:06]
 
-`[DOCS]`
+Enforces native operating system process isolation, manages execution containment boundaries, and protects local workstation environments from unauthorized remote calls or destructive terminal operations `[DOCS:06]`.
 
-Enforces native operating system process isolation, manages execution containment boundaries, and protects local workstation environments from unauthorized remote calls or destructive terminal operations `[DOCS]`.
-
-### Native OS Containment Rings
+### Native OS Containment Rings `[DOCS:06]`
 
 | Platform | Sandboxing Technology | Filesystem Containment | Network Egress Policy |
 |---|---|---|---|
-| **Linux** | `nsjail` | Kernel namespaces (`CLONE_NEWNS`, `CLONE_NEWUSER`), cgroups v2 resource bounds, read-only system root (`/`), private workspace mount | Network namespace unsharing (`CLONE_NEWNET`) isolates network stack; raw outbound sockets blocked `[DOCS]`. |
-| **macOS** | `sandbox-exec` (Seatbelt / SBPL) | Scheme-based policy profiles (`.sb`) enforcing `(allow file-read*)` and `(allow file-write* (subpath <workspace>))` | `(deny network-outbound)` blocks unauthorized outbound socket connections `[DOCS]`. |
-| **Windows** | `AppContainer` | Low-integrity restricted token, workspace DACL access grants, isolated registry namespace | Network client capabilities restricted via AppContainer security attributes `[DOCS]`. |
+| **Linux** | `nsjail` | Kernel namespaces (`CLONE_NEWNS`, `CLONE_NEWUSER`), cgroups v2 resource bounds, read-only system root (`/`), private workspace mount | Network namespace unsharing (`CLONE_NEWNET`) isolates network stack; raw outbound sockets blocked. |
+| **macOS** | `sandbox-exec` (Seatbelt / SBPL) | Scheme-based policy profiles (`.sb`) enforcing `(allow file-read*)` and `(allow file-write* (subpath <workspace>))` | `(deny network-outbound)` blocks unauthorized outbound socket connections. |
+| **Windows** | `AppContainer` | Low-integrity restricted token, workspace DACL access grants, isolated registry namespace | Network client capabilities restricted via AppContainer security attributes. |
 
-### Sandbox Activation & Security Guarantees
+### Sandbox Activation & Security Guarantees `[DOCS:06]`
 
-Sandboxing is configured inside global preferences (`~/.gemini/antigravity-cli/settings.json` or `~/.gemini/settings.json`) `[DOCS]`:
+Sandboxing is configured inside global preferences (`~/.gemini/antigravity-cli/settings.json` or `~/.gemini/settings.json`):
 
 ```json
 {
@@ -1769,13 +1768,13 @@ Sandboxing is configured inside global preferences (`~/.gemini/antigravity-cli/s
 }
 ```
 
-- **`enableTerminalSandbox`** (boolean, default: `false`): Restricts all local terminal tools and execution commands launched by agents to OS containment rings `[DOCS]`.
-- **Fail-Closed Security Guarantee:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution **fails closed** with a hard error rather than silently executing unprotected `[DOCS]` / `[GOOGLE]`.
-- **Symlink Escape Prevention:** Symlinks within the project directory pointing to targets outside the workspace root are blocked to prevent directory traversal escapes (`../`) `[DOCS]` / `[GOOGLE]`.
+- **`enableTerminalSandbox`** (boolean, default: `false`): Restricts all local terminal tools and execution commands launched by agents to OS containment rings.
+- **Fail-Closed Security Guarantee:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution **fails closed** with a hard error rather than silently executing unprotected `[DOCS:06]` / `[GOOGLE:35]`.
+- **Symlink Escape Prevention:** Symlinks within the project directory pointing to targets outside the workspace root are blocked to prevent directory traversal escapes (`../`) `[DOCS:06]` / `[GOOGLE:35]`.
 
-### Interactive Approval Behavior
+### Interactive Approval Behavior `[DOCS:06]`
 
-When an agent attempts shell tool execution, the TUI prompt adapts dynamically to your sandboxing state `[DOCS]`:
+When an agent attempts shell tool execution, the TUI prompt adapts dynamically to your sandboxing state:
 
 - **Sandbox Enabled**: Prompt offers a temporary escape option:
   1. *Yes*
@@ -1933,200 +1932,196 @@ Headless print mode (`agy -p` / `--print`) does **not** load or execute workspac
 ---
 
 ## 11. Browser Integration
+[DOCS:23]
 
-`[DOCS]`
+Google Antigravity includes a local Chrome browser integration operated via a specialized Browser Subagent to test websites, inspect documentation sources, capture visual screenshots, and automate web tasks `[DOCS:23]`.
 
-Google Antigravity includes a local Chrome browser integration operated via a specialized Browser Subagent to test websites, inspect documentation sources, capture visual screenshots, and automate web tasks `[DOCS]`.
-
-### Core Browser Architecture & Profile Isolation
+### Core Browser Architecture & Profile Isolation `[DOCS:23,26]`
 
 | Aspect | Technical Specification |
 |---|---|
-| **Engine** | Local Chrome browser operated via Browser Subagent `[DOCS]`. |
-| **Profile Isolation** | Runs inside a completely separate Chrome profile (isolated application instance) `[DOCS]`. |
-| **Data Privacy** | No cookie or sign-in credential sharing with personal browsing profiles `[DOCS]`. |
-| **Sign-In Persistence** | Account sign-ins persist inside the isolated profile across future sessions `[DOCS]`. |
-| **OS Windowing** | On macOS, appears as a separate dock icon if Chrome is already open `[DOCS]`. |
-| **Profile Path** | Configurable via the **Browser Profile** setting in the Browser User Settings section `[DOCS]`. |
-| **Toggle Control** | Completely disabled by toggling **Browser Tools** under User Settings → Browser `[DOCS]`. |
+| **Engine** | Local Chrome browser operated via Browser Subagent. |
+| **Profile Isolation** | Runs inside a completely separate Chrome profile (isolated application instance). |
+| **Data Privacy** | No cookie or sign-in credential sharing with personal browsing profiles. |
+| **Sign-In Persistence** | Account sign-ins persist inside the isolated profile across future sessions. |
+| **OS Windowing** | On macOS, appears as a separate dock icon if Chrome is already open. |
+| **Profile Path** | Configurable via the **Browser Profile** setting in the Browser User Settings section. |
+| **Toggle Control** | Completely disabled by toggling **Browser Tools** under User Settings → Browser. |
 
-### Two-Layer URL Security Model
+### Two-Layer URL Security Model `[DOCS:24]`
 
-Browser navigation enforces a mandatory two-layer URL security system `[DOCS]`:
+Browser navigation enforces a mandatory two-layer URL security system:
 
 1. **Denylist (Server-Side Enforced)**:
-   - Evaluated using Google Superroots' `BadUrlsChecker` service via RPC before navigation `[DOCS]`.
-   - Denies access to malicious or dangerous URLs `[DOCS]`.
-   - **Fail-Closed**: If the server is unreachable, access is denied by default `[DOCS]`.
-   - **Absolute Precedence**: The denylist always overrides the allowlist; a denylisted URL cannot be allowlisted `[DOCS]`.
+   - Evaluated using Google Superroots' `BadUrlsChecker` service via RPC before navigation.
+   - Denies access to malicious or dangerous URLs.
+   - **Fail-Closed**: If the server is unreachable, access is denied by default.
+   - **Absolute Precedence**: The denylist always overrides the allowlist; a denylisted URL cannot be allowlisted.
 
 2. **Allowlist (Local User Control)**:
-   - Stored in a local text file, initialized with `localhost` `[DOCS]`.
-   - When navigating to an un-allowlisted URL, the UI displays an **"Always Allow"** confirmation prompt `[DOCS]`.
-   - Clicking "Always Allow" appends the target host to the local allowlist `[DOCS]`.
+   - Stored in a local text file, initialized with `localhost`.
+   - When navigating to an un-allowlisted URL, the UI displays an **"Always Allow"** confirmation prompt.
+   - Clicking "Always Allow" appends the target host to the local allowlist.
 
-### Invocation & Artifact Output
+### Invocation & Artifact Output `[DOCS:23,27]`
 
-- **Invocation**: Triggered explicitly via the `/browser` command or spawned via subagent `[DOCS]`.
-- **Design Rationale**: Kept as an explicit command/subagent invocation rather than auto-triggered because automated browser usage requires user steering `[DOCS]`.
-- **Artifact Deliverables**: Tab actions generate visual screenshot artifacts and WebP action video recordings saved directly to the session artifact directory `[DOCS]`.
+- **Invocation**: Triggered explicitly via the `/browser` command or spawned via subagent.
+- **Design Rationale**: Kept as an explicit command/subagent invocation rather than auto-triggered because automated browser usage requires user steering.
+- **Artifact Deliverables**: Tab actions generate visual screenshot artifacts and WebP action video recordings saved directly to the session artifact directory.
 
 ---
 
 ## 12. Artifacts and Implementation Plans
+[DOCS:13]
 
-`[DOCS]`
+Artifacts are structured deliverables created by agents to communicate progress, outline technical plans, present code diffs, render architecture diagrams, and capture visual media `[DOCS:13]`. As agents execute with high autonomy over long sessions, artifacts serve as the primary asynchronous co-steering mechanism.
 
-Artifacts are structured deliverables created by agents to communicate progress, outline technical plans, present code diffs, render architecture diagrams, and capture visual media `[DOCS]`. As agents execute with high autonomy over long sessions, artifacts serve as the primary asynchronous co-steering mechanism `[DOCS]`.
-
-### Execution Modes
+### Execution Modes `[DOCS:13]`
 
 | Mode | Command | Execution & Planning Behavior |
 |---|---|---|
-| **Planning Mode** | `/planning` | Agent generates structured implementation plans, task groups, and architecture artifacts before executing filesystem changes `[DOCS]`. |
-| **Fast Mode** | `/fast` | Direct execution mode without intermediate planning halts `[DOCS]`. |
+| **Planning Mode** | `/planning` | Agent generates structured implementation plans, task groups, and architecture artifacts before executing filesystem changes. |
+| **Fast Mode** | `/fast` | Direct execution mode without intermediate planning halts. |
 
-### TUI Interactive Review Interface
+### TUI Interactive Review Interface `[DOCS:22]`
 
-When an agent produces or modifies artifacts, the TUI status bar displays an active notification (`/artifact to review`). Pressing `Ctrl+R` opens the interactive review interface `[DOCS]`:
+When an agent produces or modifies artifacts, the TUI status bar displays an active notification (`/artifact to review`). Pressing `Ctrl+R` opens the interactive review interface:
 
 1. **Artifact Picker Panel Overlay**:
-   - A high-level checklist menu featuring status markers (`✓ approved`, `open`), quick preview toggles, and folder structures `[DOCS]`.
+   - A high-level checklist menu featuring status markers (`✓ approved`, `open`), quick preview toggles, and folder structures.
 2. **Artifact Detail Viewer**:
-   - A full-screen audit interface supporting syntax highlighting, inline line-level commenting, and diagram scaling `[DOCS]`.
+   - A full-screen audit interface supporting syntax highlighting, inline line-level commenting, and diagram scaling.
 
-#### Panel Keybindings
+#### Panel Keybindings `[DOCS:22]`
 
 | Key | TUI Command | Action Behavior |
 |---|---|---|
-| `↑` / `↓` | `nav.scroll_line` | Navigate through list of artifact entries `[DOCS]`. |
-| `h` / `l` | `nav.switch_button` | Toggle row action buttons (**open**, **approve**, **reject**) `[DOCS]`. |
-| `p` | `confirm.preview` | Toggle 12-line inline code preview under selected row `[DOCS]`. |
-| `y` | `confirm.approve` | Instantly approve selected artifact `[DOCS]`. |
-| `n` | `confirm.reject` | Instantly reject selected artifact `[DOCS]`. |
-| `Shift+A` | `confirm.approve_all` | Approve all pending artifacts simultaneously `[DOCS]`. |
-| `Esc` | `nav.close` | Close picker overlay `[DOCS]`. |
+| `↑` / `↓` | `nav.scroll_line` | Navigate through list of artifact entries. |
+| `h` / `l` | `nav.switch_button` | Toggle row action buttons (**open**, **approve**, **reject**). |
+| `p` | `confirm.preview` | Toggle 12-line inline code preview under selected row. |
+| `y` | `confirm.approve` | Instantly approve selected artifact. |
+| `n` | `confirm.reject` | Instantly reject selected artifact. |
+| `Shift+A` | `confirm.approve_all` | Approve all pending artifacts simultaneously. |
+| `Esc` | `nav.close` | Close picker overlay. |
 
-### Artifact Review Policy Settings
+### Artifact Review Policy Settings `[DOCS:22]`
 
-The Desktop Hub and CLI support configurable review policies `[DOCS]`:
+The Desktop Hub and CLI support configurable review policies:
 
 | Policy | Behavior |
 |---|---|
-| **Request Review** *(Recommended)* | Agent halts at intermediate milestones for user inspection before writing changes to disk `[DOCS]`. |
-| **Always Proceed** | Agent proceeds continuously without halting for deliverable approvals `[DOCS]`. |
+| **Request Review** *(Recommended)* | Agent halts at intermediate milestones for user inspection before writing changes to disk. |
+| **Always Proceed** | Agent proceeds continuously without halting for deliverable approvals. |
 
-### Implementation Plan Co-Steering Workflow
+### Implementation Plan Co-Steering Workflow `[DOCS:28]`
 
-1. **Generate**: Agent creates an `implementation_plan.md` artifact in the session artifact directory `[DOCS]`.
-2. **Review & Comment**: User inspects proposed architecture, adding line-level feedback comments `[DOCS]`.
-3. **Co-Steer**: User selects **"Proceed"** (approves implementation) or **"Review"** (requests revision based on feedback) `[DOCS]`.
-4. **Multimodal Feedback**: Screenshots captured by browser subagents are attached as visual artifacts supporting direct region-based feedback `[DOCS]`.
+1. **Generate**: Agent creates an `implementation_plan.md` artifact in the session artifact directory.
+2. **Review & Comment**: User inspects proposed architecture, adding line-level feedback comments.
+3. **Co-Steer**: User selects **"Proceed"** (approves implementation) or **"Review"** (requests revision based on feedback).
+4. **Multimodal Feedback**: Screenshots captured by browser subagents are attached as visual artifacts supporting direct region-based feedback.
 
 ---
 
 ## 13. Enterprise Features
+[DOCS:18]
 
-`[DOCS]`
+Google Antigravity integrates directly with **Gemini Enterprise** and the **Gemini Enterprise Agent Platform**, enabling enterprise development teams to run sessions using models hosted within their organization's Google Cloud infrastructure under strict corporate governance and VPC Service Controls `[DOCS:18]`.
 
-Google Antigravity integrates directly with **Gemini Enterprise** and the **Gemini Enterprise Agent Platform**, enabling enterprise development teams to run sessions using models hosted within their organization's Google Cloud infrastructure under strict corporate governance and VPC Service Controls `[DOCS]`.
-
-### Supported Products & Licensing Tiers
+### Supported Products & Licensing Tiers `[DOCS:18]`
 
 | Product | Enterprise Integration Status |
 |---|---|
-| **Antigravity 2.0** (Desktop) | Supported `[DOCS]`. |
-| **Antigravity CLI** (`agy`) | Supported `[DOCS]`. |
-| **Antigravity IDE** | Not supported for enterprise deployments `[DOCS]`. |
+| **Antigravity 2.0** (Desktop) | Supported. |
+| **Antigravity CLI** (`agy`) | Supported. |
+| **Antigravity IDE** | Not supported for enterprise deployments. |
 
 **Supported License Editions**:
-- Gemini Enterprise Standard `[DOCS]`
-- Gemini Enterprise Plus `[DOCS]`
-- Gemini Enterprise Pay-as-you-go `[DOCS]`
+- Gemini Enterprise Standard
+- Gemini Enterprise Plus
+- Gemini Enterprise Pay-as-you-go
 
-### IAM Roles & Permissions Matrix
+### IAM Roles & Permissions Matrix `[DOCS:18]`
 
 | Action / Setup Step | Required IAM Role | Permission ID |
 |---|---|---|
-| **Create GCP Project** | Project Creator (`roles/resourcemanager.projectCreator`) | `resourcemanager.projects.create` `[DOCS]` |
-| **Enable Agent Platform API** | Service Usage Admin (`roles/serviceusage.serviceUsageAdmin`) | `serviceusage.services.enable` `[DOCS]` |
-| **Use Antigravity Models** | Agent Platform User (`roles/aiplatform.user`) | `aiplatform.user` `[DOCS]` |
+| **Create GCP Project** | Project Creator (`roles/resourcemanager.projectCreator`) | `resourcemanager.projects.create` |
+| **Enable Agent Platform API** | Service Usage Admin (`roles/serviceusage.serviceUsageAdmin`) | `serviceusage.services.enable` |
+| **Use Antigravity Models** | Agent Platform User (`roles/aiplatform.user`) | `aiplatform.user` |
 
-### Authentication & Single Sign-On (SSO)
+### Authentication & Single Sign-On (SSO) `[DOCS:18]`
 
-1. **Standard Business SSO**: Sign in with corporate business account via Google Cloud SSO `[DOCS]`.
-2. **Workforce Identity Federation (BYOID / WIF)**: Authenticate through external identity providers (e.g. Okta, Ping) via **Advanced WIF Configuration** string `[DOCS]`.
+1. **Standard Business SSO**: Sign in with corporate business account via Google Cloud SSO.
+2. **Workforce Identity Federation (BYOID / WIF)**: Authenticate through external identity providers (e.g. Okta, Ping) via **Advanced WIF Configuration** string.
 3. **Application Default Credentials (ADC)** *(CLI Only)*:
-   - Authenticate headless workflows via `gcloud auth application-default login --project {PROJECT}` `[DOCS]`.
-   - Credential path: `~/.config/gcloud/application_default_credentials.json` `[DOCS]`.
-   - Enable via environment variable: `export AGY_ADC_AUTH=true` `[DOCS]`.
-   - Limitation: Models older than Gemini 3 Flash are not supported under ADC `[DOCS]`.
+   - Authenticate headless workflows via `gcloud auth application-default login --project {PROJECT}`.
+   - Credential path: `~/.config/gcloud/application_default_credentials.json`.
+   - Enable via environment variable: `export AGY_ADC_AUTH=true`.
+   - Limitation: Models older than Gemini 3 Flash are not supported under ADC.
 4. **API Key Support**:
-   - **CLI**: NOT supported currently (`google-antigravity/antigravity-cli#78`) `[DOCS]`.
-   - **SDK**: Supported via `GEMINI_API_KEY` env or `api_key=` config `[DOCS]`.
+   - **CLI**: NOT supported currently (`google-antigravity/antigravity-cli#78` `[GOOGLE:38]`).
+   - **SDK**: Supported via `GEMINI_API_KEY` env or `api_key=` config `[DOCS:30]`.
 
-### Regional Deployment Endpoints & Capability Matrix
+### Regional Deployment Endpoints & Capability Matrix `[DOCS:18]`
 
 | Endpoint Region | Base URI | Supported Capabilities |
 |---|---|---|
-| **Global** | `global` | Text Generation, Code Inference, Multimodal, Image Generation `[DOCS]`. |
-| **US Multi-Region** | `us` | Text Generation, Code Inference, Multimodal `[DOCS]`. |
-| **EU Multi-Region** | `eu` | Text Generation, Code Inference, Multimodal `[DOCS]`. |
+| **Global** | `global` | Text Generation, Code Inference, Multimodal, Image Generation. |
+| **US Multi-Region** | `us` | Text Generation, Code Inference, Multimodal. |
+| **EU Multi-Region** | `eu` | Text Generation, Code Inference, Multimodal. |
 
-*Note*: Image Generation is available exclusively on `global` deployment endpoints `[DOCS]`.
+*Note*: Image Generation is available exclusively on `global` deployment endpoints.
 
-### Projects, Conversations & Worktree Workflows
+### Projects, Conversations & Worktree Workflows `[DOCS:11,12]`
 
-- **Default Project**: `default-cli-project` `[DOCS]`.
-- **Project Selection**: `agy --project=<project_id>` or `agy --new-project` `[DOCS]`.
-- **Cross-Project Forking**: `/fork <project_id>` forks an active conversation to another project `[DOCS]`.
-- **Desktop Execution Modes**: Local Mode (direct in workspace directory) or New Worktree Mode (isolated git worktree) `[DOCS]`.
+- **Default Project**: `default-cli-project`.
+- **Project Selection**: `agy --project=<project_id>` or `agy --new-project`.
+- **Cross-Project Forking**: `/fork <project_id>` forks an active conversation to another project.
+- **Desktop Execution Modes**: Local Mode (direct in workspace directory) or New Worktree Mode (isolated git worktree).
 
-### Diagnostic Log Paths
+### Diagnostic Log Paths `[DOCS:16]`
 
 | Client Product | Diagnostic Log File Path |
 |---|---|
-| **Antigravity CLI** | `~/.gemini/antigravity-cli/cli.log` `[DOCS]` |
-| **Antigravity 2.0** | `~/Library/Logs/Antigravity/language_server.log` `[DOCS]` |
+| **Antigravity CLI** | `~/.gemini/antigravity-cli/cli.log` |
+| **Antigravity 2.0** | `~/Library/Logs/Antigravity/language_server.log` |
 
 ---
 
 ## 14. Workspace Governance Recommendations
+[DOCS:17]
 
-`[DOCS]`
-
-To maximize development velocity while maintaining complete control, enterprise and local engineering teams should establish structured workspace governance paradigms aligned with official Antigravity CLI best practices `[DOCS]`.
+To maximize development velocity while maintaining complete control, enterprise and local engineering teams should establish structured workspace governance paradigms aligned with official Antigravity CLI best practices `[DOCS:17]`.
 
 ### 1. Establish Local Verification Loops
-- Ensure a workspace test suite or build script is defined before initiating agent tasks `[DOCS]`.
-- Instruct agents to write test cases first, execute local verification scripts (e.g. `npm test`, `pytest`), and iterate on test outputs automatically `[DOCS]`.
+- Ensure a workspace test suite or build script is defined before initiating agent tasks.
+- Instruct agents to write test cases first, execute local verification scripts (e.g. `npm test`, `pytest`), and iterate on test outputs automatically.
 
-### 2. Enforce the Three-Phase Execution Pattern
-- **Exploration**: Direct the agent to explore codebase references and explain architecture before modifying code `[DOCS]`.
-- **Planning**: Request a structured implementation plan artifact outlining file paths, dependencies, and logic overrides `[DOCS]`.
-- **Execution**: Apply code edits only after reviewing and approving the implementation plan `[DOCS]`.
+### 2. Enforce the Three-Phase Execution Pattern `[DOCS:17,28]`
+- **Exploration**: Direct the agent to explore codebase references and explain architecture before modifying code.
+- **Planning**: Request a structured implementation plan artifact outlining file paths, dependencies, and logic overrides.
+- **Execution**: Apply code edits only after reviewing and approving the implementation plan.
 
-### 3. Maintain Codebase Rule Files
-- Place a `GEMINI.md` or `AGENTS.md` file at the workspace root to define coding standards, styling paradigms, test flags, and deprecation notices `[DOCS]`.
-- Agents automatically parse root rule files on startup to guide code generation `[DOCS]`.
+### 3. Maintain Codebase Rule Files `[DOCS:20]`
+- Place a `GEMINI.md` or `AGENTS.md` file at the workspace root to define coding standards, styling paradigms, test flags, and deprecation notices.
+- Agents automatically parse root rule files on startup to guide code generation.
 
-### 4. Configure Structured Safety Barriers
-Configure `~/.gemini/antigravity-cli/settings.json` based on team risk tolerance `[DOCS]`:
+### 4. Configure Structured Safety Barriers `[DOCS:03,07]`
+Configure `~/.gemini/antigravity-cli/settings.json` based on team risk tolerance:
 
 | Permission Preset | Behavior | Recommended Use |
 |---|---|---|
-| **`request-review`** | Prompts for confirmation before non-read operations `[DOCS]`. | Standard default mode `[DOCS]`. |
-| **`proceed-in-sandbox`** | Confines terminal execution to an OS kernel sandbox ring (`enableTerminalSandbox: true`) `[DOCS]`. | High-autonomy untrusted script execution `[DOCS]`. |
-| **`strict`** | Always prompts for all write and shell actions with line-by-line transparency `[DOCS]`. | High-security enterprise repositories `[DOCS]`. |
+| **`request-review`** | Prompts for confirmation before non-read operations. | Standard default mode. |
+| **`proceed-in-sandbox`** | Confines terminal execution to an OS kernel sandbox ring (`enableTerminalSandbox: true`). | High-autonomy untrusted script execution. |
+| **`strict`** | Always prompts for all write and shell actions with line-by-line transparency. | High-security enterprise repositories. |
 
-### 5. Active Session Management & Branching
-- **Immediate Escape Hatch (`Esc`)**: Interrupts active agent execution immediately if search or code generation deviates `[DOCS]`.
-- **History Rollback (`/rewind` / `/undo`)**: Rolls back conversation thread and filesystem state to a stable prior baseline `[DOCS]`.
-- **Parallel Speculative Branching (`/fork`)**: Forks a session to experiment with alternative implementations without polluting the main thread `[DOCS]`.
+### 5. Active Session Management & Branching `[DOCS:12,14]`
+- **Immediate Escape Hatch (`Esc`)**: Interrupts active agent execution immediately if search or code generation deviates.
+- **History Rollback (`/rewind` / `/undo`)**: Rolls back conversation thread and filesystem state to a stable prior baseline.
+- **Parallel Speculative Branching (`/fork`)**: Forks a session to experiment with alternative implementations without polluting the main thread.
 
-### 6. Non-Interactive Scripting & Subagent Fan-Out
-- Use `agy -p "prompt"` for non-interactive one-shot CI/CD queries and git hook automation `[DOCS]`.
-- Dispatch concurrent background subagents for large-scale multi-file refactoring without blocking the main TUI prompt `[DOCS]`.
+### 6. Non-Interactive Scripting & Subagent Fan-Out `[DOCS:05,10]`
+- Use `agy -p "prompt"` for non-interactive one-shot CI/CD queries and git hook automation.
+- Dispatch concurrent background subagents for large-scale multi-file refactoring without blocking the main TUI prompt.
 
 ---
 
@@ -2477,11 +2472,11 @@ The official docs (`antigravity.google/docs/*`) leave the following behavioral q
 
 | Question | Context | Impact |
 |---|---|---|
-| What does `commandExecutionPolicy: "eager"` do vs `auto` vs `sandbox` vs `off`? | Agent frontmatter lists 4 values but defines none | Developers cannot choose between policies without testing |
-| What does `artifactReviewPolicy: "agent-decides"` trigger on? | Listed as valid option in settings | Unpredictable review behavior in production |
-| What does `runningLightSpeed: "fast"` change vs `medium`/`slow`/`off`? | All 4 values listed in settings | Users cannot meaningfully configure rendering speed |
-| What counts as a "read" tool for `toolPermission: "strict"`? | `strict` prompts for "all non-read tools" | Is `grep_search` a read? Is `list_dir` a read? Is `search_web` a read? |
-| What happens when `enableTerminalSandbox: true` and the OS sandbox technology is unavailable? | Three technologies listed but fallback behavior undocumented | Potential silent security gap |
+| What does `commandExecutionPolicy: "eager"` do vs `auto` vs `sandbox` vs `off`? | Official docs explain `auto` (permits autonomous test/compilation while gating high-risk actions), but `eager`, `sandbox`, and `off` are not defined | Developers cannot choose between policies without testing |
+| What does `artifactReviewPolicy: "agent-decides"` trigger on? | Official docs state it dynamically prompts based on change complexity, but the algorithmic heuristics and thresholds are not defined | Unpredictable review behavior in production |
+| What does `runningLightSpeed: "fast"` change vs `medium`/`slow`/`off`? | Official docs clarify this as "Animation Speed" for the TUI progress indicator/spinner, but frame-rate and timing specs are omitted | Users cannot meaningfully predict animation intervals |
+| What counts as a "read" tool for `toolPermission: "strict"`? | `strict` prompts for "all non-read tools"; temp directory and `.git` are granted read, but exhaustive built-in tool classification is omitted | Is `grep_search` a read? Is `list_dir` a read? Is `search_web` a read? |
+| What happens when `enableTerminalSandbox: true` and the OS sandbox technology is unavailable? | Three technologies listed (nsjail, sandbox-exec, AppContainer) but fallback behavior undocumented | Potential silent security gap |
 
 ### Extensibility Behavioral Gaps
 
@@ -2676,14 +2671,24 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 
 ---
 
-## 20. Automated Schema Toolkit & 17 Native Schemas Reference Architecture
+## 20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
 
 ### 20.1 Toolkit Architecture & Design Seams
 
-The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 17 original native configuration and runtime artifacts across the Google Antigravity Ecosystem.
+The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 18 native configuration and runtime artifacts across the Google Antigravity Ecosystem.
+
+#### Architecture Decision Records (ADRs)
+The evolution of the schema engine and reference repository is governed by formal ADRs:
+- [ADR-0001: Modular Reference with Composed Parent](docs/adr/0001-modular-reference-with-composed-parent.md)
+- [ADR-0002: Archive Cited Sources as Local Markdown Snapshots](docs/adr/0002-archive-cited-sources.md)
+- [ADR-0003: Standalone JSON Schema Catalog with Automated Drift Validation](docs/adr/0003-standalone-json-schema-catalog.md)
+- [ADR-0004: AST-Driven Table and Schema Linter for Automated Drift Prevention](docs/adr/0004-ast-table-and-schema-linter.md)
+- [ADR-0005: TypeScript Port of Build and Validation Toolchain](docs/adr/0005-convert-scripts-to-typescript.md)
+- [ADR-0006: OKF Indexed Citation Badges and Source Tag Deduplication](docs/adr/0006-indexed-citation-badges-and-deduplication.md)
+- [ADR-0007: Evidence Hierarchy and Reports Reorganization](docs/adr/0007-evidence-hierarchy-and-reports-reorganization.md)
 
 #### Core Architectural Patterns
-1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 17 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
+1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 18 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
 2. **Audit Domain Locality (`AuditReport`)**: `SystemAuditor` returns strongly-typed `AuditReport` objects and `CategoryAuditResult` items (`src/antigravity_schemas/auditor.py`). Presentation logic (Rich table formatting) lives inside domain models rather than CLI handlers.
 3. **Contextual Spec Synchronization (`DocSyncInspector`)**: `DocSyncInspector` (`src/antigravity_schemas/doc_inspector.py`) parses Markdown files into section blocks, ensuring field documentation coverage is validated strictly within each schema's dedicated section rather than globally.
 
@@ -2710,9 +2715,31 @@ The `antigravity-schemas` toolkit provides automated schema extraction, validati
 | 17 | `trusted_hooks` | **Trusted Security Hooks** | `TrustedHooksSchema` | `schemas/trusted_hooks.schema.json` | Lifecycle | `~/.gemini/trusted_hooks.json` |
 | 18 | `import_manifest` | **Import History Manifest** | `ImportManifestSchema` | `schemas/import_manifest.schema.json` | Ecosystem Migration | `~/.gemini/config/import_manifest.json` |
 
-### 20.3 Programmatic Python Usage Examples
+### 20.3 Programmatic Toolkit Usage Examples
 
-#### 1. Querying Schema Registry
+#### 1. TypeScript / Node.js Engine (`src/schema/validator.ts`)
+```typescript
+import { validateAntigravityPayload, schemaRegistry } from './schema/validator';
+
+// Lookup schema metadata descriptor
+const settingsDescriptor = schemaRegistry.get('settings');
+console.log(settingsDescriptor?.filename); // "settings.schema.json"
+
+// Validate live configuration payload using compiled Ajv validator
+const result = validateAntigravityPayload('settings', {
+  commandExecutionPolicy: 'ALWAYS_ALLOW',
+  geminiModel: 'gemini-3.7-flash',
+  theme: 'system'
+});
+
+if (!result.valid) {
+  console.error(`Validation failed for ${result.schemaName}:`, result.errors);
+} else {
+  console.log(`✓ Configuration valid for ${result.schemaName}`);
+}
+```
+
+#### 2. Python Architecture Specification & Exporter
 ```python
 from antigravity_schemas import registry
 
@@ -2721,11 +2748,11 @@ settings_desc = registry.get("settings")
 print(settings_desc.model_cls)  # <class 'antigravity_schemas.models.settings.SettingsSchema'>
 print(settings_desc.filename)   # "settings.schema.json"
 
-# Export all 17 JSON schemas to disk
+# Export all 18 JSON schemas to disk
 exported_paths = registry.export_all(output_dir=Path("schemas"))
 ```
 
-#### 2. Running Live System Audit
+#### 3. Live System Audit Engine
 ```python
 from pathlib import Path
 from antigravity_schemas.auditor import SystemAuditor
@@ -2738,7 +2765,7 @@ for row in report.to_table_rows():
     print(row)
 ```
 
-#### 3. Contextual Document Synchronization Check
+#### 4. Contextual Document Synchronization Check
 ```python
 from pathlib import Path
 from antigravity_schemas.doc_inspector import DocSyncInspector

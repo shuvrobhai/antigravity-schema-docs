@@ -1,0 +1,10 @@
+{
+  "name": "security-reviewer",
+  "description": "Specialized agent for auditing security vulnerabilities and secret leaks.",
+  "tools": ["view_file", "grep_search", "run_command"],
+  "mainAgent": true,
+  "subagent": true,
+  "model": "inherit",
+  "commandExecutionPolicy": "sandbox",
+  "skills": ["code-review", "vulnerability-scan"]
+}

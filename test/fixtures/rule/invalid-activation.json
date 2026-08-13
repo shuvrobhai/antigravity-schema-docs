@@ -1,0 +1,5 @@
+{
+  "name": "invalid-rule",
+  "description": "Rule with invalid activation",
+  "activation": "on_every_heartbeat_forever"
+}

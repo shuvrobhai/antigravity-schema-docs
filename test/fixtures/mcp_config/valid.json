@@ -1,0 +1,18 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/mcp_config.schema.json",
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"],
+      "env": {
+        "DEBUG": "true"
+      },
+      "disabled": false
+    },
+    "github": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "mcp/github"],
+      "disabled": false
+    }
+  }
+}

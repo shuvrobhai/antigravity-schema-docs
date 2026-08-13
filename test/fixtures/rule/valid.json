@@ -1,0 +1,7 @@
+{
+  "name": "typescript-style-guide",
+  "description": "Enforce strict typing and modular architecture for all TS files.",
+  "activation": "glob",
+  "globs": ["**/*.ts", "**/*.tsx"],
+  "tags": ["coding-standards", "typescript"]
+}

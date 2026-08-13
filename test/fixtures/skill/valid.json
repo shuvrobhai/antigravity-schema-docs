@@ -1,0 +1,9 @@
+{
+  "name": "firebase-integration",
+  "description": "Integration skill for setting up Firestore rules and database models.",
+  "metadata": {
+    "version": "1.0.0",
+    "author": "Antigravity Team"
+  },
+  "disable-slash-command": false
+}

@@ -1,6 +1,0 @@
-# Python dependencies for repository automation and source snapshotting
-beautifulsoup4>=4.12.0
-certifi>=2024.0.0
-
-# System tool dependencies (install via homebrew or apt):
-#   pandoc (e.g. brew install pandoc) - required for HTML to Markdown conversion in fetch_sources.py

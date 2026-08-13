@@ -22,14 +22,14 @@ antigtavity-schema/
 ├── requirements.txt               # Toolchain dependencies
 ├── antigravity-reference.md       # Composed monolithic parent document (Build artifact)
 │
-├── schemas/                       # 17 Standalone JSON Schemas (Section 20 catalog)
+├── schemas/                       # 18 Standalone JSON Schemas (Section 20 catalog)
 │   ├── settings.schema.json       # CLI configuration schema
 │   ├── plugin.schema.json         # Plugin manifest schema
 │   ├── agent.schema.json          # Agent frontmatter schema
 │   ├── skill.schema.json          # Skill frontmatter schema
 │   ├── mcp_config.schema.json     # MCP server configuration schema
 │   ├── hooks.schema.json          # Lifecycle hooks schema
-│   └── ... (17 total schemas)
+│   └── ... (18 total schemas)
 │
 ├── reference/                     # Source modules (Source of truth)
 │   ├── 00-preamble.md             # Title, changelog, report methodology, and TOC
@@ -38,8 +38,12 @@ antigtavity-schema/
 │   └── 20-schema-toolkit-and-native-schemas.md # JSON schemas & tool configurations
 │
 ├── evidence/                      # Empirical grounding & web snapshots
+│   ├── index.md                   # Master Evidence Registry & Grounding Catalog
 │   ├── agy-1.1.12/                # Empirical test logs (EV-001 through EV-020)
 │   │   └── evidence.md            # Live system observations & verification runs
+│   ├── reports/                   # Technical research reports & synthesis whitepapers
+│   │   ├── R-001-behavioral-contracts.md
+│   │   └── index.md               # Reports catalog index
 │   └── sources/                   # 46 point-in-time Markdown snapshots of cited URLs
 │       ├── index.md               # Generated snapshot manifest & citation map
 │       ├── community/             # Community discussions and third-party reports
@@ -51,28 +55,36 @@ antigtavity-schema/
 │   └── adr/
 │       ├── 0001-modular-reference-with-composed-parent.md
 │       ├── 0002-archive-cited-sources.md
-│       └── 0003-standalone-json-schema-catalog.md
+│       ├── 0003-standalone-json-schema-catalog.md
+│       ├── 0004-ast-table-and-schema-linter.md
+│       ├── 0005-convert-scripts-to-typescript.md
+│       ├── 0006-indexed-citation-badges-and-deduplication.md
+│       └── 0007-evidence-hierarchy-and-reports-reorganization.md
 │
 └── scripts/                       # Maintenance & quality toolchain
-    ├── build.py                   # Modular composition engine (compiles reference/ -> parent)
-    ├── fetch_sources.py           # Snapshot archiver & dead-link detector
-    ├── validate.py                # 9-check repository integrity validator
-    └── migrations/                # Historical migration scripts
-        └── split_reference.py     # One-time reference modularization migration
+    ├── build.ts                   # Modular composition engine (compiles reference/ -> parent)
+    ├── validate.ts                # 12-check repository integrity validator
+    ├── generate_evidence.ts       # Regenerates probe, report, and master evidence indexes
+    ├── audit_workspace.ts         # CLI workspace auditor (AJV + the 18 native schemas)
+    ├── test_schemas.ts            # JSON Schema fixture test runner (test/fixtures/)
+    ├── fetch_sources.ts           # Citation snapshot archiver & dead-link detector
+    └── lib/
+        ├── docInspector.ts        # Stdlib-only Markdown AST / table parser
+        └── evidenceRegistry.ts    # Evidence & citation query interface
 ```
 
 ---
 
 ## 🚀 Quickstart & Commands
 
-You can use standard `make` targets or invoke Python scripts directly:
+You can use standard `make` targets or invoke TypeScript scripts directly:
 
 ### 1. Installation
-Install the required scraping and validation dependencies:
+Install the required dependencies:
 ```bash
 make install
 # or
-python3 -m pip install -r requirements.txt
+npm install
 ```
 
 ### 2. Building Documentation
@@ -88,8 +100,21 @@ make build-check
 make watch
 ```
 
-### 3. Repository Validation
-Run the full 9-point integrity suite (verifies module contiguity, composition sync, TOC alignment, heading hierarchy, source archives, snapshot orphans, relative links, live EV evidence grounding, and native JSON schema integrity):
+### 3. Workspace Diagnostic & Schema Auditor
+Audit your project's agent workspace files against all 18 Antigravity JSON schemas, YAML frontmatters, and cross-artifact links:
+```bash
+# Run workspace audit on a directory
+npm run audit -- --dir ./my-agent-workspace
+
+# Automatically repair fixable errors on disk
+npm run audit -- --dir ./my-agent-workspace --fix
+
+# Output structured JSON for AI Agent self-healing
+npm run audit -- --dir ./my-agent-workspace --json
+```
+
+### 4. Repository Validation
+Run the full 12-point integrity suite (verifies module contiguity, composition sync, TOC alignment, heading hierarchy, source archives, snapshot orphans, relative links, live EV evidence grounding, native JSON schema integrity, schema-to-doc parity, cross-module evidence consistency, and evidence index synchronization):
 ```bash
 # Run all checks
 make validate
@@ -101,7 +126,7 @@ make validate-verbose
 make validate-fix
 ```
 
-### 4. Source Archival & Web Snapshots
+### 5. Source Archival & Web Snapshots
 Fetch, convert, and index cited URLs from Section 19 ([`reference/19-works-cited.md`](reference/19-works-cited.md)):
 ```bash
 # Fetch missing citations into evidence/sources/
@@ -113,6 +138,12 @@ make check-sources
 # Force re-fetch and update all snapshots
 make force-fetch-sources
 ```
+
+---
+
+## 📖 Complete Documentation & Guides
+
+For full instructions, preset guides, schema specifications, and AI self-healing workflows, read the [**User Guide (`docs/USER_GUIDE.md`)**](docs/USER_GUIDE.md).
 
 ---
 
@@ -131,3 +162,6 @@ make force-fetch-sources
 - [ADR-0002: Archive Cited Sources as Local Markdown Snapshots](docs/adr/0002-archive-cited-sources.md)
 - [ADR-0003: Standalone JSON Schema Catalog with Automated Drift Validation](docs/adr/0003-standalone-json-schema-catalog.md)
 - [ADR-0004: AST-Driven Table and Schema Linter for Automated Drift Prevention](docs/adr/0004-ast-table-and-schema-linter.md)
+- [ADR-0005: TypeScript Port of Build and Validation Toolchain](docs/adr/0005-convert-scripts-to-typescript.md)
+- [ADR-0006: OKF Indexed Citation Badges and Source Tag Deduplication](docs/adr/0006-indexed-citation-badges-and-deduplication.md)
+- [ADR-0007: Evidence Hierarchy and Reports Reorganization](docs/adr/0007-evidence-hierarchy-and-reports-reorganization.md)

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/settings.schema.json",
+  "toolPermission": "request-review",
+  "commandExecutionPolicy": "sandbox",
+  "colorScheme": "dark",
+  "enableTerminalSandbox": true
+}

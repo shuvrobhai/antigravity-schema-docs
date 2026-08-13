@@ -1,0 +1,16 @@
+{
+  "workspace-safety": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/guard_command.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

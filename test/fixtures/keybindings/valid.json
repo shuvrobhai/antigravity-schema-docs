@@ -1,0 +1,5 @@
+{
+  "focus_chat": ["ctrl+k", "cmd+k"],
+  "toggle_sidebar": ["ctrl+b"],
+  "abort_generation": ["escape"]
+}

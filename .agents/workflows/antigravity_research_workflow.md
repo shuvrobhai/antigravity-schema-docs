@@ -59,6 +59,6 @@ This workflow orchestrates a team of dedicated background subagents to research,
 ### Stage 5: Final Refactoring & Toolchain Integration
 **Subagent**: `Core Maintainer`
 - **Role**: `Master Technical Editor & Integration Engineer`
-- **Action**: Read `technical_draft_v1.md` alongside `audit_report.md`. Resolve all audit findings. Merge content into target `reference/NN-slug.md` module(s), update standalone schemas under `schemas/*.schema.json`, synchronize Section 20 matrix table, and run `make all` (`scripts/validate.py` + `scripts/build.py --check`).
+- **Action**: Read `technical_draft_v1.md` alongside `audit_report.md`. Resolve all audit findings. Merge content into target `reference/NN-slug.md` module(s), update standalone schemas under `schemas/*.schema.json`, synchronize Section 20 matrix table, and run `make all` (`scripts/validate.ts` + `scripts/build.ts --check`).
 - **Output Artifact**: `final_doc_spec.md`
 - **Log Prompt**: Record prompt in `agent_prompts.md` under `## Stage 5: Core Maintainer Prompt`.

@@ -1,0 +1,16 @@
+{
+  "invalid-group": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "unsupported_hook_runner_type",
+            "command": "./scripts/guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

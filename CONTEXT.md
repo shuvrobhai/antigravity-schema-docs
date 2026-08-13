@@ -13,11 +13,11 @@ Module `00-preamble.md` — everything before Section 1: title block, "What This
 _Avoid_: header, front matter
 
 **Parent**:
-The generated `antigravity-reference.md` at the repo root, composed from the modules by `scripts/build.py`. Never hand-edited; carries a generated-file HTML comment.
+The generated `antigravity-reference.md` at the repo root, composed from the modules by `scripts/build.ts`. Never hand-edited; carries a generated-file HTML comment.
 _Avoid_: main doc, master file
 
 **Composition build**:
-`scripts/build.py` regenerating the parent from modules (`--watch` for live rebuilds, `--check` for sync verification).
+`scripts/build.ts` regenerating the parent from modules (`--watch` for live rebuilds, `--check` for sync verification).
 _Avoid_: compile, merge
 
 **Source tag**:
@@ -37,7 +37,7 @@ _Avoid_: saved sites, web snapshot, cached sources
 _Avoid_: source index, sources table
 
 **Native schema catalog**:
-`schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 18 core native schemas documented in section 20; validated against drift by `scripts/validate.py`.
+`schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 18 core native schemas documented in section 20; validated against drift by `scripts/validate.ts`.
 _Avoid_: json templates, config definitions
 
 **Schema-to-Doc Parity Gate**:
@@ -49,10 +49,10 @@ Automated validation verifying live evidence range alignment across works-cited/
 _Avoid_: proof checker, ev linter
 
 **MarkdownDoc Inspector**:
-Pure-stdlib semantic Markdown AST and table parsing module (`scripts/lib/doc_inspector.py`) encapsulating section slicing, column extraction, citation discovery, and heading hierarchy verification behind a unified object interface.
+Pure-stdlib semantic Markdown AST and table parsing module (`scripts/lib/docInspector.ts`) encapsulating section slicing, column extraction, citation discovery, and heading hierarchy verification behind a unified object interface.
 _Avoid_: markdown helper, regex utils
 
 **Evidence Registry**:
-Domain catalog and verification module (`scripts/lib/evidence_registry.py`) providing an immutable query interface over Section 19 citations, empirical evidence probes (EV-001..EV-020), snapshot path resolution, and `index.md` manifest verification.
+Domain catalog and verification module (`scripts/lib/evidenceRegistry.ts`) providing an immutable query interface over Section 19 citations, empirical evidence probes (EV-001..EV-020), snapshot path resolution, and `index.md` manifest verification.
 _Avoid_: citation helper, source parser
 
