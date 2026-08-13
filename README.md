@@ -21,14 +21,14 @@ antigtavity-schema/
 ├── Makefile                       # Standard task automation interface
 ├── antigravity-reference.md       # Composed monolithic parent document (Build artifact)
 │
-├── schemas/                       # 18 Standalone JSON Schemas (Section 20 catalog)
+├── schemas/                       # 19 Standalone JSON Schemas (Section 20 catalog)
 │   ├── settings.schema.json       # CLI configuration schema
 │   ├── plugin.schema.json         # Plugin manifest schema
 │   ├── agent.schema.json          # Agent frontmatter schema
 │   ├── skill.schema.json          # Skill frontmatter schema
 │   ├── mcp_config.schema.json     # MCP server configuration schema
 │   ├── hooks.schema.json          # Lifecycle hooks schema
-│   └── ... (18 total schemas)
+│   └── ... (19 total schemas)
 │
 ├── reference/                     # Source modules (Source of truth)
 │   ├── 00-preamble.md             # Title, changelog, report methodology, and TOC
@@ -64,7 +64,7 @@ antigtavity-schema/
     ├── build.ts                   # Modular composition engine (compiles reference/ -> parent)
     ├── validate.ts                # 12-check repository integrity validator
     ├── generate_evidence.ts       # Regenerates probe, report, and master evidence indexes
-    ├── audit_workspace.ts         # CLI workspace auditor (AJV + the 18 native schemas)
+    ├── audit_workspace.ts         # CLI workspace auditor (AJV + the 19 native schemas)
     ├── test_schemas.ts            # JSON Schema fixture test runner (test/fixtures/)
     ├── fetch_sources.ts           # Citation snapshot archiver & dead-link detector
     └── lib/
@@ -100,7 +100,7 @@ make watch
 ```
 
 ### 3. Workspace Diagnostic & Schema Auditor
-Audit your project's agent workspace files against all 18 Antigravity JSON schemas, YAML frontmatters, and cross-artifact links:
+Audit your project's agent workspace files against all 19 Antigravity JSON schemas, YAML frontmatters, and cross-artifact links:
 ```bash
 # Run workspace audit on a directory
 npm run audit -- --dir ./my-agent-workspace

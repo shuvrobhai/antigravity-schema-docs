@@ -106,6 +106,19 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
       isMarkdownFrontmatter = true;
       const { frontmatter } = extractFrontmatter(file.content);
       if (!frontmatter) {
+        if (schemaKey === 'rule') {
+          // Rule files are plain Markdown by design (see evidence/reports/R-003):
+          // frontmatter is optional, so a frontmatter-less rule is valid.
+          fileResults.push({
+            path: file.path,
+            schemaKey,
+            schemaTitle: descriptor?.title || schemaKey,
+            valid: true,
+            violations: [],
+            autoFixAvailable: false,
+          });
+          continue;
+        }
         parseError = 'Missing or malformed YAML frontmatter (must start and end with "---")';
       } else {
         payload = frontmatter;

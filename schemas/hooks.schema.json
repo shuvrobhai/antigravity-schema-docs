@@ -13,29 +13,29 @@
         "description": "Whether this hook group is active."
       },
       "PreToolUse": {
-        "$ref": "#/$defs/eventMatchers",
-        "description": "Interceptors triggered before tool execution."
+        "$ref": "#/$defs/matchedEvent",
+        "description": "Interceptors triggered before tool execution (matcher + hooks groups)."
       },
       "PostToolUse": {
-        "$ref": "#/$defs/eventMatchers",
-        "description": "Interceptors triggered after tool execution completes."
+        "$ref": "#/$defs/matchedEvent",
+        "description": "Interceptors triggered after tool execution completes (matcher + hooks groups)."
       },
       "PreInvocation": {
-        "$ref": "#/$defs/eventMatchers",
-        "description": "Interceptors triggered before model API invocation."
+        "anyOf": [{ "$ref": "#/$defs/handlerList" }, { "$ref": "#/$defs/matchedEvent" }],
+        "description": "Interceptors triggered before model API invocation. Canonical form is a plain list of handlers (matcher is ignored); the matcher-group form is accepted for compatibility."
       },
       "PostInvocation": {
-        "$ref": "#/$defs/eventMatchers",
-        "description": "Interceptors triggered after model API response."
+        "anyOf": [{ "$ref": "#/$defs/handlerList" }, { "$ref": "#/$defs/matchedEvent" }],
+        "description": "Interceptors triggered after model API response. Canonical form is a plain list of handlers (matcher is ignored); the matcher-group form is accepted for compatibility."
       },
       "Stop": {
-        "$ref": "#/$defs/eventMatchers",
-        "description": "Interceptors triggered when agent execution halts."
+        "anyOf": [{ "$ref": "#/$defs/handlerList" }, { "$ref": "#/$defs/matchedEvent" }],
+        "description": "Interceptors triggered when agent execution halts. Canonical form is a plain list of handlers (matcher is ignored); the matcher-group form is accepted for compatibility."
       }
     }
   },
   "$defs": {
-    "eventMatchers": {
+    "matchedEvent": {
       "type": "array",
       "items": {
         "type": "object",
@@ -46,31 +46,37 @@
           },
           "hooks": {
             "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "enum": ["command"],
-                  "default": "command",
-                  "description": "Hook runner type."
-                },
-                "command": {
-                  "type": "string",
-                  "description": "Shell script or binary executable command path."
-                },
-                "timeout": {
-                  "type": "integer",
-                  "default": 30,
-                  "description": "Execution timeout limit in seconds."
-                }
-              },
-              "required": ["command"]
-            }
+            "items": { "$ref": "#/$defs/hookHandler" }
           }
         },
         "required": ["hooks"]
       }
+    },
+    "handlerList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/hookHandler" },
+      "description": "Plain list of hook handlers (used by PreInvocation, PostInvocation, Stop; matcher is ignored)."
+    },
+    "hookHandler": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["command"],
+          "default": "command",
+          "description": "Hook runner type."
+        },
+        "command": {
+          "type": "string",
+          "description": "Shell script or binary executable command path."
+        },
+        "timeout": {
+          "type": "integer",
+          "default": 30,
+          "description": "Execution timeout limit in seconds."
+        }
+      },
+      "required": ["command"]
     }
   }
 }

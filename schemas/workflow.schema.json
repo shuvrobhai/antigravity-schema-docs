@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/workflow.schema.json",
+  "title": "WorkflowFrontmatterSchema",
+  "description": "Google Antigravity Workflow YAML frontmatter schema (.agents/workflows/<name>.md, .agent/workflows/<name>.md, ~/.gemini/antigravity/global_workflows/). Workflow bodies are ordered Markdown step lists invoked via /workflow-name.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-_]+$",
+      "description": "Unique workflow identifier; defaults to the file name when omitted."
+    },
+    "title": {
+      "type": "string",
+      "description": "Display title for the workflow."
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of the workflow shown to the model when deciding whether to run it."
+    }
+  },
+  "additionalProperties": true
+}

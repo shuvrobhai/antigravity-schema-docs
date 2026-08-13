@@ -1,8 +1,8 @@
-## 20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
+## 20. Automated Schema Toolkit & 19 Native Schemas Reference Architecture
 
 ### 20.1 Toolkit Architecture & Design Seams
 
-The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 18 native configuration and runtime artifacts across the Google Antigravity Ecosystem.
+The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 19 native configuration and runtime artifacts across the Google Antigravity Ecosystem.
 
 #### Architecture Decision Records (ADRs)
 The evolution of the schema engine and reference repository is governed by formal ADRs:
@@ -15,11 +15,11 @@ The evolution of the schema engine and reference repository is governed by forma
 - [ADR-0007: Evidence Hierarchy and Reports Reorganization](../docs/adr/0007-evidence-hierarchy-and-reports-reorganization.md)
 
 #### Core Architectural Patterns
-1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 18 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
+1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 19 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
 2. **Audit Domain Locality (`AuditReport`)**: `SystemAuditor` returns strongly-typed `AuditReport` objects and `CategoryAuditResult` items (`src/antigravity_schemas/auditor.py`). Presentation logic (Rich table formatting) lives inside domain models rather than CLI handlers.
 3. **Contextual Spec Synchronization (`DocSyncInspector`)**: `DocSyncInspector` (`src/antigravity_schemas/doc_inspector.py`) parses Markdown files into section blocks, ensuring field documentation coverage is validated strictly within each schema's dedicated section rather than globally.
 
-### 20.2 Complete 18 Native Schemas Inventory Matrix
+### 20.2 Complete 19 Native Schemas Inventory Matrix
 
 | # | Key | Schema Name | Pydantic Model Class | Exported JSON Schema File | Category | Target File / Location |
 |---|---|---|---|---|---|---|
@@ -41,6 +41,7 @@ The evolution of the schema engine and reference repository is governed by forma
 | 16 | `history` | **CLI Prompt History Entry** | `CLIHistoryEntrySchema` | `schemas/history_entry.schema.json` | Runtime State | `~/.gemini/antigravity-cli/history.jsonl` |
 | 17 | `trusted_hooks` | **Trusted Security Hooks** | `TrustedHooksSchema` | `schemas/trusted_hooks.schema.json` | Lifecycle | `~/.gemini/trusted_hooks.json` |
 | 18 | `import_manifest` | **Import History Manifest** | `ImportManifestSchema` | `schemas/import_manifest.schema.json` | Ecosystem Migration | `~/.gemini/config/import_manifest.json` |
+| 19 | `workflow` | **Workflow Frontmatter** | `WorkflowFrontmatterSchema` | `schemas/workflow.schema.json` | Agent System | `.agents/workflows/<name>.md`, `.agent/workflows/`, `~/.gemini/antigravity/global_workflows/` |
 
 ### 20.3 Programmatic Toolkit Usage Examples
 
@@ -75,7 +76,7 @@ settings_desc = registry.get("settings")
 print(settings_desc.model_cls)  # <class 'antigravity_schemas.models.settings.SettingsSchema'>
 print(settings_desc.filename)   # "settings.schema.json"
 
-# Export all 18 JSON schemas to disk
+# Export all 19 JSON schemas to disk
 exported_paths = registry.export_all(output_dir=Path("schemas"))
 ```
 
@@ -109,4 +110,4 @@ for r in results:
 
 ---
 
-*End of Report — Version 8.1 (Live-Grounded Revision Edition)*
+*End of Report — Version 8.3 (Rule & Config Validation Hardening Edition)*

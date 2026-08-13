@@ -68,7 +68,12 @@
             "description": "Request timeout in seconds."
           }
         },
-        "additionalProperties": true
+        "additionalProperties": true,
+        "anyOf": [
+          { "required": ["command"], "description": "stdio transport: executable path or binary name." },
+          { "required": ["serverUrl"], "description": "remote transport: Streamable HTTP or SSE endpoint URL." }
+        ],
+        "description": "Each server entry requires a transport: 'command' (stdio) or 'serverUrl' (remote), per the official MCP docs. Legacy fields like url/httpUrl are not supported."
       }
     }
   },

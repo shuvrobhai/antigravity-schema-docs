@@ -2,28 +2,32 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://antigravity.google/schemas/v1/rule.schema.json",
   "title": "RuleFileSchema",
-  "description": "Google Antigravity behavioral rule file and frontmatter schema (GEMINI.md, AGENTS.md, .agents/rules/*.md).",
+  "description": "Google Antigravity behavioral rule file frontmatter schema (GEMINI.md, AGENTS.md, .agents/rules/*.md). Rule bodies are plain Markdown; frontmatter is optional (see evidence/reports/R-003-rule-frontmatter-format.md).",
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9-_]+$",
-      "description": "Unique rule identifier."
+      "description": "Unique rule identifier; defaults to the file name when omitted."
     },
     "description": {
       "type": "string",
-      "description": "Summary of rule constraints and trigger scenarios."
+      "description": "Summary of rule constraints and trigger scenarios. For model_decision rules this description is what the model sees when deciding whether to load the rule."
+    },
+    "trigger": {
+      "type": "string",
+      "enum": ["always_on", "glob", "model_decision", "manual", "manual_mention"],
+      "description": "Activation strategy (community-observed convention, e.g. xcaffold Antigravity renderer). Always-on rules may omit the key entirely."
     },
     "activation": {
       "type": "string",
-      "enum": ["always_on", "manual", "model_decision", "glob"],
-      "default": "always_on",
-      "description": "Activation strategy determining when the rule is injected into prompt context."
+      "enum": ["always", "always_on", "glob", "manual", "model_decision"],
+      "description": "Legacy activation key observed in real plugin rule files (e.g. self-customizer ships 'activation: always'). Accepts both spellings."
     },
     "globs": {
-      "type": "array",
+      "type": ["string", "array"],
       "items": { "type": "string" },
-      "description": "File path glob patterns matching files that trigger this rule (for activation: 'glob')."
+      "description": "File path glob patterns matching files that trigger this rule (for glob activation). Accepts a comma-joined string or an array of patterns."
     },
     "tags": {
       "type": "array",

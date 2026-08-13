@@ -1,0 +1,5 @@
+{
+  "name": "deploy-to-staging",
+  "title": "Deploy to Staging",
+  "description": "Deploy the current branch to the staging environment and run smoke tests."
+}

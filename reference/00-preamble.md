@@ -1,6 +1,6 @@
 # Google Antigravity Ecosystem: Complete Technical Reference, Schema Specification, and Gap Analysis
 
-## Version 8.1 — Live-Grounded Revision (agy 1.1.12) Edition
+## Version 8.3 — Rule & Config Validation Hardening Edition (agy 1.1.12)
 
 **Live verification date:** 2026-08-13  
 **Live binary:** `agy 1.1.12`  
@@ -43,6 +43,8 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 | 7.1 | 2026-08-13 | **Live-system grounding pass:** replaced guessed schemas with empirically observed formats from `~/.gemini/`. `CLIHistoryEntrySchema` corrected to `{display, timestamp (int), workspace, conversationId, type}`. `TranscriptStepSchema` gained `created_at` and expanded `type` enum to include observed values (`CONVERSATION_HISTORY`, `LIST_DIRECTORY`, `RUN_COMMAND`, `VIEW_FILE`, `CHECKPOINT`). `parse_pbtxt_state` implemented migrations parsing and fixed section-name extraction. `SystemAuditor` expanded from 5 to all 17 schemas (added `audit_json_file`, `audit_history`, `audit_plugin_hooks`, `audit_ide_state`; fixed agent glob to `*/agent.md`). `doc_inspector` regex updated to support hyphenated field names. CLI `validate` gained `.jsonl` and `.pbtxt` handling. |
 | 8.0 | 2026-08-13 | **Live-Grounded Revision against `agy 1.1.12`:** Added `[LIVE-1.1.12 · 2026-08-13]` source tag and evidence IDs (`EV-001`–`EV-018`). Replaced all prior `1.1.11` grounding with `1.1.12`. Corrected `agy agents` / `agy models` output-format conflict, `agy agents` workspace-agent scope, plugin component detection rules, plugin roots, plugin manifest schema, agent frontmatter notes, global skill roots, structured `/skills` and `/permissions` output, CLI state/history/trusted-hooks schemas, keybindings default absence, and CLI path inventory. Added official hook argument corrections and Projects documentation. Recorded five high-priority conflicts and one unresolved hook-firing confound. |
 | 8.1 | 2026-08-13 | **Web-Validated Additions Edition:** Added official SDK architecture documentation (three-layer model, bundled Go harness over WebSockets, Inspect/Decide/Transform hook categories, multimodal input) `[DOCS]`/`[GOOGLE]`; documented `/export` CLI→Desktop handoff `[COMMUNITY]`, `/schedule` one-time-timer 900 s cap `[GOOGLE]`, Open VSX IDE extension marketplace `[COMMUNITY]`, and `agy`/`gemini` binary coexistence `[COMMUNITY]`; expanded §5.7 keybinding inventory from the live official CLI reference `[DOCS]` (Ctrl+D exit, Ctrl+O/Ctrl+R/Ctrl+A/Ctrl+E/Ctrl+Z undo/Ctrl+Shift+Z redo, Alt+J, Ctrl+K, page nav, `A` approve-all) and rejected a community claim that mislabeled `Ctrl+Z` as suspend; documented that CLI API-key auth is NOT supported (open feature request `google-antigravity/antigravity-cli#78`; Google staff 2026-06-29: use the SDK) while the SDK supports `GEMINI_API_KEY`/`api_key`; fixed `[DOOGLE]` tag typo and `Antigrativity` misspelling; saved master evidence file at `evidence/agy-1.1.12/evidence.md` (defines EV-019). |
+| 8.2 | 2026-08-14 | **Schema Coverage Audit & Catalog Expansion:** added `WorkflowFrontmatterSchema` (`schemas/workflow.schema.json`, the 19th native schema) and fixed `hooks.schema.json` so `PreInvocation`/`PostInvocation`/`Stop` accept the documented plain handler list (matcher ignored) in addition to the matcher-group form; added hooks/workflow schema fixtures and the `workflow` auditor file type; recorded R-002 (schema coverage audit). |
+| 8.3 | 2026-08-14 | **Rule & Config Validation Hardening:** rewrote `rule.schema.json` to accept both observed frontmatter keys (`trigger` community convention + legacy `activation`, e.g. the real `activation: always` in the self-customizer plugin rule), string-or-array `globs`, and no required fields (R-003 — real rule files are often frontmatter-less); auditor now treats frontmatter-less `.agents/rules/*.md` as valid; `mcp_config.schema.json` enforces a required transport (`command` or `serverUrl`) per official docs; `settings.schema.json` enumerates `general.defaultApprovalMode` (`default`/`auto_edit`/`plan`); `parseSimpleYaml` now parses YAML block scalars (`>`/`|`) so multi-line skill/rule descriptions round-trip; added rule/mcp/settings schema fixtures. |
 
 ## How This Report Was Built
 
@@ -79,7 +81,7 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 18. Remaining Hard Gaps
     18.1 Transcript Schema (verified hands-on, 2026-08-11)
 19. Works Cited
-20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
+20. Automated Schema Toolkit & 19 Native Schemas Reference Architecture
     20.1 Toolkit Architecture (SchemaRegistry, AuditReport, DocSyncInspector)
-    20.2 Complete 18 Native Schema Matrix
+    20.2 Complete 19 Native Schema Matrix
     20.3 Detailed Pydantic Specifications & Usage Examples

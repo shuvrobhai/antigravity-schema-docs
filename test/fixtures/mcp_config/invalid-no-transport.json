@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "broken": {
+      "args": ["-y", "some-package"],
+      "env": {
+        "DEBUG": "true"
+      }
+    }
+  }
+}

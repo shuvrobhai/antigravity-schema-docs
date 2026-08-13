@@ -1,0 +1,21 @@
+{
+  "reminder": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "./scripts/reminder.sh"
+      },
+      {
+        "command": "./scripts/track.sh",
+        "timeout": 5
+      }
+    ]
+  },
+  "cleanup-gate": {
+    "Stop": [
+      {
+        "command": "./scripts/cleanup.sh"
+      }
+    ]
+  }
+}

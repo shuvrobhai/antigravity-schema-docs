@@ -1,0 +1,5 @@
+{
+  "description": "Prevents server-only modules from being imported inside client components.",
+  "trigger": "glob",
+  "globs": "src/components/**,src/hooks/**"
+}

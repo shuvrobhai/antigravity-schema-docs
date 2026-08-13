@@ -107,10 +107,22 @@ export function parseSimpleYaml(yaml: string): Record<string, JsonValue> {
   let currentKey = '';
   let currentList: JsonValue[] | null = null;
   let currentNestedObj: Record<string, JsonValue> | null = null;
+  // Active YAML block scalar ('>' fold / '|' literal) accumulating for one key.
+  let block: { key: string; style: 'fold' | 'literal'; lines: string[] } | null = null;
 
   for (let i = 0; i < lines.length; i++) {
     const rawLine = lines[i];
     const line = rawLine.trim();
+
+    // Accumulate block-scalar content until a top-level (non-indented) line ends it.
+    if (block) {
+      if (!line || rawLine.startsWith('  ') || rawLine.startsWith('\t')) {
+        block.lines.push(line);
+        continue;
+      }
+      result[block.key] = renderBlockScalar(block);
+      block = null;
+    }
 
     // Skip empty lines or full comment lines
     if (!line || line.startsWith('#')) continue;
@@ -165,13 +177,26 @@ export function parseSimpleYaml(yaml: string): Record<string, JsonValue> {
         } catch {
           result[currentKey] = valPart.slice(1, -1).split(',').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
         }
+      } else if (/^[>|][+-]?$/.test(valPart)) {
+        // YAML block scalar: '>' folds lines with spaces, '|' keeps newlines.
+        // Chomping ('-' strip, '+' keep trailing) is best-effort — see docs/TODO.md.
+        block = { key: currentKey, style: valPart[0] === '>' ? 'fold' : 'literal', lines: [] };
+        result[currentKey] = '';
       } else {
         result[currentKey] = parseYamlValue(valPart);
       }
     }
   }
 
+  if (block) {
+    result[block.key] = renderBlockScalar(block);
+  }
   return result;
+}
+
+function renderBlockScalar(block: { style: 'fold' | 'literal'; lines: string[] }): string {
+  const text = block.style === 'fold' ? block.lines.join(' ') : block.lines.join('\n');
+  return text.trim();
 }
 
 function parseYamlValue(val: string): JsonValue {

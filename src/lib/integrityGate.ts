@@ -335,7 +335,7 @@ export function checkNativeSchemas(store: DocumentStore, opts: RunOptions = {}):
   }
 
   const sec20Doc = MarkdownDoc.fromText(sec20Module.rawContent, sec20Module.filename);
-  const matrixSec = sec20Doc.getSection('20.2 Complete 18 Native Schemas');
+  const matrixSec = sec20Doc.getSection('20.2 Complete 19 Native Schemas');
   if (!matrixSec || matrixSec.tables.length === 0) {
     return bad('schemas', 'Native Schema Integrity', 'Schemas', ['could not find Section 20.2 schema catalog table']);
   }
@@ -360,8 +360,8 @@ export function checkNativeSchemas(store: DocumentStore, opts: RunOptions = {}):
   }
 
   const errors: string[] = [];
-  if (Object.keys(expectedSchemas).length !== 18) {
-    errors.push(`expected 18 schemas from Section 20 matrix, parsed ${Object.keys(expectedSchemas).length}`);
+  if (Object.keys(expectedSchemas).length !== 19) {
+    errors.push(`expected 19 schemas from Section 20 matrix, parsed ${Object.keys(expectedSchemas).length}`);
   }
 
   const storeSchemas = new Map(store.getSchemas().map(s => [s.filename, s]));
@@ -401,7 +401,7 @@ export function checkNativeSchemas(store: DocumentStore, opts: RunOptions = {}):
     name: 'Native Schema Integrity',
     category: 'Schemas',
     status: 'pass',
-    messages: ['all 18 native JSON schemas valid and in sync with Section 20 catalog'],
+    messages: ['all 19 native JSON schemas valid and in sync with Section 20 catalog'],
     details: [],
   };
   if (opts.verbose) {

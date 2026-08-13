@@ -1,0 +1,5 @@
+{
+  "name": "safety-guardrails",
+  "description": "Always-on safety rules for self-customization operations. Applied when modifying antigravity-cli configuration, permissions, or plugins.",
+  "activation": "always"
+}

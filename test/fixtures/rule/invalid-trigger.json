@@ -1,0 +1,4 @@
+{
+  "description": "Rule with an invalid activation trigger value.",
+  "trigger": "on_every_heartbeat_forever"
+}

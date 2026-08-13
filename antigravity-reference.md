@@ -2,7 +2,7 @@
 
 # Google Antigravity Ecosystem: Complete Technical Reference, Schema Specification, and Gap Analysis
 
-## Version 8.1 — Live-Grounded Revision (agy 1.1.12) Edition
+## Version 8.3 — Rule & Config Validation Hardening Edition (agy 1.1.12)
 
 **Live verification date:** 2026-08-13  
 **Live binary:** `agy 1.1.12`  
@@ -45,6 +45,8 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 | 7.1 | 2026-08-13 | **Live-system grounding pass:** replaced guessed schemas with empirically observed formats from `~/.gemini/`. `CLIHistoryEntrySchema` corrected to `{display, timestamp (int), workspace, conversationId, type}`. `TranscriptStepSchema` gained `created_at` and expanded `type` enum to include observed values (`CONVERSATION_HISTORY`, `LIST_DIRECTORY`, `RUN_COMMAND`, `VIEW_FILE`, `CHECKPOINT`). `parse_pbtxt_state` implemented migrations parsing and fixed section-name extraction. `SystemAuditor` expanded from 5 to all 17 schemas (added `audit_json_file`, `audit_history`, `audit_plugin_hooks`, `audit_ide_state`; fixed agent glob to `*/agent.md`). `doc_inspector` regex updated to support hyphenated field names. CLI `validate` gained `.jsonl` and `.pbtxt` handling. |
 | 8.0 | 2026-08-13 | **Live-Grounded Revision against `agy 1.1.12`:** Added `[LIVE-1.1.12 · 2026-08-13]` source tag and evidence IDs (`EV-001`–`EV-018`). Replaced all prior `1.1.11` grounding with `1.1.12`. Corrected `agy agents` / `agy models` output-format conflict, `agy agents` workspace-agent scope, plugin component detection rules, plugin roots, plugin manifest schema, agent frontmatter notes, global skill roots, structured `/skills` and `/permissions` output, CLI state/history/trusted-hooks schemas, keybindings default absence, and CLI path inventory. Added official hook argument corrections and Projects documentation. Recorded five high-priority conflicts and one unresolved hook-firing confound. |
 | 8.1 | 2026-08-13 | **Web-Validated Additions Edition:** Added official SDK architecture documentation (three-layer model, bundled Go harness over WebSockets, Inspect/Decide/Transform hook categories, multimodal input) `[DOCS]`/`[GOOGLE]`; documented `/export` CLI→Desktop handoff `[COMMUNITY]`, `/schedule` one-time-timer 900 s cap `[GOOGLE]`, Open VSX IDE extension marketplace `[COMMUNITY]`, and `agy`/`gemini` binary coexistence `[COMMUNITY]`; expanded §5.7 keybinding inventory from the live official CLI reference `[DOCS]` (Ctrl+D exit, Ctrl+O/Ctrl+R/Ctrl+A/Ctrl+E/Ctrl+Z undo/Ctrl+Shift+Z redo, Alt+J, Ctrl+K, page nav, `A` approve-all) and rejected a community claim that mislabeled `Ctrl+Z` as suspend; documented that CLI API-key auth is NOT supported (open feature request `google-antigravity/antigravity-cli#78`; Google staff 2026-06-29: use the SDK) while the SDK supports `GEMINI_API_KEY`/`api_key`; fixed `[DOOGLE]` tag typo and `Antigrativity` misspelling; saved master evidence file at `evidence/agy-1.1.12/evidence.md` (defines EV-019). |
+| 8.2 | 2026-08-14 | **Schema Coverage Audit & Catalog Expansion:** added `WorkflowFrontmatterSchema` (`schemas/workflow.schema.json`, the 19th native schema) and fixed `hooks.schema.json` so `PreInvocation`/`PostInvocation`/`Stop` accept the documented plain handler list (matcher ignored) in addition to the matcher-group form; added hooks/workflow schema fixtures and the `workflow` auditor file type; recorded R-002 (schema coverage audit). |
+| 8.3 | 2026-08-14 | **Rule & Config Validation Hardening:** rewrote `rule.schema.json` to accept both observed frontmatter keys (`trigger` community convention + legacy `activation`, e.g. the real `activation: always` in the self-customizer plugin rule), string-or-array `globs`, and no required fields (R-003 — real rule files are often frontmatter-less); auditor now treats frontmatter-less `.agents/rules/*.md` as valid; `mcp_config.schema.json` enforces a required transport (`command` or `serverUrl`) per official docs; `settings.schema.json` enumerates `general.defaultApprovalMode` (`default`/`auto_edit`/`plan`); `parseSimpleYaml` now parses YAML block scalars (`>`/`|`) so multi-line skill/rule descriptions round-trip; added rule/mcp/settings schema fixtures. |
 
 ## How This Report Was Built
 
@@ -81,9 +83,9 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 18. Remaining Hard Gaps
     18.1 Transcript Schema (verified hands-on, 2026-08-11)
 19. Works Cited
-20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
+20. Automated Schema Toolkit & 19 Native Schemas Reference Architecture
     20.1 Toolkit Architecture (SchemaRegistry, AuditReport, DocSyncInspector)
-    20.2 Complete 18 Native Schema Matrix
+    20.2 Complete 19 Native Schema Matrix
     20.3 Detailed Pydantic Specifications & Usage Examples
 
 ---
@@ -2671,11 +2673,11 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 
 ---
 
-## 20. Automated Schema Toolkit & 18 Native Schemas Reference Architecture
+## 20. Automated Schema Toolkit & 19 Native Schemas Reference Architecture
 
 ### 20.1 Toolkit Architecture & Design Seams
 
-The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 18 native configuration and runtime artifacts across the Google Antigravity Ecosystem.
+The `antigravity-schemas` toolkit provides automated schema extraction, validation, and auditing for all 19 native configuration and runtime artifacts across the Google Antigravity Ecosystem.
 
 #### Architecture Decision Records (ADRs)
 The evolution of the schema engine and reference repository is governed by formal ADRs:
@@ -2688,11 +2690,11 @@ The evolution of the schema engine and reference repository is governed by forma
 - [ADR-0007: Evidence Hierarchy and Reports Reorganization](docs/adr/0007-evidence-hierarchy-and-reports-reorganization.md)
 
 #### Core Architectural Patterns
-1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 18 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
+1. **Unified Schema Registry Seam (`SchemaRegistry`)**: Single source of truth (`src/antigravity_schemas/registry.py`) encapsulating `SchemaDescriptor` metadata for all 19 models. Eliminates ad-hoc string replacement routines across exporters, auditors, and CLI handlers.
 2. **Audit Domain Locality (`AuditReport`)**: `SystemAuditor` returns strongly-typed `AuditReport` objects and `CategoryAuditResult` items (`src/antigravity_schemas/auditor.py`). Presentation logic (Rich table formatting) lives inside domain models rather than CLI handlers.
 3. **Contextual Spec Synchronization (`DocSyncInspector`)**: `DocSyncInspector` (`src/antigravity_schemas/doc_inspector.py`) parses Markdown files into section blocks, ensuring field documentation coverage is validated strictly within each schema's dedicated section rather than globally.
 
-### 20.2 Complete 18 Native Schemas Inventory Matrix
+### 20.2 Complete 19 Native Schemas Inventory Matrix
 
 | # | Key | Schema Name | Pydantic Model Class | Exported JSON Schema File | Category | Target File / Location |
 |---|---|---|---|---|---|---|
@@ -2714,6 +2716,7 @@ The evolution of the schema engine and reference repository is governed by forma
 | 16 | `history` | **CLI Prompt History Entry** | `CLIHistoryEntrySchema` | `schemas/history_entry.schema.json` | Runtime State | `~/.gemini/antigravity-cli/history.jsonl` |
 | 17 | `trusted_hooks` | **Trusted Security Hooks** | `TrustedHooksSchema` | `schemas/trusted_hooks.schema.json` | Lifecycle | `~/.gemini/trusted_hooks.json` |
 | 18 | `import_manifest` | **Import History Manifest** | `ImportManifestSchema` | `schemas/import_manifest.schema.json` | Ecosystem Migration | `~/.gemini/config/import_manifest.json` |
+| 19 | `workflow` | **Workflow Frontmatter** | `WorkflowFrontmatterSchema` | `schemas/workflow.schema.json` | Agent System | `.agents/workflows/<name>.md`, `.agent/workflows/`, `~/.gemini/antigravity/global_workflows/` |
 
 ### 20.3 Programmatic Toolkit Usage Examples
 
@@ -2748,7 +2751,7 @@ settings_desc = registry.get("settings")
 print(settings_desc.model_cls)  # <class 'antigravity_schemas.models.settings.SettingsSchema'>
 print(settings_desc.filename)   # "settings.schema.json"
 
-# Export all 18 JSON schemas to disk
+# Export all 19 JSON schemas to disk
 exported_paths = registry.export_all(output_dir=Path("schemas"))
 ```
 
@@ -2782,4 +2785,4 @@ for r in results:
 
 ---
 
-*End of Report — Version 8.1 (Live-Grounded Revision Edition)*
+*End of Report — Version 8.3 (Rule & Config Validation Hardening Edition)*

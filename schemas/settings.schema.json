@@ -173,7 +173,13 @@
       "properties": {
         "preferredEditor": { "type": "string" },
         "openEditorInNewWindow": { "type": "boolean", "default": false },
-        "vimMode": { "type": "boolean", "default": false }
+        "vimMode": { "type": "boolean", "default": false },
+        "defaultApprovalMode": {
+          "type": "string",
+          "enum": ["default", "auto_edit", "plan"],
+          "default": "default",
+          "description": "Default approval mode for artifact edits (resolved in Section 18)."
+        }
       }
     },
     "policyPaths": {

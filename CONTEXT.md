@@ -37,7 +37,7 @@ _Avoid_: saved sites, web snapshot, cached sources
 _Avoid_: source index, sources table
 
 **Native schema catalog**:
-`schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 18 core native schemas documented in section 20; validated against drift by `scripts/validate.ts`.
+`schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 19 core native schemas documented in section 20; validated against drift by `scripts/validate.ts`.
 _Avoid_: json templates, config definitions
 
 **Schema-to-Doc Parity Gate**:
