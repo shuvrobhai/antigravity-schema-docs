@@ -13,7 +13,7 @@ These are specific pieces of information that no source — official, Google-own
 
 ---
 
-## 18.1 Transcript Schema — Verified Hands-On (2026-08-11)
+### 18.1 Transcript Schema — Verified Hands-On (2026-08-11)
 
 Source: live `agy` 1.1.11 sessions — 2 headless probes plus an interactive `self-auditor` agent run (72 entries, 40 tool calls across view_file/list_dir/find_by_name/grep_search/run_command). Enum completeness further verified by a full-brain audit (2026-08-11): **49,586 lines across 33 sessions** scanned with `scripts/audit_transcripts.py`; evidence at `audits/transcript-audit-2026-08-10.json` in the reference repo. Files confirmed at:
 

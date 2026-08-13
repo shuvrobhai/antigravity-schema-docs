@@ -1,10 +1,10 @@
 ---
-source: 49
+source: 43
 category: community
 title: "Google Antigravity SDK: The developer guide (K. Weinmeister)"
 url: "https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc"
 final_url: "https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc"
-fetched: 2026-08-13
+fetched: 2026-08-14
 status: 200
 ---
 <figure>
@@ -12,19 +12,19 @@ status: 200
 <figcaption>The Antigravity SDK supports tools, APIs, and hooks to build your AI agent</figcaption>
 </figure>
 
-The [Google Antigravity SDK](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fantigravity%2Egoogle%2Fdocs%2Fsdk-overview%3Futm_campaign%3DCDR_0x2b6f3004_default_b521271009%26utm_medium%3Dexternal%26utm_source%3Dblog&urlhash=MOFL&trk=article-ssr-frontend-pulse_little-text-block) is a Python framework for building and running autonomous agents. It decouples your agent’s logic from where it runs, letting you focus on what the agent does while the SDK manages execution and state.
+The [Google Antigravity SDK](https://antigravity.google/docs/sdk-overview?utm_campaign=CDR_0x2b6f3004_default_b521271009&utm_medium=external&utm_source=blog&trk=article-ssr-frontend-pulse_little-text-block) is a Python framework for building and running autonomous agents. It decouples your agent’s logic from where it runs, letting you focus on what the agent does while the SDK manages execution and state.
 
 The Python SDK interfaces with a bundled Go harness over WebSockets. The local Go harness runs the core agentic loop and manages sandboxed tool execution. Python acts as the control plane where you configure tools, safety policies, and lifecycle hooks.
 
-This guide outlines the SDK’s architecture one layer at a time, referencing the official [source repository](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity&urlhash=DECT&trk=article-ssr-frontend-pulse_little-text-block). Note that the SDK is currently pre-v1.0 and subject to change.
+This guide outlines the SDK’s architecture one layer at a time, referencing the official [source repository](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity?trk=article-ssr-frontend-pulse_little-text-block). Note that the SDK is currently pre-v1.0 and subject to change.
 
 ### Where Antigravity fits in Google’s AI stack
 
 Google’s AI stack offers multiple levels of abstraction for building with Gemini. Choosing the right one depends on how much control you need over the execution loop.
 
-- The [Gemini API](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fai%2Egoogle%2Edev%2Fgemini-api%2Fdocs&urlhash=hP3O&trk=article-ssr-frontend-pulse_little-text-block) is stateless. You make an API call and get a response. You manage the entire loop.
-- The [Agent Development Kit](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgoogle%2Egithub%2Eio%2Fadk-docs%2F&urlhash=I3nz&trk=article-ssr-frontend-pulse_little-text-block) sits one level up. With the ADK, you design the event loops, pick the foundation models, and control how agents route messages to each other.
-- The [Antigravity SDK](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fantigravity%2Egoogle%2Fproduct%2Fantigravity-sdk&urlhash=HaLQ&trk=article-ssr-frontend-pulse_little-text-block) is a pre-packaged runtime tightly integrated with [Gemini](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fai%2Egoogle%2Edev%2F%3Futm_campaign%3DCDR_0x2b6f3004_default_b521271009%26utm_medium%3Dexternal%26utm_source%3Dblog&urlhash=itJ6&trk=article-ssr-frontend-pulse_little-text-block). You don’t build the agentic loop; you’re given one. Your role is to govern it.
+- The [Gemini API](https://ai.google.dev/gemini-api/docs?trk=article-ssr-frontend-pulse_little-text-block) is stateless. You make an API call and get a response. You manage the entire loop.
+- The [Agent Development Kit](https://google.github.io/adk-docs/?trk=article-ssr-frontend-pulse_little-text-block) sits one level up. With the ADK, you design the event loops, pick the foundation models, and control how agents route messages to each other.
+- The [Antigravity SDK](https://antigravity.google/product/antigravity-sdk?trk=article-ssr-frontend-pulse_little-text-block) is a pre-packaged runtime tightly integrated with [Gemini](https://ai.google.dev/?utm_campaign=CDR_0x2b6f3004_default_b521271009&utm_medium=external&utm_source=blog&trk=article-ssr-frontend-pulse_little-text-block). You don’t build the agentic loop; you’re given one. Your role is to govern it.
 
 ### Getting started
 
@@ -43,11 +43,11 @@ The SDK separates concerns into three layers, each with a distinct responsibilit
 <figcaption>How the SDK decouples agent configuration, session state, and transport protocols</figcaption>
 </figure>
 
-Layer 1: [Agent](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Fblob%2Fmain%2Fgoogle%2Fantigravity%2Fagent%2Epy&urlhash=eavF&trk=article-ssr-frontend-pulse_little-text-block) and [LocalAgentConfig](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity%2Ftypes%2Epy&urlhash=B85E&trk=article-ssr-frontend-pulse_little-text-block). The high-level entry point. Manages configuration, session lifecycle, tool wiring, hooks, and triggers. This is where you spend most of your time.
+Layer 1: [Agent](https://github.com/google-antigravity/antigravity-sdk-python/blob/main/google/antigravity/agent.py?trk=article-ssr-frontend-pulse_little-text-block) and [LocalAgentConfig](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity/types.py?trk=article-ssr-frontend-pulse_little-text-block). The high-level entry point. Manages configuration, session lifecycle, tool wiring, hooks, and triggers. This is where you spend most of your time.
 
-Layer 2: [Conversation](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity%2Fconversation&urlhash=BY4k&trk=article-ssr-frontend-pulse_little-text-block). The stateful session manager. Wraps the connection and handles message history accumulation, context window compaction, and token usage tracking (including Gemini’s “thinking tokens”).
+Layer 2: [Conversation](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity/conversation?trk=article-ssr-frontend-pulse_little-text-block). The stateful session manager. Wraps the connection and handles message history accumulation, context window compaction, and token usage tracking (including Gemini’s “thinking tokens”).
 
-Layer 3: [Connection](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity%2Fconnections&urlhash=1FGo&trk=article-ssr-frontend-pulse_little-text-block) and [ConnectionStrategy](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity%2Fconnections&urlhash=1FGo&trk=article-ssr-frontend-pulse_little-text-block). The transport abstraction. For local development, LocalConnection communicates via WebSockets with the Go harness. This layer is what makes it possible to eventually swap in remote backends without changing your application code.
+Layer 3: [Connection](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity/connections?trk=article-ssr-frontend-pulse_little-text-block) and [ConnectionStrategy](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity/connections?trk=article-ssr-frontend-pulse_little-text-block). The transport abstraction. For local development, LocalConnection communicates via WebSockets with the Go harness. This layer is what makes it possible to eventually swap in remote backends without changing your application code.
 
 Now let’s look at what you can build on top of those three layers.
 
@@ -78,13 +78,13 @@ from google.antigravity.tools.tool_context import ToolContext def process_logs(b
 
 ### MCP integration
 
-The SDK has native support for the [Model Context Protocol](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fmodelcontextprotocol%2Eio%2F&urlhash=p0ev&trk=article-ssr-frontend-pulse_little-text-block) using both Stdio transport and Streamable HTTP. Point your agent at an MCP server and it for access to its exposed tools.
+The SDK has native support for the [Model Context Protocol](https://modelcontextprotocol.io/?trk=article-ssr-frontend-pulse_little-text-block) using both Stdio transport and Streamable HTTP. Point your agent at an MCP server and it for access to its exposed tools.
 
 Because MCP tools are integrated at the ToolRunner level, they’re governed by the exact same safety policies as built-in and custom tools.
 
 ### Lifecycle hooks
 
-The SDK treats agent lifecycles through composable middleware using [hooks](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity%2Fhooks&urlhash=0wNS&trk=article-ssr-frontend-pulse_little-text-block).
+The SDK treats agent lifecycles through composable middleware using [hooks](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity/hooks?trk=article-ssr-frontend-pulse_little-text-block).
 
 <figure>
 
@@ -103,11 +103,11 @@ The OnToolErrorHook is particularly useful. When a tool throws an exception, ins
 
 ## Recommended by LinkedIn
 
-Build with E2E: Enhancing Python Code Generation with… Souvik Bose 2 years ago
+🎶 AllegroAgent : A Lightweight Python Framework for… Ajith Raghavan 4 months ago
 
-FFMPEG with Docker for Python AWS lambda - based… Denis Smyslov 1 year ago
+Build AI-Powered Applications with Python and GitHub… Amit Kumar Tiwari 7 months ago
 
-You Sing It: Putting Your Voice into Any Song Using… Pablo Schaffner Bofill 3 years ago
+Polymorphism Hidden in Plain Sight? Abdullah I. 1 year ago
 
 from typing import Optional from google.antigravity.hooks import hooks class FallbackHook(hooks.OnToolErrorHook): """Intercepts tool errors and returns recovery guidance.""" async def run(self, context: hooks.HookContext, data: Exception) -\> Optional\[str\]: if isinstance(data, ValueError): return ( "\[System: Invalid parameters. " "Try 'search_directory' to find the correct ID.\]" ) return None config = LocalAgentConfig(hooks=\[FallbackHook()\])
 
@@ -115,7 +115,7 @@ You can stack these hook types together to build a middleware pipeline. For exam
 
 ### Safety policies
 
-Giving an autonomous agent access to your system requires guardrails. The SDK employs a declarative, priority-based [policy engine](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity%2Fhooks&urlhash=0wNS&trk=article-ssr-frontend-pulse_little-text-block) that evaluates every single action at the runtime hook level.
+Giving an autonomous agent access to your system requires guardrails. The SDK employs a declarative, priority-based [policy engine](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity/hooks?trk=article-ssr-frontend-pulse_little-text-block) that evaluates every single action at the runtime hook level.
 
 <figure>
 
@@ -138,7 +138,7 @@ There’s an important distinction between disabling vs denying tools. Capabilit
 
 ### Background triggers
 
-True autonomous systems monitor their environment and alert you proactively. The SDK’s [triggers](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fgoogle%2Fantigravity%2Ftriggers&urlhash=qcnd&trk=article-ssr-frontend-pulse_little-text-block) are long-lived async tasks that run alongside the agent session, reacting to external events.
+True autonomous systems monitor their environment and alert you proactively. The SDK’s [triggers](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/google/antigravity/triggers?trk=article-ssr-frontend-pulse_little-text-block) are long-lived async tasks that run alongside the agent session, reacting to external events.
 
 <figure>
 
@@ -195,9 +195,9 @@ To prevent privilege escalation, safety policies and hooks cascade hierarchicall
 
 Building an agent loop is relatively straightforward, but securing and monitoring it in production is where challenges typically begin. The Antigravity SDK bridges this gap by decoupling your agent’s logic from its execution environment.
 
-To get started, review the [SDK overview docs](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fantigravity%2Egoogle%2Fdocs%2Fsdk-overview%3Futm_campaign%3DCDR_0x2b6f3004_default_b521271009%26utm_medium%3Dexternal%26utm_source%3Dblog&urlhash=MOFL&trk=article-ssr-frontend-pulse_little-text-block) and clone the [source repository](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python&urlhash=YAvc&trk=article-ssr-frontend-pulse_little-text-block). Then try out one of the [examples](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fgithub%2Ecom%2Fgoogle-antigravity%2Fantigravity-sdk-python%2Ftree%2Fmain%2Fexamples&urlhash=unFU&trk=article-ssr-frontend-pulse_little-text-block).
+To get started, review the [SDK overview docs](https://antigravity.google/docs/sdk-overview?utm_campaign=CDR_0x2b6f3004_default_b521271009&utm_medium=external&utm_source=blog&trk=article-ssr-frontend-pulse_little-text-block) and clone the [source repository](https://github.com/google-antigravity/antigravity-sdk-python?trk=article-ssr-frontend-pulse_little-text-block). Then try out one of the [examples](https://github.com/google-antigravity/antigravity-sdk-python/tree/main/examples?trk=article-ssr-frontend-pulse_little-text-block).
 
-Stay tuned for the next agent I’ll build with the Antigravity SDK! Share with me what you’re building on [X](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fx%2Ecom%2Fkweinmeister&urlhash=IZ-f&trk=article-ssr-frontend-pulse_little-text-block), [LinkedIn](https://www.linkedin.com/in/karlweinmeister/?trk=article-ssr-frontend-pulse_little-text-block), or [Bluesky](https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fbsky%2Eapp%2Fprofile%2Fkweinmeister%2Ebsky%2Esocial&urlhash=iDK1&trk=article-ssr-frontend-pulse_little-text-block).
+Stay tuned for the next agent I’ll build with the Antigravity SDK! Share with me what you’re building on [X](https://x.com/kweinmeister?trk=article-ssr-frontend-pulse_little-text-block), [LinkedIn](https://www.linkedin.com/in/karlweinmeister/?trk=article-ssr-frontend-pulse_little-text-block), or [Bluesky](https://bsky.app/profile/kweinmeister.bsky.social?trk=article-ssr-frontend-pulse_little-text-block).
 
 \
 
@@ -344,37 +344,41 @@ Show more
 
   Ashish Kumar 9mo
 
-- ### Prevent Code Breakage with the Liskov Substitution Principle in Python ML
+- ### gRPC Communication Between Go and Python
 
-  Tanu Nanda Prabhu 1y
-
-- ### LangChain vs LangGraph vs Custom Python Agents
-
-  Garvit Sharma 7mo
-
-- ### Why We Ditched Python for Go: How Stepping Out of Our Comfort Zone Reduced Stress on Engineers and Servers Alike
-
-  Mayur Rawte 11mo
-
-- ### Posting a Message on Facebook Using Python
-
-  Himanshu Singh 1y
-
-- ### Start Algo Trading Using Python \| Complete Guide by Bigul
-
-  Bigul.co 1y
+  Richard Taujenis 1y
 
 - ### I Stopped Using Conda and Pip. Here’s Why UV Changed Everything.
 
   Zheng Yu Tan 9mo
 
-- ### 🚀 A PowerShell script that makes any Python project “ready to code” with central venvs
+- ### What No One Tells You About Using Gemini AI with Python — Part 1
 
-  Izairton Vasconcelos 10mo
+  Deepika P. 1y
 
-- ### Build AI-Powered Applications with Python and GitHub Models
+- ### Python Environments: You Cannot Survive Without Them
 
-  Amit Kumar Tiwari 7mo
+  Abhinav Girotra 2y
+
+- ### FFMPEG with Docker for Python AWS lambda - based applications
+
+  Denis Smyslov 1y
+
+- ### LangChain vs LangGraph vs Custom Python Agents
+
+  Garvit Sharma 7mo
+
+- ### Saving costs with Headroom and Codegraph
+
+  Samuel Howell 2mo
+
+- ### Rapidly prototyping a domain specific language using Python
+
+  Wai Ming Ho 6y
+
+- ### Recursive Functions in Python
+
+  Sonali Shintre 4y
 
 Show more
 

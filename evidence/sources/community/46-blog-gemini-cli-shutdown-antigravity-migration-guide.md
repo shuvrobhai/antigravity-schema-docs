@@ -1,10 +1,10 @@
 ---
-source: 54
+source: 46
 category: community
 title: 15-Minute Migration to Antigravity CLI
 url: "https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide"
 final_url: "https://www.harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide"
-fetched: 2026-08-13
+fetched: 2026-08-14
 status: 200
 ---
 [Back to Blog](/blog)![Gemini CLI to Antigravity CLI migration — June 18 2026 deadline timeline](https://placehold.co/1200x630/0a0a0a/10b981.png?text=Gemini+CLI+%E2%86%92+Antigravity+CLI%0AJune+18%2C+2026+Deadline&font=raleway)

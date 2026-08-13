@@ -1,10 +1,10 @@
 ---
-source: 44
+source: 42
 category: community
 title: claude-faces-expert
 url: "https://github.com/omnifaces/claude-faces-expert"
 final_url: "https://github.com/omnifaces/claude-faces-expert"
-fetched: 2026-08-13
+fetched: 2026-08-14
 status: 200
 ---
 ### Uh oh!

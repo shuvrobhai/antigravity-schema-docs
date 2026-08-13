@@ -47,16 +47,8 @@ Status of every citation in section 19 (`reference/19-works-cited.md`), regenera
 | 39 | protocol | MCP Specification | [39-getting-started-intro.md](protocol/39-getting-started-intro.md) | 200 | 2026-08-13 |
 | 40 | community | Antigravity CLI Setup | [40-antigravity-cli-setup.md](community/40-antigravity-cli-setup.md) | 200 | 2026-08-13 |
 | 41 | community | Scary Agent Skills | [41-2026-scary-agent-skills.md](community/41-2026-scary-agent-skills.md) | 200 | 2026-08-13 |
-| 42 | community | SKILL.md, explained | [42-skills-md-github-copilot.md](community/42-skills-md-github-copilot.md) | 200 | 2026-08-13 |
-| 43 | community | Build Custom Commands | [43-volodymyr_nehir-how-to-build-custom-commands-for-gemini-cli-and-antigravity-49mb.md](community/43-volodymyr_nehir-how-to-build-custom-commands-for-gemini-cli-and-antigravity-49mb.md) | 200 | 2026-08-13 |
-| 44 | community | claude-faces-expert | [44-omnifaces-claude-faces-expert.md](community/44-omnifaces-claude-faces-expert.md) | 200 | 2026-08-13 |
-| 45 | community | Antigravity CLI | [45-install-guides-antigravity.md](community/45-install-guides-antigravity.md) | 200 | 2026-08-13 |
-| 46 | community | Claude Code Components | [46-mlg-mla-23.md](community/46-mlg-mla-23.md) | 200 | 2026-08-13 |
-| 47 | community | Claude Code SDK | [47-blog-claude-code-sdk-command-list-latest-reference.md](community/47-blog-claude-code-sdk-command-list-latest-reference.md) | 200 | 2026-08-13 |
-| 48 | community | ai-r MCP Server | [48-pro-target-ai-r.md](community/48-pro-target-ai-r.md) | 200 | 2026-08-13 |
-| 49 | community | Google Antigravity SDK: The developer guide (K. Weinmeister) | [49-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md](community/49-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md) | 200 | 2026-08-13 |
-| 50 | community | Antigravity CLI hands-on guide (dev.to) | [50-arindam_1729-antigravity-cli-a-hands-on-guide-to-googles-terminal-coding-agent-5bc7.md](community/50-arindam_1729-antigravity-cli-a-hands-on-guide-to-googles-terminal-coding-agent-5bc7.md) | 200 | 2026-08-13 |
-| 51 | community | C# Dev Kit not available in Google Antigravity IDE | [51-c-dev-kit-not-available-in-google-antigravity-ide.md](community/51-c-dev-kit-not-available-in-google-antigravity-ide.md) | 200 | 2026-08-13 |
-| 52 | community | Sessions & conversation history (neurals.ca) | [52-antigravity-conversation-history.md](community/52-antigravity-conversation-history.md) | 200 | 2026-08-13 |
-| 53 | community | Antigravity SDK API key in CI (GitHub Action) | [53-rsamborski-run-agy-sdk.md](community/53-rsamborski-run-agy-sdk.md) | 200 | 2026-08-13 |
-| 54 | community | 15-Minute Migration to Antigravity CLI | [54-blog-gemini-cli-shutdown-antigravity-migration-guide.md](community/54-blog-gemini-cli-shutdown-antigravity-migration-guide.md) | 200 | 2026-08-13 |
+| 42 | community | claude-faces-expert | [42-omnifaces-claude-faces-expert.md](community/42-omnifaces-claude-faces-expert.md) | 200 | 2026-08-14 |
+| 43 | community | Google Antigravity SDK: The developer guide (K. Weinmeister) | [43-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md](community/43-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md) | 200 | 2026-08-14 |
+| 44 | community | C# Dev Kit not available in Google Antigravity IDE | [44-c-dev-kit-not-available-in-google-antigravity-ide.md](community/44-c-dev-kit-not-available-in-google-antigravity-ide.md) | 200 | 2026-08-14 |
+| 45 | community | Antigravity SDK API key in CI (GitHub Action) | [45-rsamborski-run-agy-sdk.md](community/45-rsamborski-run-agy-sdk.md) | 200 | 2026-08-14 |
+| 46 | community | 15-Minute Migration to Antigravity CLI | [46-blog-gemini-cli-shutdown-antigravity-migration-guide.md](community/46-blog-gemini-cli-shutdown-antigravity-migration-guide.md) | 200 | 2026-08-14 |

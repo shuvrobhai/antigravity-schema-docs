@@ -43,7 +43,11 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlparse
 
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+    HAS_BS4 = True
+except ImportError:
+    HAS_BS4 = False
 
 try:
     import certifi
@@ -62,13 +66,6 @@ USER_AGENT = (
 )
 FETCH_TIMEOUT = 30
 
-# Citation-number ranges in the Works Cited module that encode the source tag.
-RANGES = {
-    "docs": range(1, 31),
-    "google": range(31, 39),
-    "protocol": range(39, 40),
-    "community": range(40, 55),
-}
 TAG_FOLDER = {
     "DOCS": "docs",
     "GOOGLE": "google",
@@ -102,34 +99,38 @@ def make_ssl_context(insecure: bool = False) -> ssl.SSLContext:
 def load_citations() -> dict:
     """Parse every numbered citation in the Works Cited module.
 
-    Returns {number: {"number", "title", "url", "category"}}. The category is
-    derived from the citation-number ranges for the list sections and from the
-    inline source tag for the "New Sources Identified" table.
+    Dynamically tracks the active source category from markdown section
+    headings (e.g. `### Official Docs [DOCS]`).
     """
     with open(WORKS_CITED, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
 
     citations = {}
+    current_cat = None
     for raw in lines:
         line = raw.strip()
+        # Category section heading: "### Official Docs `[DOCS]`"
+        hm = re.search(r"^###\s+.*?`?\[([A-Z0-9-]+)\]`?", line)
+        if hm:
+            tag = hm.group(1).upper()
+            current_cat = TAG_FOLDER.get(tag)
+            continue
         m = LIST_ITEM.match(line)
         if m:
             n = int(m.group(1))
-            cat = next((folder for folder, rng in RANGES.items() if n in rng), None)
-            if cat:
-                # Strip common trailing punctuation from captured URL
+            if current_cat:
                 url = m.group(3).strip().rstrip(".,;:!?")
                 citations[n] = {
                     "number": n,
                     "title": m.group(2).strip(),
                     "url": url,
-                    "category": cat,
+                    "category": current_cat,
                 }
             continue
         m = TABLE_ROW.match(line)
         if m:
             n = int(m.group(1))
-            folder = TAG_FOLDER.get(m.group(2))
+            folder = TAG_FOLDER.get(m.group(2).upper())
             if folder:
                 citations[n] = {
                     "number": n,
@@ -138,6 +139,29 @@ def load_citations() -> dict:
                     "category": folder,
                 }
     return citations
+
+
+def get_existing_snapshots() -> list:
+    """Return paths of all existing snapshot markdown files in category folders."""
+    existing = []
+    for cat in TAG_FOLDER.values():
+        cat_dir = os.path.join(ARCHIVE_DIR, cat)
+        if os.path.isdir(cat_dir):
+            for name in sorted(os.listdir(cat_dir)):
+                if name.endswith(".md") and name != "index.md":
+                    existing.append(os.path.join(cat_dir, name))
+    return existing
+
+
+def find_orphans(citations: dict) -> list:
+    """Find snapshot files on disk that are not referenced in citations."""
+    expected = {
+        snapshot_path(rec)
+        for n, rec in citations.items()
+        if not rec.get("duplicate_of")
+    }
+    existing = set(get_existing_snapshots())
+    return sorted(existing - expected)
 
 
 def resolve_duplicates(citations: dict) -> None:
@@ -306,6 +330,8 @@ def html_to_markdown(html: str) -> str:
 
     Only the main content area is converted; site chrome is discarded.
     """
+    if not HAS_BS4:
+        sys.exit("error: beautifulsoup4 is required. Run: pip install beautifulsoup4")
     pandoc = shutil.which("pandoc")
     if not pandoc:
         sys.exit("error: pandoc not found on PATH (required for HTML -> Markdown conversion)")
@@ -422,6 +448,7 @@ def main() -> int:
     )
     ap.add_argument("--force", action="store_true", help="re-fetch pages even when the snapshot exists")
     ap.add_argument("--check", action="store_true", help="exit 0 if the archive is in sync, 1 if not (no writes)")
+    ap.add_argument("--prune", action="store_true", help="delete archived files no longer referenced in section 19")
     ap.add_argument("--insecure", action="store_true", help="disable SSL certificate verification (not recommended)")
     args = ap.parse_args()
 
@@ -433,6 +460,22 @@ def main() -> int:
     resolve_duplicates(citations)
     assign_slugs(citations)
 
+    # Handle pruning orphaned files
+    if args.prune:
+        orphans = find_orphans(citations)
+        if not orphans:
+            print("ok: no orphaned snapshot files found")
+        else:
+            for p in orphans:
+                os.remove(p)
+                print(f"pruned: {os.path.relpath(p, ROOT)}")
+        if not args.check and not args.force and not args.category:
+            index_text = generate_index(citations)
+            with open(INDEX_PATH, "w", encoding="utf-8") as fh:
+                fh.write(index_text)
+            print(f"wrote {os.path.relpath(INDEX_PATH, ROOT)}")
+            return 0
+
     # In --check mode, always validate the full archive, ignoring category filters.
     if args.check:
         missing = [
@@ -440,13 +483,16 @@ def main() -> int:
             for n, rec in sorted(citations.items())
             if not rec.get("duplicate_of") and not os.path.exists(snapshot_path(rec))
         ]
+        orphans = find_orphans(citations)
         index_text = generate_index(citations)
         index_sync = os.path.exists(INDEX_PATH) and open(INDEX_PATH, encoding="utf-8").read() == index_text
         for p in missing:
             print(f"missing: {os.path.relpath(p, ROOT)}", file=sys.stderr)
+        for p in orphans:
+            print(f"orphan:  {os.path.relpath(p, ROOT)}", file=sys.stderr)
         if not index_sync:
             print("stale: evidence/sources/index.md differs from the archive (run fetch_sources.py)", file=sys.stderr)
-        if not missing and index_sync:
+        if not missing and not orphans and index_sync:
             print(f"ok: all {len(citations)} citations are archived and index.md is in sync")
             return 0
         return 1
