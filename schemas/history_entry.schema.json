@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/history_entry.schema.json",
+  "title": "CLIHistoryEntrySchema",
+  "description": "Google Antigravity CLI prompt history line entry schema (~/.gemini/antigravity-cli/history.jsonl).",
+  "type": "object",
+  "properties": {
+    "display": {
+      "type": "string",
+      "description": "Prompt text or slash command string submitted by user."
+    },
+    "timestamp": {
+      "type": "integer",
+      "description": "Epoch millisecond timestamp of prompt submission."
+    },
+    "workspace": {
+      "type": "string",
+      "description": "Absolute path to workspace directory where prompt was executed."
+    },
+    "conversationId": {
+      "type": "string",
+      "description": "Unique conversation ID associated with this interaction."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["slash_command", "prompt", "system"],
+      "description": "Classification of history entry (optional)."
+    }
+  },
+  "required": ["display", "timestamp", "workspace", "conversationId"],
+  "additionalProperties": true
+}

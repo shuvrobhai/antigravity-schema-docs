@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/rule.schema.json",
+  "title": "RuleFileSchema",
+  "description": "Google Antigravity behavioral rule file and frontmatter schema (GEMINI.md, AGENTS.md, .agents/rules/*.md).",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-_]+$",
+      "description": "Unique rule identifier."
+    },
+    "description": {
+      "type": "string",
+      "description": "Summary of rule constraints and trigger scenarios."
+    },
+    "activation": {
+      "type": "string",
+      "enum": ["always_on", "manual", "model_decision", "glob"],
+      "default": "always_on",
+      "description": "Activation strategy determining when the rule is injected into prompt context."
+    },
+    "globs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "File path glob patterns matching files that trigger this rule (for activation: 'glob')."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Category tags classifying rule domains."
+    }
+  },
+  "additionalProperties": true
+}

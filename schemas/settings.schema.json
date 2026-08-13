@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/settings.schema.json",
+  "title": "SettingsSchema",
+  "description": "Google Antigravity CLI persistent user configuration schema (~/.gemini/antigravity-cli/settings.json).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON schema reference URL."
+    },
+    "toolPermission": {
+      "type": "string",
+      "enum": ["request-review", "proceed-in-sandbox", "always-proceed", "strict"],
+      "default": "request-review",
+      "description": "Default permission gate for agent tool invocations."
+    },
+    "artifactReviewPolicy": {
+      "type": "string",
+      "enum": ["asks-for-review", "agent-decides", "always-proceed"],
+      "default": "asks-for-review",
+      "description": "Approval requirement policy before creating or modifying artifacts."
+    },
+    "enableTerminalSandbox": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to enforce bubblewrap/seatbelt terminal sandboxing on bash commands."
+    },
+    "allowNonWorkspaceAccess": {
+      "type": "boolean",
+      "default": false,
+      "description": "Allow reading and editing files outside registered workspace roots."
+    },
+    "trustedWorkspaces": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "List of trusted directory paths exempt from workspace confirmation prompts."
+    },
+    "colorScheme": {
+      "type": "string",
+      "enum": [
+        "terminal",
+        "light",
+        "solarized light",
+        "colorblind-friendly light",
+        "dark",
+        "solarized dark",
+        "colorblind-friendly dark",
+        "tokyo night"
+      ],
+      "default": "terminal",
+      "description": "TUI theme and color palette."
+    },
+    "altScreenMode": {
+      "type": "string",
+      "enum": ["default", "always", "never"],
+      "default": "default",
+      "description": "Alternate terminal screen buffer usage policy."
+    },
+    "notifications": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable system desktop notifications when agent requires attention."
+    },
+    "showTips": {
+      "type": "boolean",
+      "default": true,
+      "description": "Display tips and helper shortcuts in TUI."
+    },
+    "showFeedbackSurvey": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show optional feedback prompts on session termination."
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string",
+          "default": "us",
+          "description": "TUI display language identifier (e.g., 'us', 'zh-tw', 'jp')."
+        },
+        "footer": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Ordered list of widgets rendered in the statusline footer."
+            }
+          }
+        }
+      }
+    },
+    "editor": {
+      "type": "string",
+      "default": "auto",
+      "description": "External editor command (e.g., 'auto', 'vim', 'code', 'nano')."
+    },
+    "editorMode": {
+      "type": "string",
+      "enum": ["default", "vim"],
+      "default": "default",
+      "description": "Interactive prompt keybinding mode."
+    },
+    "vimInsertFirst": {
+      "type": "boolean",
+      "default": false,
+      "description": "Start in Vim INSERT mode when entering prompts (requires editorMode: 'vim')."
+    },
+    "verbosity": {
+      "type": "string",
+      "enum": ["high", "low"],
+      "default": "high",
+      "description": "Output detail and logging verbosity level."
+    },
+    "runningLightSpeed": {
+      "type": "string",
+      "enum": ["fast", "medium", "slow", "off"],
+      "default": "medium",
+      "description": "Animation speed for running spinner lights."
+    },
+    "useG1Credits": {
+      "type": "boolean",
+      "default": false,
+      "description": "Use Google One credits pool when available."
+    },
+    "enableTelemetry": {
+      "type": "boolean",
+      "default": true,
+      "description": "Send anonymous crash diagnostics and performance telemetry."
+    },
+    "model": {
+      "type": "string",
+      "description": "Persisted default model and reasoning tier (e.g., 'Gemini 3.5 Flash (Low)')."
+    },
+    "statusLine": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["command"] },
+        "command": { "type": "string", "description": "Path to statusline script." },
+        "padding": { "type": "integer", "default": 0 },
+        "enabled": { "type": "boolean", "default": true },
+        "stack_with_default": { "type": "boolean", "default": false }
+      },
+      "required": ["command"]
+    },
+    "title": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["command"] },
+        "command": { "type": "string" }
+      },
+      "required": ["command"]
+    },
+    "permissions": {
+      "type": "object",
+      "properties": {
+        "allow": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "deny": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "ask": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    },
+    "general": {
+      "type": "object",
+      "properties": {
+        "preferredEditor": { "type": "string" },
+        "openEditorInNewWindow": { "type": "boolean", "default": false },
+        "vimMode": { "type": "boolean", "default": false }
+      }
+    },
+    "policyPaths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "adminPolicyPaths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    }
+  },
+  "additionalProperties": true
+}

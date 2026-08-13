@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/mcp_config.schema.json",
+  "title": "MCPConfigSchema",
+  "description": "Model Context Protocol (MCP) server configuration schema (mcp_config.json).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON schema reference URL."
+    },
+    "mcpServers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Executable path or binary name for stdio transport (e.g. 'node', 'python', 'docker')."
+          },
+          "args": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Command-line arguments passed to the server executable."
+          },
+          "env": {
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "description": "Environment variables passed to the server process."
+          },
+          "cwd": {
+            "type": "string",
+            "description": "Working directory for the stdio process."
+          },
+          "serverUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Remote endpoint URL for SSE or streamable HTTP transports."
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "description": "HTTP request headers (such as Authorization) for remote transport."
+          },
+          "authProviderType": {
+            "type": "string",
+            "description": "Built-in auth provider mode (e.g., 'google_credentials')."
+          },
+          "oauth": {
+            "type": "object",
+            "properties": {
+              "clientId": { "type": "string" },
+              "clientSecret": { "type": "string" }
+            }
+          },
+          "disabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Temporarily disable server without removing its configuration."
+          },
+          "disabledTools": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of tool names on this server to conceal from the model."
+          },
+          "timeout": {
+            "type": "number",
+            "description": "Request timeout in seconds."
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["mcpServers"],
+  "additionalProperties": true
+}

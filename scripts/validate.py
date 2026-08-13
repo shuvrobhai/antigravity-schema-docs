@@ -10,6 +10,7 @@ Runs comprehensive consistency, composition, and integrity checks across the wor
   6. Orphan Snapshots: no unindexed/dead files in evidence/sources/
   7. Relative Markdown Links: all relative links in core documentation resolve
   8. Live Evidence Grounding: all EV-### IDs cited in reference/ exist in evidence.md
+  9. Native Schema Integrity: all 17 Section 20 JSON schemas valid and in sync
 
 Usage:
   scripts/validate.py              run all checks
@@ -19,6 +20,7 @@ Usage:
 """
 import argparse
 import glob
+import json
 import os
 import re
 import sys
@@ -28,6 +30,8 @@ SRC_DIR = os.path.join(ROOT, "reference")
 PARENT_DOC = os.path.join(ROOT, "antigravity-reference.md")
 PREAMBLE = os.path.join(SRC_DIR, "00-preamble.md")
 WORKS_CITED = os.path.join(SRC_DIR, "19-works-cited.md")
+SECTION_20 = os.path.join(SRC_DIR, "20-schema-toolkit-and-native-schemas.md")
+SCHEMAS_DIR = os.path.join(ROOT, "schemas")
 ARCHIVE_DIR = os.path.join(ROOT, "evidence", "sources")
 INDEX_PATH = os.path.join(ARCHIVE_DIR, "index.md")
 EVIDENCE_FILE = os.path.join(ROOT, "evidence", "agy-1.1.12", "evidence.md")
@@ -89,12 +93,12 @@ def check_module_contiguity(fix: bool, verbose: bool) -> ValidationResult:
 # --- Check 2: Composition Build Sync ---
 def check_build_sync(fix: bool, verbose: bool) -> ValidationResult:
     res = ValidationResult("Composition Build Sync")
-    # Dynamically import compose / do_build from build.py
-    sys.path.insert(0, ROOT)
+    # Dynamically import compose / do_build from scripts/build.py
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
     try:
         import build
     except ImportError as e:
-        res.fail_with(f"could not import build.py: {e}")
+        res.fail_with(f"could not import scripts/build.py: {e}")
         return res
 
     expected_content = build.compose()
@@ -279,7 +283,7 @@ def check_relative_markdown_links(fix: bool, verbose: bool) -> ValidationResult:
     files = sorted(
         glob.glob(os.path.join(SRC_DIR, "*.md"))
         + glob.glob(os.path.join(ROOT, "docs", "**", "*.md"), recursive=True)
-        + [PARENT_DOC, os.path.join(ROOT, "CONTEXT.md"), INDEX_PATH, EVIDENCE_FILE]
+        + [PARENT_DOC, os.path.join(ROOT, "README.md"), os.path.join(ROOT, "CONTEXT.md"), INDEX_PATH, EVIDENCE_FILE]
     )
 
     broken_links = []
@@ -347,6 +351,87 @@ def check_evidence_citations(fix: bool, verbose: bool) -> ValidationResult:
     return res
 
 
+# --- Check 9: Native Schema Integrity & Catalog Sync ---
+def check_native_schemas(fix: bool, verbose: bool) -> ValidationResult:
+    res = ValidationResult("Native Schema Integrity")
+    if not os.path.exists(SCHEMAS_DIR):
+        res.fail_with(f"schemas directory missing: {os.path.relpath(SCHEMAS_DIR, ROOT)}")
+        return res
+
+    if not os.path.exists(SECTION_20):
+        res.fail_with(f"Section 20 reference missing: {os.path.relpath(SECTION_20, ROOT)}")
+        return res
+
+    with open(SECTION_20, encoding="utf-8") as fh:
+        sec20_content = fh.read()
+
+    row_pattern = re.compile(
+        r"^\|\s*(\d+)\s*\|\s*`([^`]+)`\s*\|\s*([^|]+)\|\s*`([^`]+)`\s*\|\s*`([^`]+)`\s*\|\s*([^|]+)\|\s*([^|]+)\|",
+        re.M,
+    )
+    expected_schemas = {}
+    for m in row_pattern.finditer(sec20_content):
+        idx, key, name, model, schema_rel, cat, target = m.groups()
+        filename = os.path.basename(schema_rel.strip())
+        expected_schemas[filename] = {
+            "index": int(idx),
+            "key": key.strip(),
+            "name": name.strip().replace("*", ""),
+            "model": model.strip(),
+            "category": cat.strip(),
+            "target": target.strip().replace("`", ""),
+        }
+
+    if len(expected_schemas) != 17:
+        res.fail_with(f"expected 17 schemas from Section 20 matrix, parsed {len(expected_schemas)}")
+
+    missing_files = []
+    invalid_json = []
+
+    for filename, meta in sorted(expected_schemas.items(), key=lambda x: x[1]["index"]):
+        file_path = os.path.join(SCHEMAS_DIR, filename)
+        if not os.path.exists(file_path):
+            missing_files.append(filename)
+            continue
+
+        try:
+            with open(file_path, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception as e:
+            invalid_json.append(f"{filename}: invalid JSON ({e})")
+            continue
+
+        if not isinstance(data, dict):
+            invalid_json.append(f"{filename}: root must be a JSON object")
+            continue
+
+        if "title" not in data and "description" not in data and "$ref" not in data and "properties" not in data and "additionalProperties" not in data:
+            invalid_json.append(f"{filename}: missing core JSON Schema descriptors")
+            continue
+
+        if verbose:
+            res.add_detail(f"#{meta['index']:02d} {filename} -> {meta['model']} ({meta['category']})")
+
+    disk_schemas = set(glob.glob(os.path.join(SCHEMAS_DIR, "*.json")))
+    expected_paths = {os.path.join(SCHEMAS_DIR, f) for f in expected_schemas.keys()}
+    orphan_schemas = [os.path.basename(p) for p in disk_schemas if p not in expected_paths]
+
+    if missing_files:
+        for f in missing_files:
+            res.fail_with(f"missing schema file: schemas/{f}")
+    if invalid_json:
+        for err in invalid_json:
+            res.fail_with(err)
+    if orphan_schemas:
+        for f in orphan_schemas:
+            res.fail_with(f"untracked schema file in schemas/: {f}")
+
+    if not missing_files and not invalid_json and not orphan_schemas and len(expected_schemas) == 17:
+        res.pass_with(f"all 17 native JSON schemas valid and in sync with Section 20 catalog")
+
+    return res
+
+
 CHECKS = {
     "modules": ("Module Contiguity", check_module_contiguity),
     "build": ("Composition Build Sync", check_build_sync),
@@ -356,6 +441,7 @@ CHECKS = {
     "orphans": ("Orphan Snapshots", check_orphan_snapshots),
     "links": ("Relative Markdown Links", check_relative_markdown_links),
     "evidence": ("Live Evidence Grounding", check_evidence_citations),
+    "schemas": ("Native Schema Integrity", check_native_schemas),
 }
 
 

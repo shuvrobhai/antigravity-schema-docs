@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/agent.schema.json",
+  "title": "AgentFrontmatterSchema",
+  "description": "Google Antigravity Custom Agent YAML frontmatter schema (.agents/agents/<name>.md) per Section 4.3 specification.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-_]+$",
+      "description": "Unique agent identifier (Required)."
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed explanation of agent specialization and delegation criteria used by the planner (Required)."
+    },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Permitted tool names available to this agent (e.g., view_file, grep_search, run_command)."
+    },
+    "mainAgent": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow selection as primary agent persona in interactive chat."
+    },
+    "subagent": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow invocation as a delegated worker via invoke_subagent."
+    },
+    "model": {
+      "type": "string",
+      "default": "inherit",
+      "description": "Model tier override ('inherit', 'flash', 'pro', or specific model name)."
+    },
+    "commandExecutionPolicy": {
+      "type": "string",
+      "enum": ["off", "auto", "eager", "sandbox"],
+      "default": "sandbox",
+      "description": "Shell command execution policy."
+    },
+    "mcpServers": {
+      "type": "array",
+      "items": { "type": "object" },
+      "default": [],
+      "description": "Custom MCP server definitions scoped to this subagent."
+    },
+    "skills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Skill identifiers or plugin-qualified skill paths (e.g. 'plugins/superpowers/skills/code-review')."
+    },
+    "plugins": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Plugin dependencies required for this agent."
+    }
+  },
+  "required": ["name", "description"],
+  "additionalProperties": true
+}

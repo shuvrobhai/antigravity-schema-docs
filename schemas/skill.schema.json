@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/skill.schema.json",
+  "title": "SkillFrontmatterSchema",
+  "description": "Google Antigravity Skill YAML frontmatter schema (.agents/skills/<name>/SKILL.md) per Section 4.2 specification.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-_]+$",
+      "description": "Unique identifier matching directory name (lowercase, hyphens). Defaults to folder name if omitted."
+    },
+    "description": {
+      "type": "string",
+      "description": "Explains what the skill does and explicit trigger scenarios used by the agent for dynamic loading (Required)."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional arbitrary metadata object (e.g. category, version, author)."
+    },
+    "disable-slash-command": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hides the skill from the '/' interactive menu while leaving it discoverable and invocable by the model (added in v1.1.12)."
+    }
+  },
+  "required": ["description"],
+  "additionalProperties": true
+}

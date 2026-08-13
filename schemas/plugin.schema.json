@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/plugin.schema.json",
+  "title": "PluginManifestSchema",
+  "description": "Google Antigravity Plugin manifest schema (plugin.json).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON schema reference URL."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-_]+$",
+      "description": "Unique plugin identifier (defaults to directory name if omitted)."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable summary of the plugin functionality."
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version string."
+    },
+    "author": {
+      "type": "string",
+      "description": "Plugin author name or organization."
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "description": "Plugin documentation or repository URL."
+    }
+  },
+  "additionalProperties": true
+}

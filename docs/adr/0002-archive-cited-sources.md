@@ -7,7 +7,7 @@ The Works Cited section (§19) points at 70+ external URLs whose content can van
 **Considered options:**
 - Raw HTML snapshots — byte-faithful but heavy, noisy, and not greppable; rejected because the report is Markdown and readers will search and diff text.
 - URL-slug-only filenames — rejected in favor of citation-number prefixes (`NN-`), making the filename itself a pointer back to §19; slugs remain as the descriptive tail.
-- Hand-maintained archive — rejected in favor of a generated one (mirrors `build.py`): `--check` guarantees the archive never drifts from §19, and `index.md` is regenerated after every run.
+- Hand-maintained archive — rejected in favor of a generated one (mirrors `scripts/build.py`): `--check` guarantees the archive never drifts from §19, and `index.md` is regenerated after every run.
 
 **Consequences:**
 - Archives are point-in-time snapshots and will go stale; `--force` re-fetches.

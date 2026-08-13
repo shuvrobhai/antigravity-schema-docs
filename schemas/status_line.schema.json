@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/status_line.schema.json",
+  "title": "StatusLinePayloadSchema",
+  "description": "Google Antigravity CLI statusline custom script stdin IPC payload schema.",
+  "type": "object",
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "description": "Current working directory when the CLI was launched."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Backward-compatibility alias for conversation_id."
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "Current unique conversation identifier."
+    },
+    "transcript_path": {
+      "type": "string",
+      "description": "Absolute path to the active conversation transcript log file."
+    },
+    "model": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "display_name": { "type": "string" }
+      },
+      "required": ["id", "display_name"]
+    },
+    "workspace": {
+      "type": "object",
+      "properties": {
+        "current_dir": { "type": "string" },
+        "project_dir": { "type": "string" }
+      }
+    },
+    "version": {
+      "type": "string",
+      "description": "CLI version string."
+    },
+    "context_window": {
+      "type": "object",
+      "properties": {
+        "total_input_tokens": { "type": "integer" },
+        "total_output_tokens": { "type": "integer" },
+        "context_window_size": { "type": "integer" },
+        "used_percentage": { "type": "number" },
+        "remaining_percentage": { "type": "number" },
+        "current_usage": { "type": "object" }
+      }
+    },
+    "exceeds_200k_tokens": {
+      "type": ["boolean", "null"],
+      "description": "True if context window has exceeded 200,000 tokens."
+    },
+    "product": {
+      "type": "string",
+      "description": "Application name (e.g. 'antigravity')."
+    },
+    "quota": {
+      "type": "object",
+      "description": "Model quota and rate limit status."
+    },
+    "agent_state": {
+      "type": "string",
+      "enum": ["idle", "thinking", "working", "tool_use", "initializing"],
+      "description": "Current execution state of the agent."
+    },
+    "vcs": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "branch": { "type": "string" },
+        "client": { "type": "string" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "sandbox": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "allow_network": { "type": "boolean" }
+      }
+    },
+    "artifact_count": {
+      "type": "integer",
+      "description": "Number of artifacts created in the current conversation."
+    },
+    "plan_tier": {
+      "type": "string",
+      "description": "Subscription tier of authenticated user."
+    },
+    "email": {
+      "type": "string",
+      "description": "Authenticated user email identifier."
+    },
+    "pending_input_count": {
+      "type": "integer",
+      "description": "Number of queued user messages waiting to be processed."
+    },
+    "tool_confirmation_pending": {
+      "type": "boolean",
+      "description": "True when a tool permission confirmation dialog is showing."
+    },
+    "task_count": {
+      "type": "integer",
+      "description": "Number of active background tasks."
+    },
+    "terminal_width": {
+      "type": "integer",
+      "description": "Current column width of the terminal."
+    },
+    "execution_mode": {
+      "type": "string",
+      "description": "Active execution strategy (e.g. 'planning', 'fast')."
+    },
+    "vim": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["NORMAL", "INSERT", "VISUAL", "VISUAL LINE"]
+        }
+      }
+    }
+  },
+  "required": ["cwd", "conversation_id", "model", "version"],
+  "additionalProperties": true
+}

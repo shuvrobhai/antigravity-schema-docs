@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/ide_state.schema.json",
+  "title": "IDEStateSchema",
+  "description": "Google Antigravity IDE state and metadata schema (~/.gemini/antigravity-ide/).",
+  "type": "object",
+  "properties": {
+    "installation_id": {
+      "type": "string",
+      "description": "Unique identifier for this IDE instance installation."
+    },
+    "active_conversations_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of currently active conversation threads in the workspace."
+    },
+    "html_artifacts_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total count of rendered HTML and visual artifacts produced."
+    },
+    "browser_recordings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "path": { "type": "string" },
+          "duration_ms": { "type": "integer" }
+        }
+      },
+      "description": "Metadata for browser subagent WebP session recordings."
+    }
+  },
+  "additionalProperties": true
+}

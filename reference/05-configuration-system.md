@@ -33,10 +33,27 @@ String values support `$VAR_NAME`, `${VAR_NAME}`, `${VAR_NAME:-DEFAULT_VALUE}` `
 | Key | Type | Default | Options |
 |---|---|---|---|
 | `toolPermission` | string | `"request-review"` | `request-review`, `proceed-in-sandbox`, `always-proceed`, `strict` |
+| `commandExecutionPolicy` | string | `"sandbox"` | `sandbox`, `auto`, `eager`, `off` |
 | `artifactReviewPolicy` | string | `"asks-for-review"` | `asks-for-review`, `agent-decides`, `always-proceed` |
 | `enableTerminalSandbox` | boolean | `false` | `true`, `false` |
 | `allowNonWorkspaceAccess` | boolean | `false` | `true`, `false` |
 | `trustedWorkspaces` | string[] | `[]` | Whitelist of authorized repository paths |
+
+**Key Behavioral Semantics:** `[DOCS]` / `[GOOGLE]`
+- **`commandExecutionPolicy` Containment Rings:**
+  - `sandbox` *(Default)*: Enforces OS container isolation (`nsjail` on Linux, `sandbox-exec` on macOS, `AppContainer` on Windows). Uncontained commands require interactive approval.
+  - `auto`: Autonomous execution for non-destructive commands (linters, test suites, builds). Destructive actions (`rm -rf`, `git push --force`) remain gated.
+  - `eager`: Proactive, high-autonomy execution without confirmation prompts. Intended for automated CI pipelines.
+  - `off`: Disables shell command tools (`run_command` rejected).
+- **`artifactReviewPolicy` Blast Radius Evaluation:**
+  - `asks-for-review` *(Default)*: Strict manual approval gate presenting all proposed file diffs.
+  - `agent-decides`: Evaluates change complexity and blast radius. Small doc edits and scratch files proceed automatically; broad multi-file changes or deletions of core manifests require user confirmation.
+  - `always-proceed`: Direct file modification without review prompts (for headless operations).
+- **`toolPermission: "strict"` Classification:**
+  - *Exempt Read Tools (No prompt):* `view_file`, `list_dir`, `find_by_name`, `grep_search`, `/status`, `/mcp`, `/skills`.
+  - *Gated Non-Read Operations (Prompt required):* `run_command`, `write_to_file`, `replace_file_content`, `search_web`, `read_url_content`, and mutating external MCP tools.
+- **`enableTerminalSandbox` Fail-Closed Guarantee:**
+  - If the OS sandbox daemon or namespace capabilities are unavailable (e.g. unprivileged container), execution **fails closed** with a hard error rather than running unprotected. Interactive sessions display a critical prompt offering an explicit unsandboxed override.
 
 #### Display and Rendering `[DOCS]`
 
@@ -67,6 +84,8 @@ String values support `$VAR_NAME`, `${VAR_NAME}`, `${VAR_NAME:-DEFAULT_VALUE}` `
 | `useG1Credits` | boolean | `false` | `true`, `false` (external builds only) |
 | `enableTelemetry` | boolean | `true` | `true`, `false` |
 | `model` | string | (unset) | Model display name + effort tier, e.g. `"Gemini 3.5 Flash (Low)"` |
+
+- **`runningLightSpeed` Modes:** `fast` (high-cadence spinner), `medium` (default balanced cadence), `slow` (low-frequency for remote SSH/bandwidth saving), `off` (disables terminal animations for screen-readers and headless logs).
 
 > **`model` (verified 2026-08-11 via config diff + live probe `[GOOGLE]`/A):** Not listed on the antigravity.google settings page — discovered by diffing the live config (`scripts/diff_settings.py`). Confirmed hands-on: a headless `agy -p` run with **no** `--model` flag resolved the session's `Model Selection` to the configured value (`Gemini 3.5 Flash (Low)`), proving the key is the persisted default-model setting. Value format matches the documented `--model="Gemini 3.5 Flash"` flag format; effort tier (`Low`/`High`) is part of the value.
 

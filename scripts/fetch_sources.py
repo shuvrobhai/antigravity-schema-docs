@@ -13,7 +13,7 @@ pointer back to the works-cited list) and <category> mirrors the source tag
 Each file carries a YAML-style header recording provenance: citation number,
 title, URL, fetch date, and HTTP status. After every run the script
 regenerates evidence/sources/index.md — the archive manifest — so the index
-can never drift from the files (same contract as build.py --check).
+can never drift from the files (same contract as scripts/build.py --check).
 
 Dedup rule: when two citations share a URL (e.g. #2 and #62 both point at the
 CLI Reference page), the page is archived once under the lowest number and the

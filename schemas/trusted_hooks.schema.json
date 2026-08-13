@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/trusted_hooks.schema.json",
+  "title": "TrustedHooksSchema",
+  "description": "Google Antigravity trusted statusline scripts and command execution authorization mapping (~/.gemini/trusted_hooks.json).",
+  "type": "object",
+  "additionalProperties": {
+    "type": "array",
+    "items": {
+      "type": "string",
+      "description": "Authorized hook signature (e.g., 'statusLine:node <path>')."
+    },
+    "description": "List of authorized hook commands approved for execution within this directory path pattern (or '*' for all)."
+  }
+}

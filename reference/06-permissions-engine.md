@@ -37,11 +37,13 @@
 | `unsandboxed` | prefix or `*` | Ask |
 | `mcp` | server/tool or `*` | Ask |
 
-### 6.4 Implicit Rules `[DOCS]`
+### 6.4 Implicit Rules & Path Normalization `[DOCS]` / `[GOOGLE]`
 
-- Write implies Read (allowing `write_file` auto-grants `read_file`)
-- Deny Read implies Deny Write
-- Cross-platform path normalization applied
+- **Write Implies Read:** Allowing `write_file` auto-grants `read_file`.
+- **Deny Read Implies Deny Write:** Denying `read_file` automatically blocks write operations on that path.
+- **Canonical Path Resolution:** Target filesystem paths are fully resolved to their canonical location via `realpath` prior to evaluating allow/ask/deny rules.
+- **Symlink Escape Prevention:** Symbolic links inside the workspace pointing to targets outside the workspace root are blocked to prevent path traversal escapes (`../`).
+- **Cross-Platform Normalization:** Windows backslashes (`\`) are normalized to forward slashes (`/`), and drive letters (e.g., `C:/`) are standardized before matching against permission patterns. Equivalent paths reachable through multiple symlinks are deduplicated.
 
 ### 6.5 Default Behaviors `[DOCS]`
 

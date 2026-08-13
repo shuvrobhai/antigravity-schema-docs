@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/cli_state.schema.json",
+  "title": "CLIStateSchema",
+  "description": "Google Antigravity CLI runtime installation state schema (~/.gemini/antigravity-cli/state.json).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON schema reference URL."
+    },
+    "runtimes": {
+      "type": "object",
+      "properties": {
+        "node": { "type": "string" },
+        "python": { "type": "string" },
+        "docker": { "type": "boolean" },
+        "gcloud": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string" },
+          "scopes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["id", "status"]
+      }
+    },
+    "installed_tools": {
+      "type": "object",
+      "properties": {
+        "mcp_servers": { "type": "array", "items": { "type": "string" } },
+        "plugins": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "required": ["runtimes", "providers"],
+  "additionalProperties": true
+}

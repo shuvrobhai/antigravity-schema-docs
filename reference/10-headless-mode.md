@@ -130,3 +130,13 @@ plugin?: string
 - Create new project: `agy --new-project`
 - Resumed conversations automatically use their stored project.
 - Fork conversation: `/fork <project_id>`
+
+### 10.1 Workspace Hooks Omission in Headless Mode
+
+**Workspace hooks omission** `[LIVE-1.1.12 · 2026-08-14]` `EV-020`:
+Headless print mode (`agy -p` / `--print`) does **not** load or execute workspace lifecycle hooks (`PreToolUse`, `PostToolUse`) defined in `.agents/hooks.json`, regardless of permission flags or configuration settings.
+
+- **Confound Resolution (EV-017 / EV-018 vs. EV-020):** Initial headless hook probes EV-017 (untrusted workspace) and EV-018 (trusted workspace) established that workspace hooks failed to fire, but both probes supplied `--dangerously-skip-permissions`. This created a critical confound: did `--dangerously-skip-permissions` actively bypass hook evaluation, or is headless mode inherently missing hook execution support? Probe **EV-020** resolved this by executing headless print mode without `--dangerously-skip-permissions`, pre-granting tool permissions via configuration files (`.agents/settings.json` and `.agents/permissions.json`).
+- **Empirical Findings:** The tool (`run_command`) executed successfully without blocking (status `SUCCESS`, 1 turn, duration 3.3s), but workspace hooks failed to fire (`MARKER MISSING`). Supplementary probe EXP-02a with an absolute path shell command hook produced identical results.
+- **Architectural Property:** Hook omission in `agy 1.1.12` is an architectural property of the headless print-mode engine — non-interactive execution bypasses workspace hook listener registration and event dispatch entirely. Automation that relies on workspace hooks for pre-execution guardrails or post-execution logging cannot depend on them in headless mode.
+

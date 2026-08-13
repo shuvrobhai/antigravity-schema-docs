@@ -185,8 +185,14 @@ Two creation paths:
     - obsidian-markdown
     - writing-clearly-and-concisely
   ```
-- `model` accepts `inherit` and `pro` in live agent files.
+- `model` accepts `inherit`, `flash`, and `pro` in live agent files. When `model: inherit` is declared `[DOCS]`:
+  - It dynamically cascades to the calling parent agent's active runtime model.
+  - If the parent agent specifies no override, it resolves to the root session model configured in `settings.json` or CLI flags (`--model`).
 - `subagent: true` and `mainAgent: true` are **not** mutually exclusive; both were observed together.
+
+**Discovery & Headless Parity Divergence:** `[DOCS]` / `[GOOGLE]`
+- **Interactive TUI (`/agents`):** Dynamically scans `.agents/agents/` and workspace plugin paths (`plugins/*/agents/`) to present workspace-scoped agents in the picker UI.
+- **Headless Operations (`agy -p --agent <name>`):** Scans globally installed agents (`~/.gemini/config/agents/`). To run workspace-scoped agents headlessly, specify the explicit relative or absolute path to the `.md` manifest.
 
 **Known Issue (documented):** Misspelled tool names in the `tools` list may cause the subagent to hang. Fix planned `[DOCS]`.
 
@@ -225,16 +231,28 @@ You are an expert security auditor and code reviewer.
 | `browser` | Sandboxed web browser testing | Exclusively via `/browser` |
 | `self` | Clone of calling agent with identical system instructions and toolsets | Via `invoke_subagent` |
 
-**Subagent Lifecycle States:** `[DOCS]`
+**Subagent Lifecycle State Machine:** `[DOCS]` / `[GOOGLE]`
+
+```mermaid
+stateDiagram-v2
+    [*] --> running: Spawn / Invoke (invoke_subagent)
+    running --> idle: Turn Completed (send_message)
+    idle --> running: Incoming Message / Task (Context Preserved)
+    running --> error: Unhandled Exception / Hook Timeout
+    running --> killed: Direct Termination (UI / 'k' key)
+    idle --> killed: Direct Termination
+    killed --> [*]: Git Worktree & Resource Cleanup
+```
 
 | State | Behavior |
 |---|---|
-| **Running** | Actively executing. Can be cancelled (`k` in CLI) or interrupted by parent. |
+| **Running** | Actively executing reasoning loops, tool calls, and subagent orchestration. Can be cancelled (`k` in CLI) or interrupted by parent. |
+| **Idle** | Turn completed, paused awaiting parent agent or user input. Preserves full conversation context, working memory, and transcripts. |
 | **Done** | Task completed successfully. Visible as `done` in the `/agents` panel. |
-| **Error** | Subagent encountered an error. Visible as `error` in the `/agents` panel. |
-| **Killed** | Permanently terminated. Worktrees cleaned up. Historical transcripts remain in JSONL logs. |
+| **Error** | Subagent encountered an unhandled tool exception or hook timeout. Visible as `error` in the `/agents` panel. |
+| **Killed** | Permanently terminated. Ephemeral Git worktrees and allocations are cleaned up; `.jsonl` transcripts remain in session logs. |
 
-Note: The main document previously listed **Idle** as a lifecycle state — this was inferred from the subagents documentation and is not confirmed in the `/agents` panel documentation. The `/agents` panel displays `running`, `done`, `error`, and `killed`. The `idle` state may exist internally but is not surfaced in the UI.
+Note: The interactive `/agents` TUI panel surfaces active processes as `running`, `done`, `error`, and `killed`, while `idle` reflects the internal suspended execution state between conversational turns.
 
 **Inline Tool Approvals in `/agents` Panel:** `[DOCS]`
 
@@ -549,7 +567,9 @@ Note: MCP Store installations may configure authentication differently than manu
 
 Unconfigured MCP tools default to Ask mode.
 
-**Interactive MCP Manager:** `/mcp` command. View status rings, reload configs, inspect logs `[DOCS]`.
+**Interactive MCP Manager & Resilience:** `/mcp` command `[DOCS]` / `[PROTOCOL]`.
+- **Fault Isolation & Graceful Degradation:** If an external MCP server process disconnects, crashes, or times out, the error is isolated to that connector. The engine flags the server as degraded without terminating the active conversation session.
+- **Management Interface:** View status rings, reload configurations, inspect latency logs, and trigger manual reconnections.
 
 **MCP Store:** 50+ direct integrations including AlloyDB, BigQuery, Bigtable, Chrome DevTools, ClickHouse, Cloud SQL (MySQL/PostgreSQL/SQL Server), Dataplex, Figma, Firebase, **Google Workspace (Gmail, Drive, Docs, Sheets, Slides, Calendar, Chat, People API)** `[GOOGLE]`, GitHub, GitLab, GKE, Heroku, Linear, MongoDB, Neon, Netlify, Notion, PayPal, Perplexity, Pinecone, PostHog, Postman, Prisma, Redis, Stripe, Supabase, and more `[DOCS]`.
 
@@ -570,12 +590,12 @@ Backward compat: `.agent/rules` (singular) `[DOCS]`.
 
 **Activation Modes:** `[DOCS]`
 
-| Mode | Behavior |
-|---|---|
-| `Manual` | Activated via @ mention |
-| `Always On` | Always applied |
-| `Model Decision` | Agent decides based on rule description |
-| `Glob` | Applied to files matching a pattern |
+| Mode | Behavior | Syntax & Evaluation |
+|---|---|---|
+| `Manual` | Activated via @ mention in prompt | Explicit user tag |
+| `Always On` | Always injected into agent context | System prompt baseline |
+| `Model Decision` | Agent dynamically activates rule | Semantic similarity against rule description |
+| `Glob` | Injected when active files match pattern | Standard minimatch/gitignore patterns (e.g., `src/**/*.tsx`, `**/*.proto`, `!**/vendor/**`) |
 
 **@ File References:** Relative paths resolve from rules file location; absolute paths resolve directly; otherwise relative to repository `[DOCS]`.
 
@@ -596,6 +616,10 @@ Backward compat: `.agent/rules` (singular) `[DOCS]`.
 ### 4.8 Lifecycle Hooks
 
 **Definition:** Run custom scripts at specific points during the execution loop `[DOCS]`.
+
+**Execution Ordering & Timeout Guarantees:** `[DOCS]` / `[PROTOCOL]`
+- **Sequential Execution:** Multiple hooks registered for the same event execute sequentially in declared registration order.
+- **Timeout Protection:** Each hook supports a `timeout` property in seconds (defaulting to **30 seconds**). Exceeded timeouts abort the hook with an error, preventing agent pipeline deadlocks.
 
 **Configuration Paths:** `[DOCS]`
 

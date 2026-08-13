@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/projects.schema.json",
+  "title": "ProjectsIndexSchema",
+  "description": "Google Antigravity registered projects mapping index schema (~/.gemini/projects.json).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON schema reference URL."
+    },
+    "projects": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Mapping from absolute workspace directory path to unique project alias string."
+    }
+  },
+  "required": ["projects"],
+  "additionalProperties": true
+}

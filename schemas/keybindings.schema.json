@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/keybindings.schema.json",
+  "title": "KeybindingsSchema",
+  "description": "Google Antigravity CLI TUI keybinding customization schema (~/.gemini/antigravity-cli/keybindings.json).",
+  "type": "object",
+  "additionalProperties": {
+    "type": "array",
+    "items": {
+      "type": "string"
+    },
+    "description": "Array of keyboard shortcut chords bound to this action (empty array disables)."
+  }
+}

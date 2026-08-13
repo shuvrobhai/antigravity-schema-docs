@@ -30,6 +30,7 @@
 | EV-017 | untrusted workspace hook probe | hook did not fire |
 | EV-018 | trusted workspace hook probe | hook did not fire |
 | EV-019 | `keybindings.json` | absent by default |
+| EV-020 | Headless hook probe (no permission skip) | hook did not fire (confound resolved) |
 
 ---
 
@@ -642,3 +643,104 @@ cat: <HOME>/.gemini/antigravity-cli/keybindings.json: No such file or directory
 
 **Interpretation:**  
 `keybindings.json` is not present by default; it is created after custom keybinding changes.
+
+---
+
+## EV-020 — Headless Hook Probe without Permission Skip
+
+**Context & Motivation:**  
+Probes EV-017 and EV-018 showed that workspace hooks defined in `.agents/hooks.json` failed to fire during headless mode (`agy -p`) execution. However, both previous probes included the `--dangerously-skip-permissions` flag, creating a potential confound: did the hook fail because `--dangerously-skip-permissions` actively bypasses hook lifecycle dispatch, or because headless print-mode itself does not execute hooks?
+
+To resolve this confound, probe EV-020 tested headless mode execution **without** `--dangerously-skip-permissions`, granting required permissions ahead of time via `.agents/settings.json` and `.agents/permissions.json`.
+
+**Command summary:**
+
+```bash
+mkdir -p /tmp/agy_hook_exp01/.agents
+cat > /tmp/agy_hook_exp01/.agents/hooks.json << 'EOF'
+{
+  "exp01-hook": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo marker-exp01 > /tmp/agy_hook_marker_exp01.txt",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+EOF
+
+cat > /tmp/agy_hook_exp01/.agents/settings.json << 'EOF'
+{
+  "permissions": {
+    "allow": ["run_command"],
+    "deny": []
+  },
+  "toolPermission": "always-proceed"
+}
+EOF
+
+cat > /tmp/agy_hook_exp01/.agents/permissions.json << 'EOF'
+{
+  "allow": ["run_command"],
+  "deny": []
+}
+EOF
+
+cd /tmp/agy_hook_exp01
+agy -p "run command echo test" --output-format json
+```
+
+**Observed result:**
+
+```text
+MARKER MISSING (/tmp/agy_hook_marker_exp01.txt was not created)
+CLI status: SUCCESS (duration: 3.3s, num_turns: 1)
+```
+
+**Supplementary Probe EXP-02a (Absolute Path Command Hook):**
+
+```bash
+mkdir -p /tmp/agy_hook_exp02a/.agents
+cat > /tmp/agy_hook_exp02a/.agents/hooks.json << 'EOF'
+{
+  "exp02a-hook": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'echo marker-exp02a > /tmp/agy_hook_marker_exp02a.txt'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+EOF
+
+cd /tmp/agy_hook_exp02a
+agy -p "run command echo test-exp02a" --output-format json
+```
+
+**Observed result:**
+
+```text
+MARKER MISSING (/tmp/agy_hook_marker_exp02a.txt was not created)
+CLI status: SUCCESS
+```
+
+**Interpretation & Confound Resolution:**  
+1. **Confound Resolved:** The failure of hooks to execute in EV-017 and EV-018 was **not** caused by `--dangerously-skip-permissions`.
+2. **Headless Execution Omission:** In `agy 1.1.12`, non-interactive headless print mode (`agy -p`) does not load or execute lifecycle hooks (such as `PreToolUse` or `PostToolUse`) defined in workspace `.agents/hooks.json`, even when permissions are fully granted via configuration and no permission skip flags are passed.
+

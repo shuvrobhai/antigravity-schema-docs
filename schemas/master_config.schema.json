@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/master_config.schema.json",
+  "title": "MasterConfigSchema",
+  "description": "Google Antigravity global system configuration schema (~/.gemini/config/config.json).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON schema reference URL."
+    },
+    "userSettings": {
+      "type": "object",
+      "properties": {
+        "artifactReviewMode": { "type": "string" },
+        "autoExecutionPolicy": { "type": "string" },
+        "browserJsExecutionPolicy": { "type": "string" },
+        "enableTerminalSandbox": { "type": "boolean" },
+        "globalPermissionGrants": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "nonWorkspaceFileAccessPolicy": { "type": "string" },
+        "queuedMessageDeliveryStrategy": { "type": "string" },
+        "remoteControlHostname": { "type": "string" },
+        "themeMode": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "plugins": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["boolean", "object"]
+      },
+      "description": "Map of installed ecosystem plugin names to their enabled status or plugin configuration."
+    }
+  },
+  "additionalProperties": true
+}

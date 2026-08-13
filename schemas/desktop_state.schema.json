@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/desktop_state.schema.json",
+  "title": "DesktopStateSchema",
+  "description": "Google Antigravity Desktop application state and migration tracking schema (~/.gemini/antigravity/antigravity_state.pbtxt / state).",
+  "type": "object",
+  "properties": {
+    "installation_uuid": {
+      "type": "string",
+      "description": "Unique installation UUID for the desktop application."
+    },
+    "post_onboarding": {
+      "type": "boolean",
+      "description": "Whether the primary onboarding sequence has been completed."
+    },
+    "seen_nuxs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of new-user experience (NUX) dialog IDs acknowledged by the user."
+    },
+    "agent_onboarding_completed": {
+      "type": "boolean",
+      "description": "Whether agent persona onboarding walkthrough has finished."
+    },
+    "last_selected_agent_model": {
+      "type": "string",
+      "description": "Most recently chosen model identifier in the UI."
+    },
+    "migrate_convos_into_projects": {
+      "type": "boolean",
+      "description": "Flag indicating legacy conversation migration status."
+    },
+    "migrate_retroactive_projects": {
+      "type": "boolean",
+      "description": "Flag indicating project retroactive auto-discovery migration status."
+    },
+    "migrations": {
+      "type": "array",
+      "items": { "type": ["string", "object"] },
+      "description": "List of applied database/state migration identifiers."
+    }
+  },
+  "additionalProperties": true
+}

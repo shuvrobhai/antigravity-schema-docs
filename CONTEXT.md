@@ -13,11 +13,11 @@ Module `00-preamble.md` — everything before Section 1: title block, "What This
 _Avoid_: header, front matter
 
 **Parent**:
-The generated `antigravity-reference.md` at the repo root, composed from the modules by `build.py`. Never hand-edited; carries a generated-file HTML comment.
+The generated `antigravity-reference.md` at the repo root, composed from the modules by `scripts/build.py`. Never hand-edited; carries a generated-file HTML comment.
 _Avoid_: main doc, master file
 
 **Composition build**:
-`build.py` regenerating the parent from modules (`--watch` for live rebuilds, `--check` for sync verification).
+`scripts/build.py` regenerating the parent from modules (`--watch` for live rebuilds, `--check` for sync verification).
 _Avoid_: compile, merge
 
 **Source tag**:
@@ -35,3 +35,7 @@ _Avoid_: saved sites, web snapshot, cached sources
 **Archive manifest**:
 `evidence/sources/index.md` — the script-generated status table of every citation and its archived file; never hand-edited.
 _Avoid_: source index, sources table
+
+**Native schema catalog**:
+`schemas/` — standalone JSON Schema Draft 2020-12/Draft 7 definitions corresponding to the 17 core native schemas documented in section 20; validated against drift by `scripts/validate.py`.
+_Avoid_: json templates, config definitions

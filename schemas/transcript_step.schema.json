@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/transcript_step.schema.json",
+  "title": "TranscriptStepSchema",
+  "description": "Google Antigravity conversation log step line item schema (transcript.jsonl / transcript_full.jsonl).",
+  "type": "object",
+  "properties": {
+    "step_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero-indexed sequential counter of the conversation trajectory step."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["USER_EXPLICIT", "MODEL", "SYSTEM", "USER_SYSTEM", "SUBAGENT"],
+      "description": "Originator of the step action."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["USER_INPUT", "PLANNER_RESPONSE", "TOOL_INVOCATION", "TOOL_RESULT", "STATUS_UPDATE", "ERROR"],
+      "description": "Semantic classifier of the step content."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DONE", "ERROR", "PENDING", "CANCELLED"],
+      "description": "Resolution status of the step."
+    },
+    "content": {
+      "type": "string",
+      "description": "Text payload, prompt input, or model response text."
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "arguments": { "type": "object" }
+        },
+        "required": ["name"]
+      },
+      "description": "Array of agent tool invocations initiated in this step."
+    },
+    "tool_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool_call_id": { "type": "string" },
+          "output": { "type": "string" },
+          "error": { "type": "string" }
+        }
+      }
+    },
+    "is_truncated": {
+      "type": "boolean",
+      "description": "Flag in transcript.jsonl indicating large text blocks were truncated."
+    },
+    "timestamp": {
+      "type": ["integer", "string"],
+      "description": "Unix millisecond timestamp or ISO datetime string."
+    }
+  },
+  "required": ["step_index", "source", "type", "status"],
+  "additionalProperties": true
+}

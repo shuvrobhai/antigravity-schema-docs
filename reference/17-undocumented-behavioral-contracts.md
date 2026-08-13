@@ -64,7 +64,7 @@ The official docs (`antigravity.google/docs/*`) leave the following behavioral q
 | Question | Context | Impact |
 |---|---|---|
 | Why does `/hooks` return `hooks: []` despite valid hook files existing? | `EV-016`: valid files at global plugin paths and workspace `.agents/hooks.json` | Hook enumeration in print mode appears non-functional or incomplete |
-| Does `--dangerously-skip-permissions` suppress hook execution in headless `-p`? | `EV-017`, `EV-018`: workspace `PreToolUse` hook did not fire in trusted and untrusted probes using that flag | Unresolved confound for headless hook reliability |
+| Does `--dangerously-skip-permissions` suppress hook execution in headless `-p`? | **Resolved 2026-08-14 via EV-020:** Probe EV-020 tested headless `-p` without `--dangerously-skip-permissions` (pre-granting permissions in settings/permissions config). Hooks still failed to fire (`MARKER MISSING`). Headless print mode itself omits workspace hook execution; `--dangerously-skip-permissions` is not the cause. | Headless mode cannot be used for workflows requiring workspace hook execution |
 
 ### 17.1 High-Priority Live Conflicts (agy 1.1.12)
 
@@ -73,5 +73,6 @@ The official docs (`antigravity.google/docs/*`) leave the following behavioral q
 | 1 | 1.1.12 changelog claims `agents/models --output-format json` exists (v1.1.12 changelog: "Added machine-readable output to the `models` and `agents` subcommands through an `--output-format` flag accepting `json` and `stream-json`") | EV-002, EV-003 | **Confirmed bug:** changelog definitively claims the feature; live CLI definitively rejects the flag. Either the changelog was published before the code shipped, or the flag was reverted without a changelog update. |
 | 2 | Official docs list plugin `rules` as component | EV-006, EV-007 | `agy plugin list` did not surface `rules` |
 | 3 | `/hooks` should enumerate hooks | EV-016 | Live print mode returns `hooks: []` |
-| 4 | Workspace `PreToolUse` hook should fire | EV-017, EV-018 | Did not fire in trusted or untrusted `-p` probe |
+| 4 | Workspace `PreToolUse` hook should fire | EV-017, EV-018, EV-020 | Did not fire in trusted/untrusted `-p` probes or without permission skip flag; EV-020 confirmed headless mode hook omission is an architectural property |
 | 5 | §10 claimed `agy agents` lists workspace agents | EV-004 | Live `agy agents` lists global + plugin agents only |
+
