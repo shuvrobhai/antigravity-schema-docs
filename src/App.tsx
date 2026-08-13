@@ -25,6 +25,23 @@ import { ValidationConsole } from './components/ValidationConsole';
 import { ComposedDocViewer } from './components/ComposedDocViewer';
 import { SearchModal } from './components/SearchModal';
 
+const VALID_TABS: TabType[] = [
+  'reference',
+  'auditor',
+  'schemas',
+  'extensibility',
+  'cli',
+  'evidence',
+  'sources',
+  'adrs',
+  'validation',
+  'composed',
+];
+
+function isTabType(value: string): value is TabType {
+  return (VALID_TABS as readonly string[]).includes(value);
+}
+
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('reference');
   const [selectedModuleId, setSelectedModuleId] = useState<string>(referenceModules[0]?.id || '');
@@ -41,8 +58,8 @@ export const App: React.FC = () => {
       const hash = window.location.hash.replace(/^#\/?/, '');
       if (!hash) return;
       const [tab, id] = hash.split('/');
-      if (['reference', 'auditor', 'schemas', 'extensibility', 'cli', 'evidence', 'sources', 'adrs', 'validation', 'composed'].includes(tab)) {
-        setActiveTab(tab as TabType);
+      if (isTabType(tab)) {
+        setActiveTab(tab);
         if (id) {
           if (tab === 'reference') setSelectedModuleId(id);
           else if (tab === 'schemas') setSelectedSchemaId(id);

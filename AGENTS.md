@@ -1,6 +1,6 @@
 # AGENTS.md — Google Antigravity Schema & Technical Reference
 
-Repository for the Google Antigravity (`agy`) technical reference: modular Markdown docs, 18 JSON schemas, an evidence-grounded validation suite, and a Vite/React web app that renders it all.
+Repository for the Google Antigravity (`agy`) technical reference: modular Markdown docs, 19 JSON schemas, an evidence-grounded validation suite, and a Vite/React web app that renders it all.
 
 ## Essential Commands
 
@@ -34,7 +34,7 @@ Web app (Vite + React 18 + Tailwind v4, port 3000):
 ```bash
 npm run dev        # dev server (vite, port 3000)
 npm run build      # vite build — builds the WEB APP
-npm run lint       # tsc --noEmit — typechecks src/ only (scripts/*.ts are not covered)
+npm run lint       # tsc --noEmit — typechecks src/ (tsconfig.json) and scripts/ (tsconfig.scripts.json)
 npm run audit -- --dir <path> [--fix] [--json]   # CLI workspace auditor
 ```
 
@@ -43,7 +43,7 @@ npm run audit -- --dir <path> [--fix] [--json]   # CLI workspace auditor
 ## Architecture
 
 - `reference/NN-slug.md` — source-of-truth modules (`00-preamble.md` … `20-schema-toolkit-and-native-schemas.md`). `scripts/build.ts` composes them into the root **`antigravity-reference.md` build artifact**.
-- `schemas/` — 18 standalone JSON Schema files (Draft 2020-12), cataloged in the §20.2 matrix table of `reference/20-schema-toolkit-and-native-schemas.md`.
+- `schemas/` — 19 standalone JSON Schema files (Draft 2020-12), cataloged in the §20.2 matrix table of `reference/20-schema-toolkit-and-native-schemas.md`.
 - `evidence/` — grounding layer: `agy-1.1.12/evidence.md` (EV-001..EV-020 probes), `sources/` (fetched citation snapshots + generated `index.md` manifest), plus `probes/`, `reports/`, `artifacts/`, `templates/`.
 - `src/lib/` — the shared core both seams import: `markdownCore.ts` (pure Markdown parser — headings/sections/tables/frontmatter/slugs), `documentStore.ts` (the Reference Corpus store interface + pure compose/manifest builders), `integrityGate.ts` (all 12 checks as pure functions; `pass`/`fail`/`na` status).
 - `scripts/` — TS toolchain: `build.ts`, `validate.ts` (thin fs-backed adapter over the Integrity Gate; the only place `--fix` repair lives), `generate_evidence.ts`, `audit_workspace.ts`, `fetch_sources.ts`, `lib/docInspector.ts` (fs adapter over the MarkdownDoc Core), `lib/evidenceRegistry.ts` (citation/probe catalog). Each `scripts/lib/*.ts` doubles as a self-testing executable (assert-and-throw harness invoked by `make test`).

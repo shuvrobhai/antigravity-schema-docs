@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { EvidenceRegistry, Citation, readSnapshotHeader } from './lib/evidenceRegistry';
+import { toErrorMessage } from '../src/lib/errors';
 
 const ROOT = process.cwd();
 const ARCHIVE_DIR = path.join(ROOT, 'evidence', 'sources');
@@ -247,8 +248,8 @@ export async function run(): Promise<number> {
       writeSnapshot(c, status, finalUrl, fetchedDate, markdown);
       console.log(`ok    #${String(c.number).padStart(2, '0')} ${c.category.padEnd(9)} ${path.basename(snapPath)} (${status}, ${markdown.split('\n').length} lines)`);
       ok++;
-    } catch (err: any) {
-      console.error(`FAIL  #${String(c.number).padStart(2, '0')} ${c.category.padEnd(9)} ${c.url} -> ${err.message || err}`);
+    } catch (err) {
+      console.error(`FAIL  #${String(c.number).padStart(2, '0')} ${c.category.padEnd(9)} ${c.url} -> ${toErrorMessage(err)}`);
       fail++;
     }
   }

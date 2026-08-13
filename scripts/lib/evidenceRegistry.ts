@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { MarkdownDoc } from './docInspector';
+import { parseFrontmatterMap, scanCitationBadges, parseWorksCitedEntry } from '../../src/lib/markdownCore';
 
 export const TAG_FOLDER: Record<string, string> = {
   DOCS: 'docs',
@@ -55,25 +56,13 @@ export interface EvidenceProbe {
   rawText: string;
 }
 
+/** Read the frontmatter of an archived snapshot as a string map (core parser). */
 export function readSnapshotHeader(filePath: string): Record<string, string> {
   if (!fs.existsSync(filePath)) {
     return {};
   }
   const text = fs.readFileSync(filePath, 'utf-8');
-  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
-  if (!m) {
-    return {};
-  }
-  const kv: Record<string, string> = {};
-  for (const line of m[1].split(/\r?\n/)) {
-    if (line.includes(':')) {
-      const idx = line.indexOf(':');
-      const k = line.slice(0, idx).trim();
-      const v = line.slice(idx + 1).trim().replace(/^"|"$/g, '');
-      kv[k] = v;
-    }
-  }
-  return kv;
+  return parseFrontmatterMap(text);
 }
 
 export class EvidenceRegistry {
@@ -114,33 +103,28 @@ export class EvidenceRegistry {
     const rawItems: { number: number; title: string; url: string; category: string; duplicateOf?: number | null }[] = [];
     let currentCat: string | null = null;
 
-    const listItemRe = /^(\d+)\.\s+(.+?)\s+—\s+(https?:\/\/\S+)/;
-    const tableRowRe = /^\|\s*(\d+)\s*\|\s*`?\[([A-Z0-9-]+)\]`?\s*\|\s*(.+?)\s*\|\s*(https?:\/\/\S+)\s*\|/;
-
     for (const line of doc.lines) {
-      const tagMatch = line.match(/\[(DOCS|GOOGLE|PROTOCOL|COMMUNITY)\]/);
-      if (tagMatch && line.startsWith('#')) {
-        currentCat = TAG_FOLDER[tagMatch[1]] || null;
+      // Section headings carry a bare category tag: "### Official Docs [DOCS]"
+      const bareTag = scanCitationBadges(line).find(
+        b => b.numbers.length === 0 && TAG_FOLDER[b.tag] !== undefined
+      );
+      if (bareTag && line.startsWith('#')) {
+        currentCat = TAG_FOLDER[bareTag.tag] || null;
         continue;
       }
 
-      const lm = line.trim().match(listItemRe);
-      if (lm && currentCat) {
-        const num = parseInt(lm[1], 10);
-        const title = lm[2].trim();
-        const url = lm[3].trim().replace(/\)$/, '');
-        rawItems.push({ number: num, title, url, category: currentCat });
-        continue;
-      }
-
-      const tm = line.trim().match(tableRowRe);
-      if (tm) {
-        const num = parseInt(tm[1], 10);
-        const catTag = tm[2].trim();
-        const title = tm[3].trim();
-        const url = tm[4].trim();
-        const cat = TAG_FOLDER[catTag] || 'community';
-        rawItems.push({ number: num, title, url, category: cat });
+      const entry = parseWorksCitedEntry(line);
+      if (!entry) continue;
+      if (entry.tag) {
+        // Table rows carry their own category tag.
+        rawItems.push({
+          number: entry.number,
+          title: entry.title,
+          url: entry.url,
+          category: TAG_FOLDER[entry.tag] || 'community',
+        });
+      } else if (currentCat) {
+        rawItems.push({ number: entry.number, title: entry.title, url: entry.url, category: currentCat });
       }
     }
 

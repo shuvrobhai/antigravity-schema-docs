@@ -1,13 +1,13 @@
 import Ajv2020 from 'ajv/dist/2020.js';
-import type { ErrorObject } from 'ajv';
+import type { ErrorObject, AnySchemaObject, ValidateFunction } from 'ajv';
 import fs from 'fs';
 import path from 'path';
 
-// Load all 18 JSON schemas eager-loaded by Vite in browser, or via fs in Node
-let rawSchemas: Record<string, any> = {};
+// Load all 19 JSON schemas eager-loaded by Vite in browser, or via fs in Node
+let rawSchemas: Record<string, unknown> = {};
 
-if (typeof (import.meta as any).glob === 'function') {
-  rawSchemas = (import.meta as any).glob('/schemas/*.schema.json', { eager: true });
+if (typeof import.meta.glob === 'function') {
+  rawSchemas = import.meta.glob('/schemas/*.schema.json', { eager: true });
 } else {
   // Node.js fallback
   try {
@@ -36,22 +36,23 @@ export interface SchemaDescriptor {
   filename: string;
   title: string;
   category: string;
-  schema: any;
+  schema: AnySchemaObject;
   targetPath: string;
 }
 
-const ajv = new (Ajv2020 as any)({
+const ajv = new Ajv2020({
   allErrors: true,
   strict: false,
 });
 
 // Compile cache
-const compiledValidators = new Map<string, any>();
+const compiledValidators = new Map<string, ValidateFunction>();
 export const schemaRegistry = new Map<string, SchemaDescriptor>();
 
 // Initialize registry
-for (const [path, schemaModule] of Object.entries(rawSchemas)) {
-  const schema = schemaModule.default || schemaModule;
+for (const [path, rawModule] of Object.entries(rawSchemas)) {
+  const mod = rawModule && typeof rawModule === 'object' && 'default' in rawModule ? rawModule.default : rawModule;
+  const schema = (mod ?? {}) as AnySchemaObject;
   const filename = path.split('/').pop() || '';
   const key = filename.replace('.schema.json', '');
 
@@ -74,7 +75,7 @@ for (const [path, schemaModule] of Object.entries(rawSchemas)) {
 }
 
 /**
- * Validate any payload object against one of the 18 Antigravity native schemas.
+ * Validate any payload object against one of the 19 Antigravity native schemas.
  */
 export function validateAntigravityPayload(schemaKey: string, payload: unknown): SchemaValidationResult {
   const descriptor = schemaRegistry.get(schemaKey);
@@ -92,7 +93,7 @@ export function validateAntigravityPayload(schemaKey: string, payload: unknown):
     compiledValidators.set(schemaKey, validator);
   }
 
-  const valid = validator(payload) as boolean;
+  const valid = !!validator(payload);
 
   if (valid) {
     return {

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "vite build",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
     "audit": "tsx scripts/audit_workspace.ts",
     "test:schemas": "tsx scripts/test_schemas.ts",
     "build:doc": "tsx scripts/build.ts",

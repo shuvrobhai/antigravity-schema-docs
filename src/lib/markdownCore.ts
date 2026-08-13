@@ -2,11 +2,19 @@
  * markdownCore.ts — the MarkdownDoc parsing core.
  *
  * Pure, browser-safe Markdown parsing: headings, sections, tables, code blocks,
- * frontmatter, and anchor slugs. No fs, no path, no network.
+ * frontmatter, and anchor slugs, plus the single-line scanners the corpus
+ * indexers share (source tags, text citations, file links, works-cited
+ * entries). No fs, no path, no network.
  *
- * The CLI adapter (scripts/lib/docInspector.ts) adds file I/O on top; the web app
- * imports this module directly. One parser, two thin adapters.
+ * Single home for ALL parsing — the typed YAML frontmatter parser
+ * (extractFrontmatter / parseSimpleYaml / parseYamlFrontmatter) and the line
+ * scanners that used to be duplicated across src/data/sourceProcessing.ts and
+ * scripts/lib/evidenceRegistry.ts. One parser, two thin adapters:
+ * scripts/lib/docInspector.ts adds file I/O; src/data/repository.ts is the
+ * glob-backed browser store.
  */
+
+import type { JsonValue } from '../types';
 
 export interface Heading {
   level: number;
@@ -35,25 +43,254 @@ export function extractHeadings(markdown: string): { level: number; title: strin
   });
 }
 
-/** Parse a YAML-ish frontmatter block into a string map. */
-export function parseFrontmatterMap(rawContent: string): Record<string, string> {
-  const frontmatterMatch = rawContent.match(/^---\s*[\r\n]+([\s\S]*?)[\r\n]+---/);
-  const meta: Record<string, string> = {};
+/**
+ * Extract the raw `---...---` frontmatter block (delimiters included), or null.
+ */
+export function extractFrontmatterBlock(rawContent: string): string | null {
+  const match = rawContent.match(/^---\s*[\r\n]+([\s\S]*?)[\r\n]+---/);
+  return match ? match[0] : null;
+}
 
-  if (frontmatterMatch) {
-    const yamlBody = frontmatterMatch[1];
-    const lines = yamlBody.split('\n');
-    for (const line of lines) {
-      const match = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*(.*)$/);
-      if (match) {
-        const key = match[1].trim();
-        let val = match[2].trim();
-        val = val.replace(/^["']|["']$/g, '');
-        meta[key] = val;
+/**
+ * Extract typed YAML frontmatter from Markdown content.
+ * Returns `frontmatter: null` when the document has no (or a malformed) block.
+ */
+export function extractFrontmatter(content: string): { frontmatter: Record<string, JsonValue> | null; body: string } {
+  const trimmed = content.trim();
+  if (!trimmed.startsWith('---')) {
+    return { frontmatter: null, body: content };
+  }
+
+  const match = trimmed.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n([\s\S]*))?$/);
+  if (!match) {
+    return { frontmatter: null, body: content };
+  }
+
+  const yamlStr = match[1];
+  const body = match[2] || '';
+  return { frontmatter: parseSimpleYaml(yamlStr), body };
+}
+
+/**
+ * Extract typed YAML frontmatter, defaulting to an empty map when absent.
+ * The tolerant counterpart of `extractFrontmatter` for callers that treat a
+ * missing frontmatter block as `{}` rather than an error.
+ */
+export function parseYamlFrontmatter(content: string): { frontmatter: Record<string, JsonValue>; body: string } {
+  const { frontmatter, body } = extractFrontmatter(content);
+  return { frontmatter: frontmatter ?? {}, body };
+}
+
+/**
+ * Parse a YAML-ish frontmatter block into a string map (legacy convenience).
+ * Scalars are coerced to strings; nested objects and lists become JSON text.
+ */
+export function parseFrontmatterMap(rawContent: string): Record<string, string> {
+  const { frontmatter } = parseYamlFrontmatter(rawContent);
+  const meta: Record<string, string> = {};
+  for (const [k, v] of Object.entries(frontmatter)) {
+    if (typeof v === 'string') meta[k] = v;
+    else if (typeof v === 'number' || typeof v === 'boolean' || v === null) meta[k] = String(v);
+    else meta[k] = JSON.stringify(v);
+  }
+  return meta;
+}
+
+/**
+ * Simple, resilient YAML parser supporting strings, booleans, numbers, lists,
+ * and nested objects. Previously owned by src/schema/auditor.ts; consolidated
+ * here so every frontmatter consumer shares one implementation.
+ */
+export function parseSimpleYaml(yaml: string): Record<string, JsonValue> {
+  const lines = yaml.split(/\r?\n/);
+  const result: Record<string, JsonValue> = {};
+  let currentKey = '';
+  let currentList: JsonValue[] | null = null;
+  let currentNestedObj: Record<string, JsonValue> | null = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+
+    // Skip empty lines or full comment lines
+    if (!line || line.startsWith('#')) continue;
+
+    // Check for list item under a key (e.g. "  - item" or "- item")
+    if (line.startsWith('- ')) {
+      const itemVal = parseYamlValue(line.substring(2).trim());
+      if (currentList) {
+        currentList.push(itemVal);
+      } else if (currentKey) {
+        currentList = [itemVal];
+        result[currentKey] = currentList;
+      }
+      continue;
+    }
+
+    // Check for nested indentation (e.g. "  key: value")
+    const isIndented = rawLine.startsWith('  ') || rawLine.startsWith('\t');
+    if (isIndented && currentKey && !line.startsWith('- ')) {
+      const colonIdx = line.indexOf(':');
+      if (colonIdx !== -1) {
+        const subKey = line.substring(0, colonIdx).trim();
+        const subValStr = line.substring(colonIdx + 1).trim();
+        const subVal = subValStr ? parseYamlValue(subValStr) : {};
+
+        if (!currentNestedObj) {
+          currentNestedObj = {};
+          result[currentKey] = currentNestedObj;
+        }
+        currentNestedObj[subKey] = subVal;
+        continue;
+      }
+    }
+
+    // Root level key: value
+    const colonIndex = line.indexOf(':');
+    if (colonIndex !== -1) {
+      currentKey = line.substring(0, colonIndex).trim();
+      const valPart = line.substring(colonIndex + 1).trim();
+      currentList = null;
+      currentNestedObj = null;
+
+      if (valPart === '') {
+        // Will be populated by subsequent list or nested object lines
+        const nested: Record<string, JsonValue> = {};
+        result[currentKey] = nested;
+        currentNestedObj = nested;
+      } else if (valPart.startsWith('[') && valPart.endsWith(']')) {
+        // JSON array format: ["a", "b"]
+        try {
+          result[currentKey] = JSON.parse(valPart);
+        } catch {
+          result[currentKey] = valPart.slice(1, -1).split(',').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+        }
+      } else {
+        result[currentKey] = parseYamlValue(valPart);
       }
     }
   }
-  return meta;
+
+  return result;
+}
+
+function parseYamlValue(val: string): JsonValue {
+  if (val === 'true') return true;
+  if (val === 'false') return false;
+  if (val === 'null' || val === '~') return null;
+  // Only plain decimal literals become numbers: rejects hex (0x10), Infinity,
+  // and zero-padded strings like '007' that YAML would treat as text anyway.
+  if (/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(val)) {
+    return Number(val);
+  }
+  // Strip quotes if present
+  if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+    return val.substring(1, val.length - 1);
+  }
+  return val;
+}
+
+// ---------------------------------------------------------------------------
+// Line scanning: source tags, text citations, file links, works-cited entries
+// ---------------------------------------------------------------------------
+// Pure single-line scanners consolidated from src/data/sourceProcessing.ts and
+// scripts/lib/evidenceRegistry.ts, so every corpus indexer shares one home for
+// the citation-matching rules.
+
+/** One `[TAG]` or `[TAG:23,26]` badge found on a line. */
+export interface CitationBadge {
+  /** Tag name: DOCS | GOOGLE | PROTOCOL | COMMUNITY | INFERRED | LIVE. */
+  tag: string;
+  /** Citation numbers for indexed badges (`[DOCS:23,26]`); empty for bare `[DOCS]`. */
+  numbers: number[];
+  matchedText: string;
+}
+
+/**
+ * Scan a line for source-tag badges: `[DOCS]`, `[GOOGLE:23]`, `[COMMUNITY:23,26]`.
+ * (Formerly inline `tagRegex` in sourceProcessing.ts and `tagMatch` in
+ * evidenceRegistry.ts.) Note `[LIVE-1.1.12 · 2026-08-13]` deliberately does not
+ * match — the tag must be followed by `]` or `:numbers]`.
+ */
+export function scanCitationBadges(line: string): CitationBadge[] {
+  const badges: CitationBadge[] = [];
+  const re = /\[(DOCS|GOOGLE|PROTOCOL|COMMUNITY|INFERRED|LIVE)(?::([0-9,\s]+))?\]/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(line)) !== null) {
+    const numbers = m[2]
+      ? m[2].split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n))
+      : [];
+    badges.push({ tag: m[1], numbers, matchedText: m[0] });
+  }
+  return badges;
+}
+
+/** One textual citation mention found on a line. */
+export interface TextMention {
+  number: number;
+  matchedText: string;
+}
+
+/**
+ * Scan a line for textual citation mentions: "Source #23", "Source 23",
+ * "Sources #01, #08", or footnote-style "[^23]". Only numbers 1..100 count.
+ * (Formerly inline `textCitationRegex` in sourceProcessing.ts.)
+ */
+export function scanTextMentions(line: string): TextMention[] {
+  const mentions: TextMention[] = [];
+  const re = /(?:Source|Sources)\s+#?(\d+)|\[\^(\d+)\]/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(line)) !== null) {
+    const numStr = m[1] || m[2];
+    const num = parseInt(numStr, 10);
+    if (!isNaN(num) && num > 0 && num <= 100) {
+      mentions.push({ number: num, matchedText: m[0] });
+    }
+  }
+  return mentions;
+}
+
+/**
+ * Filenames from `filenames` that appear as substrings anywhere in the line.
+ * (Formerly the `line.includes(fn)` loops in sourceProcessing.ts.)
+ */
+export function scanFileLinks(line: string, filenames: readonly string[]): string[] {
+  const found: string[] = [];
+  for (const fn of filenames) {
+    if (line.includes(fn)) found.push(fn);
+  }
+  return found;
+}
+
+/** One parsed §19 Works Cited entry (list item or table row). */
+export interface WorksCitedEntry {
+  number: number;
+  title: string;
+  url: string;
+  /** Category tag for table rows (`| 23 | [DOCS] | Title | URL |`); unset for list items. */
+  tag?: string;
+}
+
+/**
+ * Parse a §19 Works Cited line — either a list item ("1. Hooks — https://…")
+ * or a table row ("| 23 | [DOCS] | Title | https://… |"). Returns null when the
+ * line is not an entry. (Formerly inline `itemMatch` in sourceProcessing.ts and
+ * `listItemRe`/`tableRowRe` in evidenceRegistry.ts.)
+ */
+export function parseWorksCitedEntry(line: string): WorksCitedEntry | null {
+  const trimmed = line.trim();
+
+  const table = trimmed.match(/^\|\s*(\d+)\s*\|\s*`?\[([A-Z0-9-]+)\]`?\s*\|\s*(.+?)\s*\|\s*(https?:\/\/\S+)\s*\|/);
+  if (table) {
+    return { number: parseInt(table[1], 10), tag: table[2], title: table[3].trim(), url: table[4].trim() };
+  }
+
+  const list = trimmed.match(/^(\d+)\.\s+(.+?)\s+—\s+(https?:\/\/\S+)/);
+  if (list) {
+    return { number: parseInt(list[1], 10), title: list[2].trim(), url: list[3].trim().replace(/\)$/, '') };
+  }
+
+  return null;
 }
 
 export class Cell {

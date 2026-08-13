@@ -1,6 +1,15 @@
+import type { AnySchemaObject } from 'ajv';
+
 export type TabType = 'reference' | 'auditor' | 'schemas' | 'extensibility' | 'cli' | 'evidence' | 'sources' | 'adrs' | 'validation' | 'composed';
 
 export type SourceAuthority = 'DOCS' | 'LIVE' | 'GOOGLE' | 'PROTOCOL' | 'COMMUNITY' | 'INFERRED';
+
+/**
+ * A plain JSON value — the honest type for parsed YAML/JSON payloads that
+ * flow through the parser core and the workspace auditor.
+ */
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+
 
 export type AuditSeverity = 'ERROR' | 'WARNING' | 'INFO' | 'SUCCESS';
 
@@ -12,7 +21,7 @@ export interface AuditViolation {
   severity: AuditSeverity;
   instancePath?: string;
   expected?: string;
-  actual?: any;
+  actual?: JsonValue;
   fixable: boolean;
   suggestedFix?: string;
   fixedContent?: string;
@@ -63,7 +72,7 @@ export interface JsonSchemaItem {
   filename: string;
   title: string;
   description: string;
-  schema: Record<string, any>;
+  schema: AnySchemaObject;
   propertiesCount: number;
   requiredFields: string[];
 }

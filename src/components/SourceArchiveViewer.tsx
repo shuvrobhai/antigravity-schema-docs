@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { SourceCitation, TabType, SourceReferenceLocation, MergedSourceItem } from '../types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { normalizeCanonicalUrl } from '../data/sourceProcessing';
+import { extractFrontmatterBlock } from '../lib/markdownCore';
 import { CitationTooltip, LocationBadgeTooltip } from './CitationTooltip';
 import {
   ExternalLink,
@@ -91,10 +92,9 @@ export const SourceArchiveViewer: React.FC<SourceArchiveViewerProps> = ({
       const normUrl = normalizeCanonicalUrl(s.finalUrl || s.url || s.canonicalUrl || '');
       const groupKey = normUrl || `${s.category}:${normalizeTitle(s.title)}`;
 
-      if (!groupsMap.has(groupKey)) {
-        groupsMap.set(groupKey, []);
-      }
-      groupsMap.get(groupKey)!.push(s);
+      const group = groupsMap.get(groupKey) ?? [];
+      group.push(s);
+      groupsMap.set(groupKey, group);
     }
 
     let dupCount = 0;
@@ -606,7 +606,7 @@ export const SourceArchiveViewer: React.FC<SourceArchiveViewerProps> = ({
           <div className="space-y-2 pt-2">
             <div className="text-stone-400 text-xs font-semibold font-sans">Raw Frontmatter Header</div>
             <pre className="p-4 rounded-xl bg-stone-950 border border-stone-800 text-stone-300 overflow-x-auto text-[11px] leading-relaxed">
-              {currentSnapshot.rawContent.match(/^---\s*[\r\n]+([\s\S]*?)[\r\n]+---/)?.[0] ||
+              {extractFrontmatterBlock(currentSnapshot.rawContent) ||
                 '---\nsource: ' +
                   activeRecord.number +
                   '\ncategory: ' +

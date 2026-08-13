@@ -9,6 +9,8 @@
  *   - src/data/repository.ts — glob-backed, read-only (web app)
  */
 
+import type { AnySchemaObject } from 'ajv';
+
 /** One module of the Parent document (reference/NN-slug.md). */
 export interface ModuleDoc {
   /** Filename, e.g. "05-configuration-system.md". */
@@ -26,7 +28,7 @@ export interface ModuleDoc {
 export interface SchemaDoc {
   filename: string;
   /** Parsed schema object; undefined when the file was invalid JSON. */
-  schema?: Record<string, any>;
+  schema?: AnySchemaObject;
   /** Set by the CLI adapter when the schema file is not valid JSON. */
   error?: string;
 }

@@ -1,111 +1,11 @@
 import { validateAntigravityPayload, schemaRegistry } from './validator';
+import { extractFrontmatter } from '../lib/markdownCore';
+import { toErrorMessage } from '../lib/errors';
 import type { WorkspaceFileItem, WorkspaceAuditReport, FileAuditResult, AuditViolation } from '../types';
 
-/**
- * Lightweight frontmatter parser that extracts YAML frontmatter from Markdown files
- */
-export function extractFrontmatter(content: string): { frontmatter: Record<string, any> | null; body: string } {
-  const trimmed = content.trim();
-  if (!trimmed.startsWith('---')) {
-    return { frontmatter: null, body: content };
-  }
-
-  const match = trimmed.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n([\s\S]*))?$/);
-  if (!match) {
-    return { frontmatter: null, body: content };
-  }
-
-  const yamlStr = match[1];
-  const body = match[2] || '';
-  const parsed = parseSimpleYaml(yamlStr);
-  return { frontmatter: parsed, body };
-}
-
-/**
- * Simple, resilient YAML parser supporting strings, booleans, numbers, lists, and nested objects
- */
-export function parseSimpleYaml(yaml: string): Record<string, any> {
-  const lines = yaml.split(/\r?\n/);
-  const result: Record<string, any> = {};
-  let currentKey = '';
-  let currentList: any[] | null = null;
-  let currentNestedObj: Record<string, any> | null = null;
-
-  for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i];
-    const line = rawLine.trim();
-
-    // Skip empty lines or full comment lines
-    if (!line || line.startsWith('#')) continue;
-
-    // Check for list item under a key (e.g. "  - item" or "- item")
-    if (line.startsWith('- ')) {
-      const itemVal = parseYamlValue(line.substring(2).trim());
-      if (currentList) {
-        currentList.push(itemVal);
-      } else if (currentKey) {
-        currentList = [itemVal];
-        result[currentKey] = currentList;
-      }
-      continue;
-    }
-
-    // Check for nested indentation (e.g. "  key: value")
-    const isIndented = rawLine.startsWith('  ') || rawLine.startsWith('\t');
-    if (isIndented && currentKey && !line.startsWith('- ')) {
-      const colonIdx = line.indexOf(':');
-      if (colonIdx !== -1) {
-        const subKey = line.substring(0, colonIdx).trim();
-        const subValStr = line.substring(colonIdx + 1).trim();
-        const subVal = subValStr ? parseYamlValue(subValStr) : {};
-
-        if (!currentNestedObj) {
-          currentNestedObj = {};
-          result[currentKey] = currentNestedObj;
-        }
-        currentNestedObj[subKey] = subVal;
-        continue;
-      }
-    }
-
-    // Root level key: value
-    const colonIndex = line.indexOf(':');
-    if (colonIndex !== -1) {
-      currentKey = line.substring(0, colonIndex).trim();
-      const valPart = line.substring(colonIndex + 1).trim();
-      currentList = null;
-      currentNestedObj = null;
-
-      if (valPart === '') {
-        // Will be populated by subsequent list or nested object lines
-        result[currentKey] = {};
-        currentNestedObj = result[currentKey];
-      } else if (valPart.startsWith('[') && valPart.endsWith(']')) {
-        // JSON array format: ["a", "b"]
-        try {
-          result[currentKey] = JSON.parse(valPart);
-        } catch {
-          result[currentKey] = valPart.slice(1, -1).split(',').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
-        }
-      } else {
-        result[currentKey] = parseYamlValue(valPart);
-      }
-    }
-  }
-
-  return result;
-}
-
-function parseYamlValue(val: string): any {
-  if (val === 'true') return true;
-  if (val === 'false') return false;
-  if (val === 'null' || val === '~') return null;
-  if (!isNaN(Number(val)) && val !== '') return Number(val);
-  // Strip quotes if present
-  if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-    return val.substring(1, val.length - 1);
-  }
-  return val;
+/** Narrow a parsed payload to a plain JSON object. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -134,6 +34,9 @@ export function identifyFileSchemaKey(filePath: string): string | null {
   }
   if ((norm.includes('/rules/') || norm.startsWith('rules/')) && norm.endsWith('.md')) {
     return 'rule';
+  }
+  if ((norm.includes('/workflows/') || norm.startsWith('workflows/')) && norm.endsWith('.md')) {
+    return 'workflow';
   }
   if (norm.endsWith('plugin.json')) {
     return 'plugin';
@@ -195,7 +98,7 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
     }
 
     const descriptor = schemaRegistry.get(schemaKey);
-    let payload: any = null;
+    let payload: unknown = null;
     let parseError: string | null = null;
     let isMarkdownFrontmatter = false;
 
@@ -210,8 +113,8 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
     } else {
       try {
         payload = JSON.parse(file.content);
-      } catch (err: any) {
-        parseError = `Invalid JSON syntax: ${err.message}`;
+      } catch (err) {
+        parseError = `Invalid JSON syntax: ${toErrorMessage(err)}`;
       }
     }
 
@@ -226,6 +129,33 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
         suggestedFix: isMarkdownFrontmatter 
           ? 'Add valid YAML frontmatter headers at the top of the file: ---\\nname: my-item\\ndescription: my desc\\n---'
           : 'Fix JSON syntax (check for trailing commas or unquoted strings)',
+      });
+
+      fileResults.push({
+        path: file.path,
+        schemaKey,
+        schemaTitle: descriptor?.title || schemaKey,
+        valid: false,
+        violations,
+        autoFixAvailable: false,
+      });
+      continue;
+    }
+
+    // Both sources must yield a JSON object at the root. Guarding here also
+    // keeps `in`/property access from throwing on scalar or array payloads.
+    if (!isRecord(payload)) {
+      const shape = Array.isArray(payload) ? 'array' : typeof payload;
+      violations.push({
+        id: `root_type_error_${file.path}`,
+        file: file.path,
+        rule: 'syntax_error',
+        message: `Payload must be a JSON object at the root (got ${shape}).`,
+        severity: 'ERROR',
+        fixable: false,
+        suggestedFix: isMarkdownFrontmatter
+          ? 'Add valid YAML frontmatter headers at the top of the file: ---\\nname: my-item\\ndescription: my desc\\n---'
+          : 'Fix JSON syntax (wrap the contents in { } if you meant to declare an object)',
       });
 
       fileResults.push({
@@ -259,7 +189,8 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
           delete cleanPayload.theme;
         }
         if ('autoApprove' in cleanPayload) {
-          cleanPayload.toolPermission = cleanPayload.autoApprove?.execute ? 'allow' : 'request-review';
+          const autoApprove = cleanPayload.autoApprove;
+          cleanPayload.toolPermission = isRecord(autoApprove) && autoApprove.execute ? 'allow' : 'request-review';
           delete cleanPayload.autoApprove;
         }
 
@@ -279,20 +210,25 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
 
     // Skill Validation & Extraction
     if (schemaKey === 'skill') {
-      if (payload.name) {
-        discoveredSkills.add(payload.name);
+      const skillName = typeof payload.name === 'string' ? payload.name : '';
+      if (skillName) {
+        discoveredSkills.add(skillName);
         // Check for kebab-case name requirement
-        if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(payload.name)) {
-          const suggestedKebab = payload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          const fixedPayload = { ...payload, name: suggestedKebab };
+        if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(skillName)) {
+          const suggestedKebab = skillName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
           const { body } = extractFrontmatter(file.content);
-          const fixedYaml = `---\nname: ${suggestedKebab}\ndescription: ${payload.description || ''}\n${payload.metadata ? `metadata:\n  version: ${payload.metadata.version || '1.0.0'}\n` : ''}---\n${body}`;
+          const description = typeof payload.description === 'string' ? payload.description : '';
+          const metadata = isRecord(payload.metadata) ? payload.metadata : null;
+          const rawVersion = metadata?.version;
+          const version =
+            typeof rawVersion === 'string' || typeof rawVersion === 'number' ? rawVersion : '1.0.0';
+          const fixedYaml = `---\nname: ${suggestedKebab}\ndescription: ${description}\n${metadata ? `metadata:\n  version: ${version}\n` : ''}---\n${body}`;
 
           violations.push({
             id: `skill_name_case_${file.path}`,
             file: file.path,
             rule: 'skill_naming_convention',
-            message: `Skill name '${payload.name}' must be kebab-case (e.g. 'my-skill-name') with no spaces or capital letters.`,
+            message: `Skill name '${skillName}' must be kebab-case (e.g. 'my-skill-name') with no spaces or capital letters.`,
             severity: 'ERROR',
             fixable: true,
             suggestedFix: `Rename skill to '${suggestedKebab}'`,
@@ -305,10 +241,14 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
 
     // Agent Validation & Extraction
     if (schemaKey === 'agent') {
-      const agentSkills = Array.isArray(payload.skills) ? payload.skills : [];
-      const agentTools = Array.isArray(payload.tools) ? payload.tools : [];
+      const agentSkills = Array.isArray(payload.skills)
+        ? payload.skills.filter((s): s is string => typeof s === 'string')
+        : [];
+      const agentTools = Array.isArray(payload.tools)
+        ? payload.tools.filter((t): t is string => typeof t === 'string')
+        : [];
       discoveredAgents.push({
-        name: payload.name || file.path,
+        name: typeof payload.name === 'string' ? payload.name : file.path,
         file: file.path,
         requiredSkills: agentSkills,
         tools: agentTools,
@@ -318,7 +258,7 @@ export function auditWorkspaceFiles(files: WorkspaceFileItem[]): WorkspaceAuditR
     // MCP Validation & Extraction
     if (schemaKey === 'mcp_config') {
       hasMcpConfig = true;
-      if (payload.mcpServers && typeof payload.mcpServers === 'object') {
+      if (payload.mcpServers && typeof payload.mcpServers === 'object' && !Array.isArray(payload.mcpServers)) {
         for (const serverName of Object.keys(payload.mcpServers)) {
           discoveredMcpServers.add(serverName);
         }

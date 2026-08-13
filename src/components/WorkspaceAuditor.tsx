@@ -36,6 +36,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { auditWorkspaceFiles, applyAutoFixes } from '../schema/auditor';
+import { toErrorMessage } from '../lib/errors';
 import type { WorkspaceFileItem, AuditViolation } from '../types';
 
 // Preset sample workspaces for instant 1-click loading
@@ -362,6 +363,14 @@ Instructions on patterns to follow and anti-patterns to avoid.
   },
 ];
 
+function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
+  return handle.kind === 'file';
+}
+
+function isDirectoryHandle(handle: FileSystemHandle): handle is FileSystemDirectoryHandle {
+  return handle.kind === 'directory';
+}
+
 const IGNORED_DIRECTORIES = new Set([
   'node_modules',
   '.git',
@@ -402,7 +411,7 @@ export const WorkspaceAuditor: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // File System Access API Handle State
-  const [localDirHandle, setLocalDirHandle] = useState<any | null>(null);
+  const [localDirHandle, setLocalDirHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [localDirName, setLocalDirName] = useState<string | null>(null);
 
   // Template Modal State
@@ -504,19 +513,19 @@ export const WorkspaceAuditor: React.FC = () => {
     }
 
     try {
-      const dirHandle = await (window as any).showDirectoryPicker({
+      const dirHandle = await window.showDirectoryPicker({
         mode: 'readwrite',
       });
 
       const loadedFiles: WorkspaceFileItem[] = [];
 
-      async function scanDirectory(handle: any, relativePath: string = '') {
+      async function scanDirectory(handle: FileSystemDirectoryHandle, relativePath: string = '') {
         for await (const [name, entry] of handle.entries()) {
           if (IGNORED_DIRECTORIES.has(name) || (name.startsWith('.') && name !== '.agents')) {
             continue;
           }
           const currentRel = relativePath ? `${relativePath}/${name}` : name;
-          if (entry.kind === 'file') {
+          if (isFileHandle(entry)) {
             if (
               name.endsWith('.json') ||
               name.endsWith('.md') ||
@@ -531,7 +540,7 @@ export const WorkspaceAuditor: React.FC = () => {
                 console.warn(`Could not read file ${currentRel}:`, e);
               }
             }
-          } else if (entry.kind === 'directory') {
+          } else if (isDirectoryHandle(entry)) {
             await scanDirectory(entry, currentRel);
           }
         }
@@ -554,11 +563,10 @@ export const WorkspaceAuditor: React.FC = () => {
       });
       setBaselineFiles(baseMap);
       setSelectedFilePath(loadedFiles[0].path);
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        console.error('Failed to open directory:', err);
-        alert('Could not access selected directory: ' + err.message);
-      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      console.error('Failed to open directory:', err);
+      alert('Could not access selected directory: ' + toErrorMessage(err));
     }
   };
 
@@ -677,11 +685,11 @@ export const WorkspaceAuditor: React.FC = () => {
     if (!targetHandle) {
       if ('showDirectoryPicker' in window) {
         try {
-          targetHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+          targetHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
           setLocalDirHandle(targetHandle);
           setLocalDirName(targetHandle.name);
-        } catch (err: any) {
-          if (err.name === 'AbortError') return;
+        } catch (err) {
+          if (err instanceof DOMException && err.name === 'AbortError') return;
           // Fallback export as JSON
           handleExportBundle();
           setIsDiffModalOpen(false);
@@ -727,9 +735,9 @@ export const WorkspaceAuditor: React.FC = () => {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
       setIsDiffModalOpen(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to save to disk:', err);
-      alert('Failed to write changes to filesystem: ' + err.message);
+      alert('Failed to write changes to filesystem: ' + toErrorMessage(err));
     } finally {
       setIsSaving(false);
     }

@@ -1,4 +1,4 @@
-import { ReferenceModule, JsonSchemaItem, EvidenceProbe, SourceCitation, AdrRecord } from '../types';
+import { ReferenceModule, JsonSchemaItem, EvidenceProbe, SourceCitation, AdrRecord, JsonValue } from '../types';
 import {
   groupDuplicateSources,
   indexSourceReferenceLocations,
@@ -6,7 +6,7 @@ import {
   SourceArchiveStats,
   parseSourceFrontmatter,
 } from './sourceProcessing';
-import { extractHeadings as parseHeadings } from '../lib/markdownCore';
+import { extractHeadings as parseHeadings, parseYamlFrontmatter } from '../lib/markdownCore';
 import { flattenCitations, normalizePath } from '../lib/documentStore';
 import type { DocumentStore, CitationDoc } from '../lib/documentStore';
 
@@ -14,7 +14,7 @@ import type { DocumentStore, CitationDoc } from '../lib/documentStore';
 const rawReferenceModules = import.meta.glob('/reference/*.md', { query: '?raw', eager: true }) as Record<string, { default: string } | string>;
 
 // Load all schemas
-const rawSchemas = import.meta.glob('/schemas/*.schema.json', { eager: true }) as Record<string, { default: any } | any>;
+const rawSchemas = import.meta.glob('/schemas/*.schema.json', { eager: true }) as Record<string, unknown>;
 
 // Load ADR files
 const rawAdrs = import.meta.glob('/docs/adr/*.md', { query: '?raw', eager: true }) as Record<string, { default: string } | string>;
@@ -60,14 +60,23 @@ export const referenceModules: ReferenceModule[] = Object.entries(rawReferenceMo
 // 2. Process JSON Schemas
 export const jsonSchemas: JsonSchemaItem[] = Object.entries(rawSchemas)
   .map(([path, schemaObj]) => {
-    const schema = (schemaObj && typeof schemaObj === 'object' && 'default' in schemaObj) ? schemaObj.default : schemaObj;
+    const raw =
+      schemaObj && typeof schemaObj === 'object' && 'default' in schemaObj ? schemaObj.default : schemaObj;
+    const schema = (raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}) as Record<string, JsonValue>;
     const filename = path.split('/').pop() || '';
     const name = filename.replace('.schema.json', '');
-    const title = schema.title || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    const description = schema.description || 'Google Antigravity configuration schema';
-    const properties = schema.properties || {};
+    const title =
+      typeof schema.title === 'string' ? schema.title : name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const description =
+      typeof schema.description === 'string' ? schema.description : 'Google Antigravity configuration schema';
+    const properties =
+      schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties)
+        ? schema.properties
+        : {};
     const propertiesCount = Object.keys(properties).length;
-    const requiredFields = Array.isArray(schema.required) ? schema.required : [];
+    const requiredFields = Array.isArray(schema.required)
+      ? schema.required.filter((r): r is string => typeof r === 'string')
+      : [];
 
     return {
       id: filename,
@@ -128,26 +137,18 @@ export function parseEvidenceProbesFromFiles(): EvidenceProbe[] {
   if (probeEntries.length > 0) {
     return probeEntries.map(([path, contentObj]) => {
       const raw = extractContent(contentObj);
-      const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-      const fmText = m ? m[1] : '';
-      const body = m ? m[2] : raw;
-
-      const getFm = (k: string) => {
-        const line = fmText.split(/\r?\n/).find(l => l.trim().startsWith(`${k}:`));
-        if (!line) return '';
-        return line.slice(line.indexOf(':') + 1).trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-      };
+      const { frontmatter, body } = parseYamlFrontmatter(raw);
 
       const filename = path.split('/').pop()?.replace('.md', '') || 'EV-000';
-      const id = getFm('probe_id') || filename;
-      const title = getFm('title') || filename;
-      const rawStatus = getFm('status').toUpperCase();
+      const id = String(frontmatter['probe_id'] || '') || filename;
+      const title = String(frontmatter['title'] || '') || filename;
+      const rawStatus = String(frontmatter['status'] || '').toUpperCase();
       const status: EvidenceProbe['status'] =
         rawStatus === 'RESOLVED' || rawStatus === 'VERIFIED' || rawStatus === 'UNRESOLVED' || rawStatus === 'INVESTIGATING'
           ? (rawStatus as EvidenceProbe['status'])
           : 'RESOLVED';
-      const category = getFm('category') || 'CLI & Agent Internals';
-      const executedAt = getFm('executed_at') || '2026-08-13';
+      const category = String(frontmatter['category'] || '') || 'CLI & Agent Internals';
+      const executedAt = String(frontmatter['executed_at'] || '') || '2026-08-13';
 
       return {
         id,

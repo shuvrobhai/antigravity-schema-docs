@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Ajv2020 from 'ajv/dist/2020.js';
+import type { AnySchemaObject } from 'ajv';
 
 interface TestFixture {
   schemaKey: string;
@@ -9,7 +10,7 @@ interface TestFixture {
   name: string;
 }
 
-const ajv = new (Ajv2020 as any)({
+const ajv = new Ajv2020({
   allErrors: true,
   strict: false,
 });
@@ -18,7 +19,7 @@ const SCHEMAS_DIR = path.resolve('schemas');
 const FIXTURES_DIR = path.resolve('test/fixtures');
 
 // Load schemas into Ajv
-const schemas = new Map<string, any>();
+const schemas = new Map<string, AnySchemaObject>();
 const schemaFiles = fs.readdirSync(SCHEMAS_DIR).filter(f => f.endsWith('.schema.json'));
 
 for (const file of schemaFiles) {
@@ -73,7 +74,7 @@ export function runSchemaTests(): boolean {
 
     const payload = JSON.parse(fs.readFileSync(fixture.fixturePath, 'utf-8'));
     const validator = ajv.compile(schema);
-    const valid = validator(payload) as boolean;
+    const valid = !!validator(payload);
 
     if (valid === fixture.expectedValid) {
       passed++;

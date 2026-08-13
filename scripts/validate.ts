@@ -3,6 +3,7 @@ import * as path from 'path';
 import { runChecks } from '../src/lib/integrityGate';
 import type { DocumentStore, ModuleDoc, SchemaDoc, ProbeDoc, CitationDoc } from '../src/lib/documentStore';
 import { extractHeadings } from '../src/lib/markdownCore';
+import { toErrorMessage } from '../src/lib/errors';
 import { EvidenceRegistry, readSnapshotHeader } from './lib/evidenceRegistry';
 import { runEvidenceGeneration } from './generate_evidence';
 import * as buildTool from './build';
@@ -51,8 +52,8 @@ function loadSchemas(): SchemaDoc[] {
     try {
       const schema = JSON.parse(fs.readFileSync(path.join(SCHEMAS_DIR, f), 'utf-8'));
       return { filename: f, schema };
-    } catch (e: any) {
-      return { filename: f, error: e?.message || String(e) };
+    } catch (e) {
+      return { filename: f, error: toErrorMessage(e) };
     }
   });
 }

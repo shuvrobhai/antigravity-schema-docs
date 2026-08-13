@@ -106,9 +106,12 @@ const CodeBlockWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
 
   const handleCopy = () => {
     let text = '';
-    React.Children.forEach(children, (child: any) => {
-      if (child && child.props && child.props.children) {
-        text += String(child.props.children);
+    React.Children.forEach(children, child => {
+      if (React.isValidElement<{ children?: React.ReactNode }>(child)) {
+        const childContent = child.props.children;
+        if (childContent !== null && childContent !== undefined) {
+          text += String(childContent);
+        }
       }
     });
 

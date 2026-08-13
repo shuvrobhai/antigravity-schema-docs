@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { parseYamlFrontmatter } from '../src/lib/markdownCore';
 
 const ROOT = process.cwd();
 const EVIDENCE_ROOT = path.join(ROOT, 'evidence');
@@ -45,66 +46,6 @@ export interface ReportFrontmatter {
   evidence_refs?: string[];
 }
 
-export function parseYamlFrontmatter(content: string): { frontmatter: Record<string, any>; body: string } {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) {
-    return { frontmatter: {}, body: content };
-  }
-
-  const rawYaml = match[1];
-  const body = match[2];
-  const frontmatter: Record<string, any> = {};
-
-  const lines = rawYaml.split(/\r?\n/);
-  let currentKey: string | null = null;
-  let isArray = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-
-    // Array item under currentKey
-    if (line.startsWith('  - ') || line.startsWith('    - ') || trimmed.startsWith('- ')) {
-      if (currentKey) {
-        if (!Array.isArray(frontmatter[currentKey])) {
-          frontmatter[currentKey] = [];
-        }
-        const val = trimmed.replace(/^-\s*/, '').replace(/^"|"$/g, '').trim();
-        frontmatter[currentKey].push(val);
-      }
-      continue;
-    }
-
-    const colonIdx = line.indexOf(':');
-    if (colonIdx !== -1) {
-      const k = line.slice(0, colonIdx).trim();
-      let v = line.slice(colonIdx + 1).trim();
-
-      // Check for inline array: ["a", "b"]
-      if (v.startsWith('[') && v.endsWith(']')) {
-        const inner = v.slice(1, -1).trim();
-        frontmatter[k] = inner
-          ? inner.split(',').map(s => s.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, ''))
-          : [];
-        currentKey = k;
-        isArray = false;
-      } else if (v === '') {
-        currentKey = k;
-        frontmatter[k] = [];
-        isArray = true;
-      } else {
-        // Strip quotes and trailing comments
-        v = v.replace(/\s+#.*$/, '').replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-        frontmatter[k] = v;
-        currentKey = k;
-        isArray = false;
-      }
-    }
-  }
-
-  return { frontmatter, body };
-}
-
 export function generateProbeIndex(version: string = 'agy-1.1.12'): string {
   const versionDir = path.join(EVIDENCE_ROOT, 'probes', version);
   if (!fs.existsSync(versionDir)) return '';
@@ -147,9 +88,9 @@ export function compileAggregateProbeFile(version: string = 'agy-1.1.12'): strin
   for (const f of files) {
     const content = fs.readFileSync(path.join(versionDir, f), 'utf-8');
     const { frontmatter, body } = parseYamlFrontmatter(content);
-    const id = frontmatter.probe_id || f.replace('.md', '');
+    const id = typeof frontmatter.probe_id === 'string' ? frontmatter.probe_id : f.replace('.md', '');
     const title = frontmatter.title || 'Untitled Probe';
-    const resultSummary = frontmatter.tags ? frontmatter.tags.join(', ') : 'verified';
+    const resultSummary = Array.isArray(frontmatter.tags) ? frontmatter.tags.join(', ') : 'verified';
 
     summaryRows.push(`| ${id} | ${title} | ${frontmatter.status || 'RESOLVED'} |`);
 

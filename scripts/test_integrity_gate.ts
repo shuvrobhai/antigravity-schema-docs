@@ -138,7 +138,7 @@ function fixtureSchemas(): SchemaDoc[] {
       },
     },
   ];
-  for (let i = 4; i <= 18; i++) {
+  for (let i = 4; i <= 19; i++) {
     const name = `fixture_${String(i).padStart(2, '0')}`;
     schemas.push({ filename: `${name}.schema.json`, schema: { title: name, description: 'x', properties: {} } });
   }
@@ -204,7 +204,7 @@ function buildFixtureStore(overrides: FixtureOverrides = {}): DocumentStore {
   docMap.set('README.md', readCorpusFile('README.md'));
   for (const m of modules) docMap.set(`reference/${m.filename}`, m.rawContent);
   for (const s of snapshots) docMap.set(s.path, s.rawContent);
-  docMap.set('evidence/sources/index.md', manifestText);
+  docMap.set('evidence/sources/index.md', manifestText ?? '');
   docMap.set('antigravity-reference.md', parentComposed);
 
   const headers = new Map<string, { status: string; fetched: string }>();

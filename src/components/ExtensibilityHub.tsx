@@ -1,9 +1,27 @@
 import React, { useState } from 'react';
-import { Copy, Check, Sparkles, Box, Shield, Terminal, Cpu, FileCode, Layers, CheckCircle2, Download, AlertCircle, Wrench } from 'lucide-react';
+import { Copy, Check, Sparkles, Box, Shield, Terminal, Cpu, FileCode, Layers, CheckCircle2, Download, AlertCircle, Wrench, type LucideIcon } from 'lucide-react';
 import Ajv from 'ajv';
+import type { JsonValue } from '../types';
+
+type SubtoolId = 'skill' | 'plugin' | 'mcp' | 'hook' | 'agent' | 'rule';
+type McpTransport = 'stdio' | 'remote';
+type McpAuthProvider = 'none' | 'google_credentials' | 'oauth';
+type HookEvent = 'PreToolUse' | 'PostToolUse' | 'PreInvocation' | 'PostInvocation' | 'Stop';
+type AgentModel = 'inherit' | 'pro' | 'flash';
+type AgentPolicy = 'sandbox' | 'auto' | 'eager' | 'off';
+type RuleMode = 'Always On' | 'Manual' | 'Model Decision' | 'Glob';
+
+const SUBTOOLS: { id: SubtoolId; label: string; icon: LucideIcon; section: string }[] = [
+  { id: 'skill', label: 'Skill (SKILL.md)', icon: Sparkles, section: '§4.2' },
+  { id: 'plugin', label: 'Plugin Manifest', icon: Box, section: '§4.4' },
+  { id: 'mcp', label: 'MCP Config', icon: Cpu, section: '§4.5' },
+  { id: 'hook', label: 'Lifecycle Hook', icon: Terminal, section: '§4.8' },
+  { id: 'agent', label: 'Custom Agent', icon: Layers, section: '§4.3' },
+  { id: 'rule', label: 'Rule Definition', icon: Shield, section: '§4.6' },
+];
 
 export const ExtensibilityHub: React.FC = () => {
-  const [activeSubtool, setActiveSubtool] = useState<'skill' | 'plugin' | 'mcp' | 'hook' | 'agent' | 'rule'>('skill');
+  const [activeSubtool, setActiveSubtool] = useState<SubtoolId>('skill');
   const [copied, setCopied] = useState(false);
 
   // Skill Generator State
@@ -26,18 +44,18 @@ export const ExtensibilityHub: React.FC = () => {
 
   // MCP Configurator State
   const [mcpServerName, setMcpServerName] = useState('github-integration');
-  const [mcpTransport, setMcpTransport] = useState<'stdio' | 'remote'>('stdio');
+  const [mcpTransport, setMcpTransport] = useState<McpTransport>('stdio');
   const [mcpCommand, setMcpCommand] = useState('npx');
   const [mcpArgs, setMcpArgs] = useState('-y @modelcontextprotocol/server-github');
   const [mcpRemoteUrl, setMcpRemoteUrl] = useState('https://api.github.com/mcp/');
   const [mcpEnvKey, setMcpEnvKey] = useState('GITHUB_PERSONAL_ACCESS_TOKEN');
   const [mcpEnvVal, setMcpEnvVal] = useState('${GITHUB_TOKEN}');
-  const [mcpAuthProvider, setMcpAuthProvider] = useState<'none' | 'google_credentials' | 'oauth'>('none');
+  const [mcpAuthProvider, setMcpAuthProvider] = useState<McpAuthProvider>('none');
   const [mcpTimeout, setMcpTimeout] = useState<number>(30);
 
   // Hook Configurator State
   const [hookName, setHookName] = useState('linter-gate');
-  const [hookEvent, setHookEvent] = useState<'PreToolUse' | 'PostToolUse' | 'PreInvocation' | 'PostInvocation' | 'Stop'>('PostToolUse');
+  const [hookEvent, setHookEvent] = useState<HookEvent>('PostToolUse');
   const [hookMatcher, setHookMatcher] = useState('run_command');
   const [hookCommand, setHookCommand] = useState('./scripts/lint-check.sh');
   const [hookTimeout, setHookTimeout] = useState(15);
@@ -46,8 +64,8 @@ export const ExtensibilityHub: React.FC = () => {
   // Custom Agent State
   const [agentName, setAgentName] = useState('qa-engineer');
   const [agentDesc, setAgentDesc] = useState('Automates end-to-end regression tests and generates coverage reports.');
-  const [agentModel, setAgentModel] = useState<'inherit' | 'pro' | 'flash'>('inherit');
-  const [agentPolicy, setAgentPolicy] = useState<'sandbox' | 'auto' | 'eager' | 'off'>('sandbox');
+  const [agentModel, setAgentModel] = useState<AgentModel>('inherit');
+  const [agentPolicy, setAgentPolicy] = useState<AgentPolicy>('sandbox');
   const [agentIsSubagent, setAgentIsSubagent] = useState(true);
   const [agentIsMain, setAgentIsMain] = useState(true);
   const [agentTools, setAgentTools] = useState<string[]>(['view_file', 'run_command', 'grep_search']);
@@ -55,7 +73,7 @@ export const ExtensibilityHub: React.FC = () => {
 
   // Rule Generator State
   const [ruleName, setRuleName] = useState('typescript-strictness');
-  const [ruleMode, setRuleMode] = useState<'Always On' | 'Manual' | 'Model Decision' | 'Glob'>('Glob');
+  const [ruleMode, setRuleMode] = useState<RuleMode>('Glob');
   const [ruleGlob, setRuleGlob] = useState('src/**/*.{ts,tsx}');
   const [ruleContent, setRuleContent] = useState(`All TypeScript files must adhere to strict type checking. Never use 'any' without an explicit code comment justifying the exception. Prefer interfaces over type aliases for object definitions.`);
 
@@ -94,7 +112,7 @@ ${skillBody}
 
   // Generate MCP Config Output
   const generateMcpConfig = () => {
-    const serverObj: Record<string, any> = {};
+    const serverObj: Record<string, JsonValue> = {};
     if (mcpTransport === 'stdio') {
       serverObj.command = mcpCommand;
       serverObj.args = mcpArgs.split(' ').filter(Boolean);
@@ -129,10 +147,10 @@ ${skillBody}
 
   // Generate Hooks Config Output
   const generateHooksConfig = () => {
-    const hookObj: Record<string, any> = {};
+    const hookObj: Record<string, JsonValue> = {};
     if (!hookEnabled) hookObj.enabled = false;
 
-    const eventEntry: Record<string, any> = {
+    const eventEntry: Record<string, JsonValue> = {
       hooks: [
         {
           type: 'command',
@@ -260,20 +278,13 @@ ${ruleContent}
 
       {/* Extensibility Pillar Switcher Tabs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-        {[
-          { id: 'skill', label: 'Skill (SKILL.md)', icon: Sparkles, section: '§4.2' },
-          { id: 'plugin', label: 'Plugin Manifest', icon: Box, section: '§4.4' },
-          { id: 'mcp', label: 'MCP Config', icon: Cpu, section: '§4.5' },
-          { id: 'hook', label: 'Lifecycle Hook', icon: Terminal, section: '§4.8' },
-          { id: 'agent', label: 'Custom Agent', icon: Layers, section: '§4.3' },
-          { id: 'rule', label: 'Rule Definition', icon: Shield, section: '§4.6' },
-        ].map(item => {
+        {SUBTOOLS.map(item => {
           const Icon = item.icon;
           const isActive = activeSubtool === item.id;
           return (
             <button
               key={item.id}
-              onClick={() => setActiveSubtool(item.id as any)}
+              onClick={() => setActiveSubtool(item.id)}
               className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                 isActive
                   ? 'bg-cyan-950/80 border-cyan-700/80 text-white shadow-lg shadow-cyan-950/40 ring-1 ring-cyan-500/30'
@@ -494,7 +505,7 @@ ${pluginHasSkills ? '├── skills/\n' : ''}${pluginHasAgents ? '├── ag
                   <label className="block text-stone-400 mb-1">Transport:</label>
                   <select
                     value={mcpTransport}
-                    onChange={e => setMcpTransport(e.target.value as any)}
+                    onChange={e => setMcpTransport(e.target.value as McpTransport)}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
                   >
                     <option value="stdio">Stdio (Local command)</option>
@@ -561,7 +572,7 @@ ${pluginHasSkills ? '├── skills/\n' : ''}${pluginHasAgents ? '├── ag
                   <label className="block text-stone-400 mb-1">Authentication:</label>
                   <select
                     value={mcpAuthProvider}
-                    onChange={e => setMcpAuthProvider(e.target.value as any)}
+                    onChange={e => setMcpAuthProvider(e.target.value as McpAuthProvider)}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
                   >
                     <option value="none">None / Custom Headers</option>
@@ -599,7 +610,7 @@ ${pluginHasSkills ? '├── skills/\n' : ''}${pluginHasAgents ? '├── ag
                   <label className="block text-stone-400 mb-1">Lifecycle Event:</label>
                   <select
                     value={hookEvent}
-                    onChange={e => setHookEvent(e.target.value as any)}
+                    onChange={e => setHookEvent(e.target.value as HookEvent)}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
                   >
                     <option value="PreToolUse">PreToolUse (Before tool execution)</option>
@@ -676,7 +687,7 @@ ${pluginHasSkills ? '├── skills/\n' : ''}${pluginHasAgents ? '├── ag
                   <label className="block text-stone-400 mb-1">Model Tier:</label>
                   <select
                     value={agentModel}
-                    onChange={e => setAgentModel(e.target.value as any)}
+                    onChange={e => setAgentModel(e.target.value as AgentModel)}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
                   >
                     <option value="inherit">inherit (Dynamic cascade)</option>
@@ -701,7 +712,7 @@ ${pluginHasSkills ? '├── skills/\n' : ''}${pluginHasAgents ? '├── ag
                   <label className="block text-stone-400 mb-1">Command Execution Policy:</label>
                   <select
                     value={agentPolicy}
-                    onChange={e => setAgentPolicy(e.target.value as any)}
+                    onChange={e => setAgentPolicy(e.target.value as AgentPolicy)}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
                   >
                     <option value="sandbox">sandbox (Safe execution)</option>
@@ -761,7 +772,7 @@ ${pluginHasSkills ? '├── skills/\n' : ''}${pluginHasAgents ? '├── ag
                   <label className="block text-stone-400 mb-1">Activation Mode:</label>
                   <select
                     value={ruleMode}
-                    onChange={e => setRuleMode(e.target.value as any)}
+                    onChange={e => setRuleMode(e.target.value as RuleMode)}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
                   >
                     <option value="Glob">Glob (Active files match pattern)</option>

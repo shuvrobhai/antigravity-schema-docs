@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { JsonSchemaItem } from '../types';
+import { JsonSchemaItem, JsonValue } from '../types';
 import Ajv2020 from 'ajv/dist/2020.js';
+import { toErrorMessage } from '../lib/errors';
 import { Copy, Check, Play, FileJson, AlertCircle, CheckCircle2, RefreshCw, Download } from 'lucide-react';
 
 interface SchemaExplorerProps {
   schemaItem: JsonSchemaItem;
 }
 
-const ajv = new (Ajv2020 as any)({ allErrors: true, strict: false });
+/** The subset of a JSON Schema property object the inspector renders. */
+interface SchemaPropDef {
+  type?: string;
+  enum?: JsonValue[];
+  default?: JsonValue;
+  description?: string;
+}
+
+function schemaProps(schema: JsonSchemaItem['schema']): Record<string, SchemaPropDef> {
+  const props = schema.properties;
+  return props && typeof props === 'object' && !Array.isArray(props) ? (props as Record<string, SchemaPropDef>) : {};
+}
+
+const ajv = new Ajv2020({ allErrors: true, strict: false });
 
 export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({ schemaItem }) => {
   const [activeTab, setActiveTab] = useState<'visual' | 'playground' | 'raw'>('visual');
@@ -25,10 +39,10 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({ schemaItem }) =>
   }, [schemaItem.id]);
 
   const generateSamplePayload = () => {
-    const sample: Record<string, any> = {};
-    const props = schemaItem.schema.properties || {};
+    const sample: Record<string, JsonValue> = {};
+    const props = schemaProps(schemaItem.schema);
 
-    for (const [key, value] of Object.entries<any>(props)) {
+    for (const [key, value] of Object.entries(props)) {
       if (value.default !== undefined) {
         sample[key] = value.default;
       } else if (value.enum && value.enum.length > 0) {
@@ -62,17 +76,17 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({ schemaItem }) =>
         });
       } else {
         const errors = (validate.errors || []).map(
-          (err: any) => `${err.instancePath ? err.instancePath + ' ' : ''}${err.message || 'Validation error'}`
+          err => `${err.instancePath ? err.instancePath + ' ' : ''}${err.message || 'Validation error'}`
         );
         setValidationResult({
           valid: false,
           errors,
         });
       }
-    } catch (e: any) {
+    } catch (e) {
       setValidationResult({
         valid: false,
-        errors: [`JSON Syntax Error: ${e.message}`],
+        errors: [`JSON Syntax Error: ${toErrorMessage(e)}`],
       });
     }
   };
@@ -93,7 +107,7 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({ schemaItem }) =>
     downloadAnchor.remove();
   };
 
-  const properties = schemaItem.schema.properties || {};
+  const properties = schemaProps(schemaItem.schema);
 
   return (
     <div className="flex-1 h-[calc(100vh-4rem)] overflow-y-auto px-6 lg:px-12 py-8 space-y-6 max-w-5xl mx-auto">
@@ -201,7 +215,7 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({ schemaItem }) =>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-800/60 font-mono">
-                  {Object.entries<any>(properties).map(([propName, propDef]) => {
+                  {Object.entries(properties).map(([propName, propDef]) => {
                     const isRequired = schemaItem.requiredFields.includes(propName);
                     return (
                       <tr key={propName} className="hover:bg-stone-850/50 transition-colors">
@@ -229,9 +243,9 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({ schemaItem }) =>
                             <code className="text-amber-300 text-[11px]">{JSON.stringify(propDef.default)}</code>
                           ) : propDef.enum ? (
                             <div className="flex flex-wrap gap-1">
-                              {propDef.enum.slice(0, 3).map((e: string) => (
-                                <span key={e} className="text-[10px] bg-stone-800 text-stone-300 px-1.5 py-0.2 rounded">
-                                  {e}
+                              {propDef.enum.slice(0, 3).map(e => (
+                                <span key={String(e)} className="text-[10px] bg-stone-800 text-stone-300 px-1.5 py-0.2 rounded">
+                                  {String(e)}
                                 </span>
                               ))}
                               {propDef.enum.length > 3 && <span className="text-[10px] text-stone-500">+{propDef.enum.length - 3}</span>}

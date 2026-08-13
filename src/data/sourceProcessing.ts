@@ -7,7 +7,13 @@ import {
   AdrRecord,
   JsonSchemaItem,
 } from '../types';
-import { parseFrontmatterMap } from '../lib/markdownCore';
+import {
+  parseFrontmatterMap,
+  scanCitationBadges,
+  scanTextMentions,
+  scanFileLinks,
+  parseWorksCitedEntry,
+} from '../lib/markdownCore';
 
 /**
  * Normalizes a URL for canonical matching and duplicate detection.
@@ -136,10 +142,9 @@ export function groupDuplicateSources(rawInputs: RawSourceInput[]): SourceCitati
     // If no URL, group by category + title slug
     const groupKey = normUrl || `${item.category}:${item.title.toLowerCase().replace(/[^\w]/g, '')}`;
 
-    if (!groupsByCanonicalUrl.has(groupKey)) {
-      groupsByCanonicalUrl.set(groupKey, []);
-    }
-    groupsByCanonicalUrl.get(groupKey)!.push(item);
+    const group = groupsByCanonicalUrl.get(groupKey) ?? [];
+    group.push(item);
+    groupsByCanonicalUrl.set(groupKey, group);
   }
 
   const canonicalCitations: SourceCitation[] = [];
@@ -220,6 +225,7 @@ export function indexSourceReferenceLocations(
   }
 
   // 1. Scan Reference Modules (reference/*.md)
+  const fileNames = Array.from(fileMap.keys());
   for (const mod of repo.referenceModules) {
     const lines = mod.rawContent.split('\n');
     let currentSectionHeading = mod.title;
@@ -235,13 +241,8 @@ export function indexSourceReferenceLocations(
       }
 
       // Check for indexed tags: [DOCS:23], [DOCS:23,26], [GOOGLE:38], etc.
-      const tagRegex = /\[(DOCS|GOOGLE|PROTOCOL|COMMUNITY|INFERRED|LIVE):([0-9,\s]+)\]/g;
-      let tagMatch: RegExpExecArray | null;
-      while ((tagMatch = tagRegex.exec(line)) !== null) {
-        const fullBadge = tagMatch[0];
-        const numTokens = tagMatch[2].split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-
-        for (const num of numTokens) {
+      for (const badge of scanCitationBadges(line)) {
+        for (const num of badge.numbers) {
           const targetCitation = citationMap.get(num);
           if (targetCitation) {
             addUniqueReferenceLocation(targetCitation.referenceLocations, {
@@ -253,7 +254,7 @@ export function indexSourceReferenceLocations(
               lineText: line.trim(),
               contextSnippet: buildContextSnippet(lines, i),
               matchType: 'badge',
-              matchedText: fullBadge,
+              matchedText: badge.matchedText,
               deepLink: { tab: 'reference', selectedId: mod.id },
             });
           }
@@ -261,33 +262,9 @@ export function indexSourceReferenceLocations(
       }
 
       // Check for textual Source citations: "Source #23", "Source 23", "Sources #01, #08", "[^23]"
-      const textCitationRegex = /(?:Source|Sources)\s+#?(\d+)|\[\^(\d+)\]/gi;
-      let textMatch: RegExpExecArray | null;
-      while ((textMatch = textCitationRegex.exec(line)) !== null) {
-        const numStr = textMatch[1] || textMatch[2];
-        const num = parseInt(numStr, 10);
-        if (!isNaN(num) && num > 0 && num <= 100) {
-          const targetCitation = citationMap.get(num);
-          if (targetCitation) {
-            addUniqueReferenceLocation(targetCitation.referenceLocations, {
-              targetType: 'reference',
-              targetId: mod.id,
-              targetTitle: `§${mod.number.toString().padStart(2, '0')}. ${mod.title}`,
-              sectionTitle: currentSectionHeading,
-              lineNumber: lineNum,
-              lineText: line.trim(),
-              contextSnippet: buildContextSnippet(lines, i),
-              matchType: 'text_mention',
-              matchedText: textMatch[0],
-              deepLink: { tab: 'reference', selectedId: mod.id },
-            });
-          }
-        }
-      }
-
-      // Check for snapshot file links (e.g. evidence/sources/docs/23-ide-browser.md)
-      for (const [fn, targetCitation] of fileMap.entries()) {
-        if (line.includes(fn)) {
+      for (const mention of scanTextMentions(line)) {
+        const targetCitation = citationMap.get(mention.number);
+        if (targetCitation) {
           addUniqueReferenceLocation(targetCitation.referenceLocations, {
             targetType: 'reference',
             targetId: mod.id,
@@ -296,18 +273,35 @@ export function indexSourceReferenceLocations(
             lineNumber: lineNum,
             lineText: line.trim(),
             contextSnippet: buildContextSnippet(lines, i),
-            matchType: 'file_link',
-            matchedText: fn,
+            matchType: 'text_mention',
+            matchedText: mention.matchedText,
             deepLink: { tab: 'reference', selectedId: mod.id },
           });
         }
       }
 
+      // Check for snapshot file links (e.g. evidence/sources/docs/23-ide-browser.md)
+      for (const fn of scanFileLinks(line, fileNames)) {
+        const targetCitation = fileMap.get(fn)!;
+        addUniqueReferenceLocation(targetCitation.referenceLocations, {
+          targetType: 'reference',
+          targetId: mod.id,
+          targetTitle: `§${mod.number.toString().padStart(2, '0')}. ${mod.title}`,
+          sectionTitle: currentSectionHeading,
+          lineNumber: lineNum,
+          lineText: line.trim(),
+          contextSnippet: buildContextSnippet(lines, i),
+          matchType: 'file_link',
+          matchedText: fn,
+          deepLink: { tab: 'reference', selectedId: mod.id },
+        });
+      }
+
       // Check for Section 19 Works Cited specific entries
       if (mod.number === 19) {
-        const itemMatch = line.match(/^(\d+)\.\s+([^—]+)—\s*(https?:\/\/[^\s\n\r]+)/);
-        if (itemMatch) {
-          const num = parseInt(itemMatch[1], 10);
+        const entry = parseWorksCitedEntry(line);
+        if (entry) {
+          const num = entry.number;
           const targetCitation = citationMap.get(num);
           if (targetCitation) {
             addUniqueReferenceLocation(targetCitation.referenceLocations, {
@@ -365,21 +359,20 @@ export function indexSourceReferenceLocations(
       const line = lines[i];
       const lineNum = i + 1;
 
-      for (const [fn, targetCitation] of fileMap.entries()) {
-        if (line.includes(fn)) {
-          addUniqueReferenceLocation(targetCitation.referenceLocations, {
-            targetType: 'adr',
-            targetId: adr.id,
-            targetTitle: `ADR-${adr.number.toString().padStart(4, '0')}: ${adr.title}`,
-            sectionTitle: `ADR Context & Decision`,
-            lineNumber: lineNum,
-            lineText: line.trim(),
-            contextSnippet: buildContextSnippet(lines, i),
-            matchType: 'file_link',
-            matchedText: fn,
-            deepLink: { tab: 'adrs', selectedId: adr.id },
-          });
-        }
+      for (const fn of scanFileLinks(line, fileNames)) {
+        const targetCitation = fileMap.get(fn)!;
+        addUniqueReferenceLocation(targetCitation.referenceLocations, {
+          targetType: 'adr',
+          targetId: adr.id,
+          targetTitle: `ADR-${adr.number.toString().padStart(4, '0')}: ${adr.title}`,
+          sectionTitle: `ADR Context & Decision`,
+          lineNumber: lineNum,
+          lineText: line.trim(),
+          contextSnippet: buildContextSnippet(lines, i),
+          matchType: 'file_link',
+          matchedText: fn,
+          deepLink: { tab: 'adrs', selectedId: adr.id },
+        });
       }
     }
   }
