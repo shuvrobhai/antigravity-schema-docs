@@ -19,7 +19,6 @@ antigtavity-schema/
 ├── README.md                      # Repository overview and developer guide
 ├── CONTEXT.md                     # Domain vocabulary & canonical terms
 ├── Makefile                       # Standard task automation interface
-├── requirements.txt               # Toolchain dependencies
 ├── antigravity-reference.md       # Composed monolithic parent document (Build artifact)
 │
 ├── schemas/                       # 18 Standalone JSON Schemas (Section 20 catalog)

@@ -225,7 +225,7 @@ export function checkSourceArchiveSync(fix: boolean, verbose: boolean): Validati
       reg.syncManifestFile();
       res.passWith(`fixed: regenerated ${path.relative(ROOT, reg.indexPath)}`);
     } else {
-      res.failWith(`archive manifest ${path.relative(ROOT, reg.indexPath)} out of sync (run fetch_sources.py / fetchSources.ts)`);
+      res.failWith(`archive manifest ${path.relative(ROOT, reg.indexPath)} out of sync (run fetch_sources.ts)`);
     }
   } else {
     res.passWith(`all ${reg.citations.length} citations archived and index.md is in sync`);

@@ -38,7 +38,7 @@ This workflow orchestrates a team of dedicated background subagents to research,
 ### Stage 2: Empirical Verification & Web Archiving
 **Subagent**: `Empirical Researcher`
 - **Role**: `Empirical Tester & Web Archivist`
-- **Action**: Read `source_hierarchy_map.md`. Conduct live empirical observation tests (CLI probes, runtime sandbox execution, permission checks, statusline inspection). Record structured `EV-###` observation entries into `evidence/agy-1.1.12/evidence.md`. Archive point-in-time web source snapshots into `evidence/sources/` using `python3 scripts/fetch_sources.py`.
+- **Action**: Read `source_hierarchy_map.md`. Conduct live empirical observation tests (CLI probes, runtime sandbox execution, permission checks, statusline inspection). Record structured `EV-###` observation entries into `evidence/agy-1.1.12/evidence.md`. Archive point-in-time web source snapshots into `evidence/sources/` using `npx tsx scripts/fetch_sources.ts`.
 - **Output Artifact**: `empirical_test_notes.md`
 - **Log Prompt**: Record prompt in `agent_prompts.md` under `## Stage 2: Empirical Researcher Prompt`.
 
