@@ -2,6 +2,8 @@
 
 All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2026-08-13]` = live observation, `[GOOGLE]` = other Google sources, `[PROTOCOL]` = MCP specification, `[COMMUNITY]` = third-party.
 
+**Numbering is append-only as of 2026-08-14:** new sources are added at the end of the list with the next free numbers (see the trailing `[DOCS]` section) rather than renumbering existing entries and their archived snapshots.
+
 ### Live Evidence `[LIVE-1.1.12 · 2026-08-13]`
 
 - EV-001 through EV-020 — raw evidence recorded under `evidence/agy-1.1.12/evidence.md`
@@ -76,3 +78,20 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 57. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
 58. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
 59. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
+
+### Official Docs `[DOCS]` — Append-Only Additions (added 2026-08-14)
+
+60. Agents Command (/agents) — https://antigravity.google/docs/cli/commands/agents
+61. Code Search Command (/codesearch) — https://antigravity.google/docs/cli/commands/codesearch
+62. AI Credits Command (/credits) — https://antigravity.google/docs/cli/commands/credits
+63. Diff Command (/diff) — https://antigravity.google/docs/cli/commands/diff
+64. Permissions Command (/permissions) — https://antigravity.google/docs/cli/commands/permissions
+65. Resume Command (/resume) — https://antigravity.google/docs/cli/commands/resume
+66. Status Line Command (/statusline) — https://antigravity.google/docs/cli/commands/statusline
+67. Window Title Command (/title) — https://antigravity.google/docs/cli/commands/title
+68. Model Quotas (/usage) — https://antigravity.google/docs/cli/commands/usage
+69. IDE Overview — https://antigravity.google/docs/ide/overview
+70. IDE Getting Started — https://antigravity.google/docs/ide/getting-started
+71. CLI Overview — https://antigravity.google/docs/cli/overview
+72. CLI Features — https://antigravity.google/docs/cli/features
+73. CLI Prompting — https://antigravity.google/docs/cli/prompting

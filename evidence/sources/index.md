@@ -65,3 +65,17 @@ Status of every citation in section 19 (`reference/19-works-cited.md`), regenera
 | 57 | community | C# Dev Kit not available in Google Antigravity IDE | [57-c-dev-kit-not-available-in-google-antigravity-ide.md](community/57-c-dev-kit-not-available-in-google-antigravity-ide.md) | 200 | 2026-08-14 |
 | 58 | community | Antigravity SDK API key in CI (GitHub Action) | [58-rsamborski-run-agy-sdk.md](community/58-rsamborski-run-agy-sdk.md) | 200 | 2026-08-14 |
 | 59 | community | 15-Minute Migration to Antigravity CLI | [59-blog-gemini-cli-shutdown-antigravity-migration-guide.md](community/59-blog-gemini-cli-shutdown-antigravity-migration-guide.md) | 200 | 2026-08-14 |
+| 60 | docs | Agents Command (/agents) | [60-commands-agents.md](docs/60-commands-agents.md) | 200 | 2026-08-14 |
+| 61 | docs | Code Search Command (/codesearch) | [61-commands-codesearch.md](docs/61-commands-codesearch.md) | 200 | 2026-08-14 |
+| 62 | docs | AI Credits Command (/credits) | [62-commands-credits.md](docs/62-commands-credits.md) | 200 | 2026-08-14 |
+| 63 | docs | Diff Command (/diff) | [63-commands-diff.md](docs/63-commands-diff.md) | 200 | 2026-08-14 |
+| 64 | docs | Permissions Command (/permissions) | [64-commands-permissions.md](docs/64-commands-permissions.md) | 200 | 2026-08-14 |
+| 65 | docs | Resume Command (/resume) | [65-commands-resume.md](docs/65-commands-resume.md) | 200 | 2026-08-14 |
+| 66 | docs | Status Line Command (/statusline) | [66-commands-statusline.md](docs/66-commands-statusline.md) | 200 | 2026-08-14 |
+| 67 | docs | Window Title Command (/title) | [67-commands-title.md](docs/67-commands-title.md) | 200 | 2026-08-14 |
+| 68 | docs | Model Quotas (/usage) | [68-commands-usage.md](docs/68-commands-usage.md) | 200 | 2026-08-14 |
+| 69 | docs | IDE Overview | [69-ide-overview.md](docs/69-ide-overview.md) | 200 | 2026-08-14 |
+| 70 | docs | IDE Getting Started | [70-ide-getting-started.md](docs/70-ide-getting-started.md) | 200 | 2026-08-14 |
+| 71 | docs | CLI Overview | [71-cli-overview.md](docs/71-cli-overview.md) | 200 | 2026-08-14 |
+| 72 | docs | CLI Features | [72-cli-features.md](docs/72-cli-features.md) | 200 | 2026-08-14 |
+| 73 | docs | CLI Prompting | [73-cli-prompting.md](docs/73-cli-prompting.md) | 200 | 2026-08-14 |

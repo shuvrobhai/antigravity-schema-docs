@@ -2,7 +2,7 @@
 
 # Google Antigravity Ecosystem: Complete Technical Reference, Schema Specification, and Gap Analysis
 
-## Version 8.6 — Evidence Archive Expansion II Edition (agy 1.1.12)
+## Version 8.7 — Append-Only Numbering & Archive Completion Edition (agy 1.1.12)
 
 **Live verification date:** 2026-08-13  
 **Live binary:** `agy 1.1.12`  
@@ -50,6 +50,7 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 | 8.4 | 2026-08-14 | **Official-Docs Verification & Works Cited Minimization:** re-verified every Google/community entry in §19 against the official docs inventory (`antigravity.google/llms.txt`) and live pages (`cli/install`, `cli/settings`, `cli/gcli-migration`, `skills`, `sdk/overview`, `ide/getting-started`, `cli/sandbox`); confirmed every kept non-official source backs claims the official docs do not cover (skill token costs, legacy config keys, CLI API-key auth status, SDK internals, Open VSX gaps, binary coexistence); dropped the three never-cited codelab sources (`getting-started-google-antigravity`, `sdd-agy-cli`, `antigravity-cli-hands-on`), shrinking §19 from 46 → 43 entries with sources 35-46 renumbered 32-43; renamed the source-archive snapshots and their `source:` frontmatter accordingly, regenerated the manifest, and updated §2 source ranges, badge indices (`[GOOGLE:35]`→`[GOOGLE:32]`, `[GOOGLE:38]`→`[GOOGLE:35]`), registry self-test (46→43), and UI counts (19 schemas / 43 sources). |
 | 8.5 | 2026-08-14 | **Evidence Archive Expansion:** added 9 official-docs sources surfaced by `antigravity.google/llms.txt` to §19 — `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (now 52 entries: docs #1-39, Google #40-44, protocol #45, community #46-52); renamed the 13 affected archive snapshots with their `source:` frontmatter, fetched the 9 new pages into `evidence/sources/docs/`, regenerated the manifest and §2 source ranges; updated badge indices (`[GOOGLE:32]`→`[GOOGLE:41]`, `[GOOGLE:35]`→`[GOOGLE:44]`), registry self-test (43→52), and UI counts (52 sources). |
 | 8.6 | 2026-08-14 | **Evidence Archive Expansion II:** added 7 more official-docs sources to §19 — `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp` (now 59 entries: docs #1-46, Google #47-51, protocol #52, community #53-59); renamed the 13 affected archive snapshots with their `source:` frontmatter, fetched the 7 new pages into `evidence/sources/docs/`, regenerated the manifest and §2 source ranges; updated badge indices (`[GOOGLE:41]`→`[GOOGLE:47]`, `[GOOGLE:44]`→`[GOOGLE:50]`), registry self-test (52→59), and UI counts (59 sources). |
+| 8.7 | 2026-08-14 | **Append-Only Numbering & Archive Completion:** adopted append-only §19 numbering — new sources get the next free numbers at the end of the list (documented in the §19 header) so existing entries and their snapshots are never renumbered again; archived the final `llms.txt` batch (9 CLI command pages `cli/commands/*`, `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting`) as §19 entries #60-73 (now 73 entries); fetched the 14 pages into `evidence/sources/docs/`; registry self-test (59→73) and UI counts (73 sources). |
 
 ## How This Report Was Built
 
@@ -2612,6 +2613,8 @@ Both files share the same line schema. Difference observed: `transcript_full.jso
 
 All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2026-08-13]` = live observation, `[GOOGLE]` = other Google sources, `[PROTOCOL]` = MCP specification, `[COMMUNITY]` = third-party.
 
+**Numbering is append-only as of 2026-08-14:** new sources are added at the end of the list with the next free numbers (see the trailing `[DOCS]` section) rather than renumbering existing entries and their archived snapshots.
+
 ### Live Evidence `[LIVE-1.1.12 · 2026-08-13]`
 
 - EV-001 through EV-020 — raw evidence recorded under `evidence/agy-1.1.12/evidence.md`
@@ -2686,6 +2689,23 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 57. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
 58. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
 59. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
+
+### Official Docs `[DOCS]` — Append-Only Additions (added 2026-08-14)
+
+60. Agents Command (/agents) — https://antigravity.google/docs/cli/commands/agents
+61. Code Search Command (/codesearch) — https://antigravity.google/docs/cli/commands/codesearch
+62. AI Credits Command (/credits) — https://antigravity.google/docs/cli/commands/credits
+63. Diff Command (/diff) — https://antigravity.google/docs/cli/commands/diff
+64. Permissions Command (/permissions) — https://antigravity.google/docs/cli/commands/permissions
+65. Resume Command (/resume) — https://antigravity.google/docs/cli/commands/resume
+66. Status Line Command (/statusline) — https://antigravity.google/docs/cli/commands/statusline
+67. Window Title Command (/title) — https://antigravity.google/docs/cli/commands/title
+68. Model Quotas (/usage) — https://antigravity.google/docs/cli/commands/usage
+69. IDE Overview — https://antigravity.google/docs/ide/overview
+70. IDE Getting Started — https://antigravity.google/docs/ide/getting-started
+71. CLI Overview — https://antigravity.google/docs/cli/overview
+72. CLI Features — https://antigravity.google/docs/cli/features
+73. CLI Prompting — https://antigravity.google/docs/cli/prompting
 
 ---
 

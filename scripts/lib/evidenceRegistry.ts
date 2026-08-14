@@ -319,7 +319,7 @@ export class EvidenceRegistry {
 if (process.argv[1]?.endsWith('evidenceRegistry.ts')) {
   console.log('Running EvidenceRegistry unit tests [TS]...');
   const reg = EvidenceRegistry.load();
-  if (reg.citations.length !== 59) throw new Error(`Expected 59 citations, got ${reg.citations.length}`);
+  if (reg.citations.length !== 73) throw new Error(`Expected 73 citations, got ${reg.citations.length}`);
   if (reg.probes.length !== 20) throw new Error(`Expected 20 EV probes, got ${reg.probes.length}`);
   if (reg.maxEvidenceNumber !== 20) throw new Error(`Expected max EV 20, got ${reg.maxEvidenceNumber}`);
   if (reg.evidenceRange !== 'EV-001..EV-020') throw new Error(`Expected EV-001..EV-020, got ${reg.evidenceRange}`);
