@@ -2,7 +2,7 @@
 
 # Google Antigravity Ecosystem: Complete Technical Reference, Schema Specification, and Gap Analysis
 
-## Version 8.4 — Official-Docs Verification & Works Cited Minimization Edition (agy 1.1.12)
+## Version 8.5 — Evidence Archive Expansion Edition (agy 1.1.12)
 
 **Live verification date:** 2026-08-13  
 **Live binary:** `agy 1.1.12`  
@@ -48,6 +48,7 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 | 8.2 | 2026-08-14 | **Schema Coverage Audit & Catalog Expansion:** added `WorkflowFrontmatterSchema` (`schemas/workflow.schema.json`, the 19th native schema) and fixed `hooks.schema.json` so `PreInvocation`/`PostInvocation`/`Stop` accept the documented plain handler list (matcher ignored) in addition to the matcher-group form; added hooks/workflow schema fixtures and the `workflow` auditor file type; recorded R-002 (schema coverage audit). |
 | 8.3 | 2026-08-14 | **Rule & Config Validation Hardening:** rewrote `rule.schema.json` to accept both observed frontmatter keys (`trigger` community convention + legacy `activation`, e.g. the real `activation: always` in the self-customizer plugin rule), string-or-array `globs`, and no required fields (R-003 — real rule files are often frontmatter-less); auditor now treats frontmatter-less `.agents/rules/*.md` as valid; `mcp_config.schema.json` enforces a required transport (`command` or `serverUrl`) per official docs; `settings.schema.json` enumerates `general.defaultApprovalMode` (`default`/`auto_edit`/`plan`); `parseSimpleYaml` now parses YAML block scalars (`>`/`|`) so multi-line skill/rule descriptions round-trip; added rule/mcp/settings schema fixtures. |
 | 8.4 | 2026-08-14 | **Official-Docs Verification & Works Cited Minimization:** re-verified every Google/community entry in §19 against the official docs inventory (`antigravity.google/llms.txt`) and live pages (`cli/install`, `cli/settings`, `cli/gcli-migration`, `skills`, `sdk/overview`, `ide/getting-started`, `cli/sandbox`); confirmed every kept non-official source backs claims the official docs do not cover (skill token costs, legacy config keys, CLI API-key auth status, SDK internals, Open VSX gaps, binary coexistence); dropped the three never-cited codelab sources (`getting-started-google-antigravity`, `sdd-agy-cli`, `antigravity-cli-hands-on`), shrinking §19 from 46 → 43 entries with sources 35-46 renumbered 32-43; renamed the source-archive snapshots and their `source:` frontmatter accordingly, regenerated the manifest, and updated §2 source ranges, badge indices (`[GOOGLE:35]`→`[GOOGLE:32]`, `[GOOGLE:38]`→`[GOOGLE:35]`), registry self-test (46→43), and UI counts (19 schemas / 43 sources). |
+| 8.5 | 2026-08-14 | **Evidence Archive Expansion:** added 9 official-docs sources surfaced by `antigravity.google/llms.txt` to §19 — `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (now 52 entries: docs #1-39, Google #40-44, protocol #45, community #46-52); renamed the 13 affected archive snapshots with their `source:` frontmatter, fetched the 9 new pages into `evidence/sources/docs/`, regenerated the manifest and §2 source ranges; updated badge indices (`[GOOGLE:32]`→`[GOOGLE:41]`, `[GOOGLE:35]`→`[GOOGLE:44]`), registry self-test (43→52), and UI counts (52 sources). |
 
 ## How This Report Was Built
 
@@ -123,9 +124,9 @@ Every claim is tagged with its source origin:
 |---|---|---|
 | `[DOCS]` / `[DOCS:NN]` | `antigravity.google/docs/*` (Source `#NN` in §19) | Official product documentation. Primary authority. |
 | `[LIVE-1.1.12 · 2026-08-13]` | Direct observation of `agy 1.1.12` on user-configured macOS Darwin 25.4.0 / arm64 | Empirical evidence from a live install. Included when live behavior disagrees with docs/changelog or fills a gap. Cites `EV-###`. |
-| `[GOOGLE]` / `[GOOGLE:NN]` | Other Google-owned sources (Codelabs, SDK repositories, announcement blogs; Sources `#31..35` in §19) | High reliability. May lag behind main docs or reflect legacy behavior. |
-| `[PROTOCOL]` / `[PROTOCOL:NN]` | `modelcontextprotocol.io` (Source `#36` in §19) | Official MCP specification. Authoritative for MCP protocol details. |
-| `[COMMUNITY]` / `[COMMUNITY:NN]` | Third-party sources (Sources `#37..43` in §19) | Variable reliability. Included only when official docs are silent. Explicitly called out. |
+| `[GOOGLE]` / `[GOOGLE:NN]` | Other Google-owned sources (Codelabs, SDK repositories, announcement blogs; Sources `#40..44` in §19) | High reliability. May lag behind main docs or reflect legacy behavior. |
+| `[PROTOCOL]` / `[PROTOCOL:NN]` | `modelcontextprotocol.io` (Source `#45` in §19) | Official MCP specification. Authoritative for MCP protocol details. |
+| `[COMMUNITY]` / `[COMMUNITY:NN]` | Third-party sources (Sources `#46..52` in §19) | Variable reliability. Included only when official docs are silent. Explicitly called out. |
 | `[INFERRED]` | Logical inference from confirmed data | Lowest authority. Always called out when used. |
 
 Tag priority:
@@ -1772,8 +1773,8 @@ Sandboxing is configured inside global preferences (`~/.gemini/antigravity-cli/s
 ```
 
 - **`enableTerminalSandbox`** (boolean, default: `false`): Restricts all local terminal tools and execution commands launched by agents to OS containment rings.
-- **Fail-Closed Security Guarantee:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution **fails closed** with a hard error rather than silently executing unprotected `[DOCS:06]` / `[GOOGLE:32]`.
-- **Symlink Escape Prevention:** Symlinks within the project directory pointing to targets outside the workspace root are blocked to prevent directory traversal escapes (`../`) `[DOCS:06]` / `[GOOGLE:32]`.
+- **Fail-Closed Security Guarantee:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution **fails closed** with a hard error rather than silently executing unprotected `[DOCS:06]` / `[GOOGLE:41]`.
+- **Symlink Escape Prevention:** Symlinks within the project directory pointing to targets outside the workspace root are blocked to prevent directory traversal escapes (`../`) `[DOCS:06]` / `[GOOGLE:41]`.
 
 ### Interactive Approval Behavior `[DOCS:06]`
 
@@ -2061,7 +2062,7 @@ Google Antigravity integrates directly with **Gemini Enterprise** and the **Gemi
    - Enable via environment variable: `export AGY_ADC_AUTH=true`.
    - Limitation: Models older than Gemini 3 Flash are not supported under ADC.
 4. **API Key Support**:
-   - **CLI**: NOT supported currently (`google-antigravity/antigravity-cli#78` `[GOOGLE:35]`).
+   - **CLI**: NOT supported currently (`google-antigravity/antigravity-cli#78` `[GOOGLE:44]`).
    - **SDK**: Supported via `GEMINI_API_KEY` env or `api_key=` config `[DOCS:30]`.
 
 ### Regional Deployment Endpoints & Capability Matrix `[DOCS:18]`
@@ -2646,28 +2647,37 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 28. Implementation Plan — https://antigravity.google/docs/implementation-plan
 29. Landing Page — https://antigravity.google/docs/
 30. Antigravity SDK Overview + Quick Start — https://antigravity.google/docs/sdk/overview
+31. Installation & Auth — https://antigravity.google/docs/cli/install
+32. Migration (Gemini CLI) — https://antigravity.google/docs/cli/gcli-migration
+33. IDE Rules — https://antigravity.google/docs/ide/rules
+34. IDE Workflows — https://antigravity.google/docs/ide/workflows
+35. SDK MCP — https://antigravity.google/docs/sdk/mcp
+36. Sidecars — https://antigravity.google/docs/sidecars
+37. Task Groups — https://antigravity.google/docs/task-groups
+38. Tools — https://antigravity.google/docs/tools
+39. FAQ — https://antigravity.google/docs/faq
 
 ### Google-Owned, Non-Docs `[GOOGLE]`
 
-31. Agent Skills 101 — https://codelabs.developers.google.com/getting-started-with-antigravity-skills
-32. Configuration — https://geminicli.com/docs/reference/configuration/ (relocated; old `google.github.io/gemini-cli/docs/configuration` returns 404 as of 2026-08-11)
-33. Antigravity SDK announcement blog — https://antigravity.google/blog/introducing-google-antigravity-sdk
-34. antigravity-sdk-python (official repo) — https://github.com/google-antigravity/antigravity-sdk-python
-35. CLI API-key auth feature request — https://github.com/google-antigravity/antigravity-cli/issues/78
+40. Agent Skills 101 — https://codelabs.developers.google.com/getting-started-with-antigravity-skills
+41. Configuration — https://geminicli.com/docs/reference/configuration/ (relocated; old `google.github.io/gemini-cli/docs/configuration` returns 404 as of 2026-08-11)
+42. Antigravity SDK announcement blog — https://antigravity.google/blog/introducing-google-antigravity-sdk
+43. antigravity-sdk-python (official repo) — https://github.com/google-antigravity/antigravity-sdk-python
+44. CLI API-key auth feature request — https://github.com/google-antigravity/antigravity-cli/issues/78
 
 ### Protocol Specification `[PROTOCOL]`
 
-36. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
+45. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
 
 ### Third-Party Sources `[COMMUNITY]`
 
-37. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
-38. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
-39. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
-40. Google Antigravity SDK: The developer guide (K. Weinmeister) — https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc
-41. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
-42. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
-43. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
+46. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
+47. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
+48. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
+49. Google Antigravity SDK: The developer guide (K. Weinmeister) — https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc
+50. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
+51. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
+52. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
 
 ---
 

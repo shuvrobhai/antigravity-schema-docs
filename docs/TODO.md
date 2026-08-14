@@ -12,6 +12,7 @@ Status ledger for issues surfaced by the schema coverage audit (**R-002**), the 
 - [x] **`settings.general.defaultApprovalMode`** — enumerated `default | auto_edit | plan` (R-002 §4; resolved in §18).
 - [x] **YAML block scalars** — `parseSimpleYaml` in `src/lib/markdownCore.ts` supports `>` / `|` values, so multi-line skill/rule descriptions parse fully (R-002 §4).
 - [x] **Works Cited minimization** — re-verified every Google/community §19 entry against the official docs (`llms.txt` + live pages), dropped the 3 never-cited codelabs, renumbered 46 → 43 entries, renamed/renumbered snapshots + `source:` frontmatter, regenerated the manifest, updated badges/§2 ranges/registry self-test/UI counts (R-004).
+- [x] **Evidence archive expansion** — added 9 official-docs sources surfaced by `llms.txt` (`cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq`) as §19 entries #31-39; renumbered §19 to 52 entries (docs 1-39, google 40-44, protocol 45, community 46-52); renamed the 13 affected snapshots + `source:` frontmatter and fetched the 9 new pages into `evidence/sources/docs/`.
 
 ## Open for next session
 
@@ -45,7 +46,7 @@ Current block-scalar support is best-effort: folding (`>`) joins lines with spac
 Preamble version header and the §20 end-note must stay in sync with the top changelog row after each revision (currently 8.4).
 
 ### 10. §09 fail-closed / symlink-escape claims lack a backing source (R-004 §6.1)
-The claims at `reference/09-sandbox.md` ("fails closed with a hard error", "symlinks … outside the workspace root are blocked") are tagged `[DOCS:06]`/`[GOOGLE:32]`, but none of the live official sandbox doc, the archived snapshot, the geminicli configuration reference, or the geminicli sandbox page contains that language (2026-08-14). Find the true source or downgrade the claims.
+The claims at `reference/09-sandbox.md` ("fails closed with a hard error", "symlinks … outside the workspace root are blocked") are tagged `[DOCS:06]`/`[GOOGLE:41]`, but none of the live official sandbox doc, the archived snapshot, the geminicli configuration reference, or the geminicli sandbox page contains that language (2026-08-14). Find the true source or downgrade the claims.
 
 ### 11. Official-docs conflict on the global skills path (R-004 §6.2)
 `docs/cli/gcli-migration` says global skills migrate to `~/.gemini/antigravity-cli/skills/`; `docs/skills` says the global location is `~/.gemini/config/skills/`. Both directories exist on this install. Resolve before re-sourcing §3.4/§16 migration rows from `[GOOGLE]`/`[COMMUNITY]` to `[DOCS]`.
@@ -56,8 +57,8 @@ OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout, Google Cloud 
 ### 13. Live settings doc lists keys not yet in `settings.schema.json` (R-004 §6.4)
 `allowNonWorkspaceAccess`, `altScreenMode`, `runningLightSpeed`, `verbosity`, `useG1Credits`, `showTips`, `showFeedbackSurvey`, `notifications`, `editorMode` — re-check schema coverage against the 2026-08-14 live page.
 
-### 14. Snapshot the newly-surfaced official pages (R-004 §3)
-`cli/install`, `cli/gcli-migration`, `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `cli/commands/*`, `ide/rules`, `ide/workflows`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq`, `plans` — candidates to close §16/§17 gaps.
+### 14. Snapshot the remaining official pages (R-004 §3)
+Done 2026-08-14: `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (now §19 entries #31-39). Still candidates: `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `cli/commands/*`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp`, `ide/overview`, `cli/overview`, `cli/getting-started`, `cli/features`, `cli/prompting`, `plans` — useful to close §16/§17 gaps.
 
 ## Where the findings live
 - `evidence/reports/R-002-schema-coverage-audit.md`

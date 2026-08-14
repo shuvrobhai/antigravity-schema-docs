@@ -175,12 +175,12 @@ evidence/
 │   └── agy-1.1.12/
 │       ├── index.md                  # Probe status summary for this version
 │       ├── EV-001.md                 # Atomic probe specification
-│       └── ...│   ├── sources/                          # Point-in-time Web Citations (S-001 .. S-043)
+│       └── ...│   ├── sources/                          # Point-in-time Web Citations (S-001 .. S-052)
 │   ├── index.md                      # Snapshot manifest & hash table
-│   ├── docs/                         # Official developer docs (01..30)
-│   ├── google/                       # Google Cloud & SDK repos (31..35)
-│   ├── protocol/                     # Protocol specifications (36)
-│   └── community/                    # Third-party reverse engineering (37..43)
+│   ├── docs/                         # Official developer docs (01..39)
+│   ├── google/                       # Google Cloud & SDK repos (40..44)
+│   ├── protocol/                     # Protocol specifications (45)
+│   └── community/                    # Third-party reverse engineering (46..52)
 │
 ├── reports/                          # Synthesized Architectural Research Whitepapers
 │   ├── index.md                      # Reports manifest

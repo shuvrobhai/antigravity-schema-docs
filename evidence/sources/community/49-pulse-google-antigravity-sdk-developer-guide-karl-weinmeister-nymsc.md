@@ -1,5 +1,5 @@
 ---
-source: 40
+source: 49
 category: community
 title: "Google Antigravity SDK: The developer guide (K. Weinmeister)"
 url: "https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc"

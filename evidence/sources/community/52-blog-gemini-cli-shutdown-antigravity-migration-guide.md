@@ -1,5 +1,5 @@
 ---
-source: 43
+source: 52
 category: community
 title: 15-Minute Migration to Antigravity CLI
 url: "https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide"

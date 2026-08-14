@@ -1,5 +1,5 @@
 ---
-source: 32
+source: 41
 category: google
 title: Configuration
 url: "https://geminicli.com/docs/reference/configuration/"
