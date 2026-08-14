@@ -4,13 +4,16 @@ import type { ErrorObject, AnySchemaObject, ValidateFunction } from 'ajv';
 import fs from 'fs';
 import path from 'path';
 
-// Load all 19 JSON schemas eager-loaded by Vite in browser, or via fs in Node
+// Load all 19 JSON schemas: Vite statically replaces the literal
+// import.meta.glob() call in the browser bundle (dev and prod builds); the
+// Node/CLI toolchain reads them from disk. Note: `typeof import.meta.glob`
+// cannot be used as a guard — it is never a runtime function in Vite builds.
 let rawSchemas: Record<string, unknown> = {};
 
-if (typeof import.meta.glob === 'function') {
-  rawSchemas = import.meta.glob('/schemas/*.schema.json', { eager: true });
+if (typeof window !== 'undefined') {
+  rawSchemas = import.meta.glob('/schemas/*.schema.json', { eager: true }) as Record<string, unknown>;
 } else {
-  // Node.js fallback
+  // Node.js fallback (scripts/ toolchain)
   try {
     const schemasDir = path.resolve('schemas');
     if (fs.existsSync(schemasDir)) {
