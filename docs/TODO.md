@@ -15,6 +15,7 @@ Status ledger for issues surfaced by the schema coverage audit (**R-002**), the 
 - [x] **Evidence archive expansion** — added 9 official-docs sources surfaced by `llms.txt` (`cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq`) as §19 entries #31-39; renumbered §19 to 52 entries (docs 1-39, google 40-44, protocol 45, community 46-52); renamed the 13 affected snapshots + `source:` frontmatter and fetched the 9 new pages into `evidence/sources/docs/`.
 - [x] **Evidence archive expansion II** — added 7 more official-docs sources (`cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp`) as §19 entries #40-46; renumbered §19 to 59 entries (docs 1-46, google 47-51, protocol 52, community 53-59); renamed the 13 affected snapshots + `source:` frontmatter and fetched the 7 new pages into `evidence/sources/docs/`.
 - [x] **Append-only numbering + final archive batch** — adopted append-only §19 numbering (new sources get the next free numbers at the end of the list, no renumbering of existing entries/snapshots); archived the final `llms.txt` batch (9 CLI command pages, `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting`) as §19 entries #60-73 (now 73 entries); fetched the 14 pages into `evidence/sources/docs/`.
+- [x] **Schema verification against archived IDE pages** — confirmed `hooks`/`rule`/`workflow` schemas match the official `ide/hooks`, `ide/rules`, `ide/workflows` pages (R-005); validated the exact documented hooks.json example and workflow `title`+`description` frontmatter with the repo's own validator. No schema changes required.
 
 ## Open for next session
 
@@ -62,7 +63,17 @@ OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout, Google Cloud 
 ### 14. Snapshot the remaining official pages (R-004 §3)
 Done 2026-08-14: `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (§19 #31-39), `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp` (§19 #40-46), `cli/commands/*` (9 pages), `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting` (§19 #60-73, append-only). Remaining (optional, add via append-only numbering): `cli/using`, `cli/tutorial`, `cli/getting-started`, `cli/install` extras, `ide/browser-recordings`, `ide/review-changes-editor`, `ide/tab`, `docs/plans`, `docs/faq` extras — useful to close §16/§17 gaps.
 
+### 15. Reconcile the global rules location (R-005)
+Official `ide/rules` and `cli/gcli-migration` say global rules/context live in `~/.gemini/GEMINI.md`; the repo's §3/§20 and the real install record rule files under `~/.gemini/antigravity-cli/rules/` (e.g. `global.md`). Confirm whether GEMINI.md and the `rules/` directories are two mechanisms or two views of one, and document both in §3/§20.2.
+
+### 16. Document runtime file-size limits (R-005)
+Both `ide/rules` and `ide/workflows` cap files at 12,000 characters; not captured in the reference modules or schemas. Add as a documented runtime constraint.
+
+### 17. Workflow `name` key is not officially documented (R-005)
+`ide/workflows` documents only `title` + `description` (steps in the markdown body); the community/2.0 format uses `name`. The schema accepts both — confirm the primary key with a real Antigravity-written workflow before tightening.
+
 ## Where the findings live
 - `evidence/reports/R-002-schema-coverage-audit.md`
 - `evidence/reports/R-003-rule-frontmatter-format.md`
 - `evidence/reports/R-004-works-cited-minimization-audit.md`
+- `evidence/reports/R-005-schema-verification-against-archived-ide-pages.md`

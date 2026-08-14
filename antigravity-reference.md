@@ -2,7 +2,7 @@
 
 # Google Antigravity Ecosystem: Complete Technical Reference, Schema Specification, and Gap Analysis
 
-## Version 8.7 — Append-Only Numbering & Archive Completion Edition (agy 1.1.12)
+## Version 8.8 — Schema Verification Against Archived IDE Pages Edition (agy 1.1.12)
 
 **Live verification date:** 2026-08-13  
 **Live binary:** `agy 1.1.12`  
@@ -51,6 +51,7 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 | 8.5 | 2026-08-14 | **Evidence Archive Expansion:** added 9 official-docs sources surfaced by `antigravity.google/llms.txt` to §19 — `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (now 52 entries: docs #1-39, Google #40-44, protocol #45, community #46-52); renamed the 13 affected archive snapshots with their `source:` frontmatter, fetched the 9 new pages into `evidence/sources/docs/`, regenerated the manifest and §2 source ranges; updated badge indices (`[GOOGLE:32]`→`[GOOGLE:41]`, `[GOOGLE:35]`→`[GOOGLE:44]`), registry self-test (43→52), and UI counts (52 sources). |
 | 8.6 | 2026-08-14 | **Evidence Archive Expansion II:** added 7 more official-docs sources to §19 — `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp` (now 59 entries: docs #1-46, Google #47-51, protocol #52, community #53-59); renamed the 13 affected archive snapshots with their `source:` frontmatter, fetched the 7 new pages into `evidence/sources/docs/`, regenerated the manifest and §2 source ranges; updated badge indices (`[GOOGLE:41]`→`[GOOGLE:47]`, `[GOOGLE:44]`→`[GOOGLE:50]`), registry self-test (52→59), and UI counts (59 sources). |
 | 8.7 | 2026-08-14 | **Append-Only Numbering & Archive Completion:** adopted append-only §19 numbering — new sources get the next free numbers at the end of the list (documented in the §19 header) so existing entries and their snapshots are never renumbered again; archived the final `llms.txt` batch (9 CLI command pages `cli/commands/*`, `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting`) as §19 entries #60-73 (now 73 entries); fetched the 14 pages into `evidence/sources/docs/`; registry self-test (59→73) and UI counts (73 sources). |
+| 8.8 | 2026-08-14 | **Schema Verification Against Archived IDE Pages:** verified `hooks`/`rule`/`workflow` schemas against the newly-archived official `ide/hooks`, `ide/rules`, `ide/workflows` pages (S-043/S-033/S-034) with the repo's own validator — the exact documented hooks.json example (plain-list `PreInvocation`/`PostInvocation`/`Stop`, `enabled`, optional handler `type`, `timeout`) and workflow `title`+`description` frontmatter all validate; recorded R-005 (no schema changes required) and three new open items (global rules path `~/.gemini/GEMINI.md` vs `rules/` dirs, 12,000-char file limits, workflow `name` key). |
 
 ## How This Report Was Built
 
