@@ -1,5 +1,5 @@
 ---
-source: 43
+source: 50
 category: google
 title: antigravity-sdk-python (official repo)
 url: "https://github.com/google-antigravity/antigravity-sdk-python"

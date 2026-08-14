@@ -1,5 +1,5 @@
 ---
-source: 45
+source: 52
 category: protocol
 title: MCP Specification
 url: "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro"

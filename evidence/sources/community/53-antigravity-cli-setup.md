@@ -1,5 +1,5 @@
 ---
-source: 46
+source: 53
 category: community
 title: Antigravity CLI Setup
 url: "https://docs.claude-mem.ai/antigravity-cli/setup"

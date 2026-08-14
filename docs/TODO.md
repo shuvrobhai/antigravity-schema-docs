@@ -13,6 +13,7 @@ Status ledger for issues surfaced by the schema coverage audit (**R-002**), the 
 - [x] **YAML block scalars** — `parseSimpleYaml` in `src/lib/markdownCore.ts` supports `>` / `|` values, so multi-line skill/rule descriptions parse fully (R-002 §4).
 - [x] **Works Cited minimization** — re-verified every Google/community §19 entry against the official docs (`llms.txt` + live pages), dropped the 3 never-cited codelabs, renumbered 46 → 43 entries, renamed/renumbered snapshots + `source:` frontmatter, regenerated the manifest, updated badges/§2 ranges/registry self-test/UI counts (R-004).
 - [x] **Evidence archive expansion** — added 9 official-docs sources surfaced by `llms.txt` (`cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq`) as §19 entries #31-39; renumbered §19 to 52 entries (docs 1-39, google 40-44, protocol 45, community 46-52); renamed the 13 affected snapshots + `source:` frontmatter and fetched the 9 new pages into `evidence/sources/docs/`.
+- [x] **Evidence archive expansion II** — added 7 more official-docs sources (`cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp`) as §19 entries #40-46; renumbered §19 to 59 entries (docs 1-46, google 47-51, protocol 52, community 53-59); renamed the 13 affected snapshots + `source:` frontmatter and fetched the 7 new pages into `evidence/sources/docs/`.
 
 ## Open for next session
 
@@ -58,7 +59,7 @@ OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout, Google Cloud 
 `allowNonWorkspaceAccess`, `altScreenMode`, `runningLightSpeed`, `verbosity`, `useG1Credits`, `showTips`, `showFeedbackSurvey`, `notifications`, `editorMode` — re-check schema coverage against the 2026-08-14 live page.
 
 ### 14. Snapshot the remaining official pages (R-004 §3)
-Done 2026-08-14: `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (now §19 entries #31-39). Still candidates: `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `cli/commands/*`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp`, `ide/overview`, `cli/overview`, `cli/getting-started`, `cli/features`, `cli/prompting`, `plans` — useful to close §16/§17 gaps.
+Done 2026-08-14: `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (§19 #31-39), `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp` (§19 #40-46). Still candidates: `cli/commands/*`, `ide/overview`, `ide/getting-started`, `ide/browser-recordings`, `ide/review-changes-editor`, `ide/tab`, `cli/overview`, `cli/getting-started`, `cli/features`, `cli/prompting`, `cli/using`, `cli/tutorial`, `docs/plans`, `docs/faq` extras — useful to close §16/§17 gaps.
 
 ## Where the findings live
 - `evidence/reports/R-002-schema-coverage-audit.md`

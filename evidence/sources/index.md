@@ -45,16 +45,23 @@ Status of every citation in section 19 (`reference/19-works-cited.md`), regenera
 | 37 | docs | Task Groups | [37-task-groups.md](docs/37-task-groups.md) | 200 | 2026-08-14 |
 | 38 | docs | Tools | [38-tools.md](docs/38-tools.md) | 200 | 2026-08-14 |
 | 39 | docs | FAQ | [39-faq.md](docs/39-faq.md) | 200 | 2026-08-14 |
-| 40 | google | Agent Skills 101 | [40-getting-started-with-antigravity-skills.md](google/40-getting-started-with-antigravity-skills.md) | 200 | 2026-08-13 |
-| 41 | google | Configuration | [41-reference-configuration.md](google/41-reference-configuration.md) | 200 | 2026-08-13 |
-| 42 | google | Antigravity SDK announcement blog | [42-blog-introducing-google-antigravity-sdk.md](google/42-blog-introducing-google-antigravity-sdk.md) | 200 | 2026-08-13 |
-| 43 | google | antigravity-sdk-python (official repo) | [43-google-antigravity-antigravity-sdk-python.md](google/43-google-antigravity-antigravity-sdk-python.md) | 200 | 2026-08-13 |
-| 44 | google | CLI API-key auth feature request | [44-cli-api-key-auth-feature-request.md](google/44-cli-api-key-auth-feature-request.md) | 200 | 2026-08-13 |
-| 45 | protocol | MCP Specification | [45-getting-started-intro.md](protocol/45-getting-started-intro.md) | 200 | 2026-08-13 |
-| 46 | community | Antigravity CLI Setup | [46-antigravity-cli-setup.md](community/46-antigravity-cli-setup.md) | 200 | 2026-08-13 |
-| 47 | community | Scary Agent Skills | [47-2026-scary-agent-skills.md](community/47-2026-scary-agent-skills.md) | 200 | 2026-08-13 |
-| 48 | community | claude-faces-expert | [48-omnifaces-claude-faces-expert.md](community/48-omnifaces-claude-faces-expert.md) | 200 | 2026-08-14 |
-| 49 | community | Google Antigravity SDK: The developer guide (K. Weinmeister) | [49-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md](community/49-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md) | 200 | 2026-08-14 |
-| 50 | community | C# Dev Kit not available in Google Antigravity IDE | [50-c-dev-kit-not-available-in-google-antigravity-ide.md](community/50-c-dev-kit-not-available-in-google-antigravity-ide.md) | 200 | 2026-08-14 |
-| 51 | community | Antigravity SDK API key in CI (GitHub Action) | [51-rsamborski-run-agy-sdk.md](community/51-rsamborski-run-agy-sdk.md) | 200 | 2026-08-14 |
-| 52 | community | 15-Minute Migration to Antigravity CLI | [52-blog-gemini-cli-shutdown-antigravity-migration-guide.md](community/52-blog-gemini-cli-shutdown-antigravity-migration-guide.md) | 200 | 2026-08-14 |
+| 40 | docs | CLI Modes | [40-cli-modes.md](docs/40-cli-modes.md) | 200 | 2026-08-14 |
+| 41 | docs | Vim Editor Mode | [41-cli-vim-editor-mode.md](docs/41-cli-vim-editor-mode.md) | 200 | 2026-08-14 |
+| 42 | docs | AI Credits | [42-cli-credits.md](docs/42-cli-credits.md) | 200 | 2026-08-14 |
+| 43 | docs | IDE Hooks | [43-ide-hooks.md](docs/43-ide-hooks.md) | 200 | 2026-08-14 |
+| 44 | docs | IDE Settings | [44-ide-settings.md](docs/44-ide-settings.md) | 200 | 2026-08-14 |
+| 45 | docs | IDE Plugins | [45-ide-plugins.md](docs/45-ide-plugins.md) | 200 | 2026-08-14 |
+| 46 | docs | IDE MCP | [46-ide-mcp.md](docs/46-ide-mcp.md) | 200 | 2026-08-14 |
+| 47 | google | Agent Skills 101 | [47-getting-started-with-antigravity-skills.md](google/47-getting-started-with-antigravity-skills.md) | 200 | 2026-08-13 |
+| 48 | google | Configuration | [48-reference-configuration.md](google/48-reference-configuration.md) | 200 | 2026-08-13 |
+| 49 | google | Antigravity SDK announcement blog | [49-blog-introducing-google-antigravity-sdk.md](google/49-blog-introducing-google-antigravity-sdk.md) | 200 | 2026-08-13 |
+| 50 | google | antigravity-sdk-python (official repo) | [50-google-antigravity-antigravity-sdk-python.md](google/50-google-antigravity-antigravity-sdk-python.md) | 200 | 2026-08-13 |
+| 51 | google | CLI API-key auth feature request | [51-cli-api-key-auth-feature-request.md](google/51-cli-api-key-auth-feature-request.md) | 200 | 2026-08-13 |
+| 52 | protocol | MCP Specification | [52-getting-started-intro.md](protocol/52-getting-started-intro.md) | 200 | 2026-08-13 |
+| 53 | community | Antigravity CLI Setup | [53-antigravity-cli-setup.md](community/53-antigravity-cli-setup.md) | 200 | 2026-08-13 |
+| 54 | community | Scary Agent Skills | [54-2026-scary-agent-skills.md](community/54-2026-scary-agent-skills.md) | 200 | 2026-08-13 |
+| 55 | community | claude-faces-expert | [55-omnifaces-claude-faces-expert.md](community/55-omnifaces-claude-faces-expert.md) | 200 | 2026-08-14 |
+| 56 | community | Google Antigravity SDK: The developer guide (K. Weinmeister) | [56-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md](community/56-pulse-google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc.md) | 200 | 2026-08-14 |
+| 57 | community | C# Dev Kit not available in Google Antigravity IDE | [57-c-dev-kit-not-available-in-google-antigravity-ide.md](community/57-c-dev-kit-not-available-in-google-antigravity-ide.md) | 200 | 2026-08-14 |
+| 58 | community | Antigravity SDK API key in CI (GitHub Action) | [58-rsamborski-run-agy-sdk.md](community/58-rsamborski-run-agy-sdk.md) | 200 | 2026-08-14 |
+| 59 | community | 15-Minute Migration to Antigravity CLI | [59-blog-gemini-cli-shutdown-antigravity-migration-guide.md](community/59-blog-gemini-cli-shutdown-antigravity-migration-guide.md) | 200 | 2026-08-14 |

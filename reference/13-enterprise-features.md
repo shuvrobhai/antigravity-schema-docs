@@ -34,7 +34,7 @@ Google Antigravity integrates directly with **Gemini Enterprise** and the **Gemi
    - Enable via environment variable: `export AGY_ADC_AUTH=true`.
    - Limitation: Models older than Gemini 3 Flash are not supported under ADC.
 4. **API Key Support**:
-   - **CLI**: NOT supported currently (`google-antigravity/antigravity-cli#78` `[GOOGLE:44]`).
+   - **CLI**: NOT supported currently (`google-antigravity/antigravity-cli#78` `[GOOGLE:50]`).
    - **SDK**: Supported via `GEMINI_API_KEY` env or `api_key=` config `[DOCS:30]`.
 
 ### Regional Deployment Endpoints & Capability Matrix `[DOCS:18]`
