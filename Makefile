@@ -1,4 +1,4 @@
-.PHONY: help install build build-check watch test test-schemas audit validate validate-verbose validate-fix generate-evidence check-evidence fetch-sources check-sources force-fetch-sources clean all
+.PHONY: help install build build-check watch test test-schemas audit validate validate-verbose validate-fix generate-evidence check-evidence fetch-sources check-sources force-fetch-sources clean tidy all
 
 TSX ?= npx tsx
 
@@ -26,6 +26,7 @@ help:
 	@echo "Environment & Maintenance:"
 	@echo "  make install             Install dependencies"
 	@echo "  make clean               Remove build temp files"
+	@echo "  make tidy                Clean workspace, inspect git status, and validate integrity"
 	@echo "  make all                 Run full test, validation and build verification"
 
 test:
@@ -82,3 +83,8 @@ force-fetch-sources:
 
 clean:
 	rm -f antigravity-reference.md.tmp
+
+tidy: clean
+	@git status --short
+	@$(TSX) scripts/validate.ts
+

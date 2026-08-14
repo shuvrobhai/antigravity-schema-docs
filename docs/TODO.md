@@ -28,6 +28,11 @@ Status ledger for issues surfaced by the schema coverage audit (**R-002**), the 
 - [x] **Formalize §16 community sourcing policy** — adopted minimal §19 indexing policy where §19 registers primary snapshotted anchors (#53–#59) while §16 tables cite secondary/corroborating community names without snapshot inflation (R-004 §6.3).
 - [x] **Reconcile version strings & end-notes** — synchronized preamble version header, §20 end-note, and README schema counts to v8.10 (20 native schemas).
 - [x] **Document workflow frontmatter & token semantics** — verified that official `ide/workflows` uses `title`+`description` while real workflows often omit `name`/`title` and derive the slash command from filename or H1 header; documented `$ARGUMENTS` interpolation and permissive schema behavior across §4.7 and `schemas/workflow.schema.json` (R-005, R-006).
+- [x] **Architecture Deepening 01: EvidenceRegistry Domain Catalog** — extracted pure browser-safe `src/lib/evidenceRegistry.ts` cataloging citations, evidence probes, canonical URLs, duplicate grouping, and cross-reference indexing over the `DocumentStore` seam.
+- [x] **Architecture Deepening 02: Headless WorkspaceSession Engine** — extracted pure in-memory `src/schema/workspaceSession.ts` managing presets, templates, line-by-line unified diffing, dirty state analysis, and audit execution behind a decoupled class interface.
+- [x] **Architecture Deepening 03: Pure ManifestGenerator Engine** — extracted `src/schema/manifestGenerator.ts` providing strongly-typed option contracts, default configurations, and deterministic serializers for `SKILL.md`, `plugin.json`, `mcp_config.json`, `hooks.json`, `agent.md`, and `rule.md`.
+- [x] **Architecture Deepening 04: In-Memory Inverted SearchIndex** — extracted `src/lib/searchIndex.ts` pre-indexing corpus items (modules, schemas, evidence, sources, ADRs) for $O(1)$ token and prefix lookup, shrinking `src/data/search.ts` to 15 lines.
+- [x] **Ponytail Cleanups & Protocol Rule** — removed redundant `bun.lock` (75 KB), pruned shallow facades (`sourceProcessing.ts`, `validationEngine.ts`), installed active workspace rule `.agents/rules/ponytail.md`, and wired all new module unit tests into `make test`.
 
 ## Open for next session
 
