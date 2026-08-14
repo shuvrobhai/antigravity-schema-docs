@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/hook_payload.schema.json",
+  "title": "HookPayloadSchema",
+  "description": "Google Antigravity Lifecycle Hook Runtime IPC Input/Output Payload Contracts (stdin/stdout across PreToolUse, PostToolUse, PreInvocation, PostInvocation, Stop).",
+  "type": "object",
+  "category": "Runtime State",
+  "anyOf": [
+    { "$ref": "#/$defs/PreToolUseInput" },
+    { "$ref": "#/$defs/PreToolUseOutput" },
+    { "$ref": "#/$defs/PostToolUseInput" },
+    { "$ref": "#/$defs/PostToolUseOutput" },
+    { "$ref": "#/$defs/InvocationInput" },
+    { "$ref": "#/$defs/PreInvocationOutput" },
+    { "$ref": "#/$defs/PostInvocationOutput" },
+    { "$ref": "#/$defs/StopInput" },
+    { "$ref": "#/$defs/StopOutput" }
+  ],
+  "$defs": {
+    "CommonHookContext": {
+      "type": "object",
+      "properties": {
+        "conversationId": {
+          "type": "string",
+          "description": "The unique UUID of the active agent conversation."
+        },
+        "workspacePaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Absolute directory paths representing mounted workspaces."
+        },
+        "transcriptPath": {
+          "type": "string",
+          "description": "Absolute path to persistent transcript.jsonl log file."
+        },
+        "artifactDirectoryPath": {
+          "type": "string",
+          "description": "Absolute path to directory containing conversation artifacts."
+        },
+        "modelName": {
+          "type": "string",
+          "description": "Active model identifier string."
+        }
+      }
+    },
+    "InjectStep": {
+      "type": "object",
+      "properties": {
+        "toolCall": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "args": { "type": "object" }
+          },
+          "required": ["name"]
+        },
+        "userMessage": {
+          "type": "string",
+          "description": "Injected message from the user."
+        },
+        "ephemeralMessage": {
+          "type": "string",
+          "description": "Injected transient system message."
+        }
+      },
+      "additionalProperties": false
+    },
+    "PreToolUseInput": {
+      "type": "object",
+      "properties": {
+        "toolCall": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "description": "The name of the tool being executed (e.g. run_command)." },
+            "args": { "type": "object", "description": "Arguments passed to the tool." }
+          },
+          "required": ["name", "args"]
+        },
+        "stepIdx": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "0-based step index in the trajectory."
+        },
+        "conversationId": { "type": "string" },
+        "workspacePaths": { "type": "array", "items": { "type": "string" } },
+        "transcriptPath": { "type": "string" },
+        "artifactDirectoryPath": { "type": "string" },
+        "modelName": { "type": "string" }
+      },
+      "required": ["toolCall", "stepIdx"],
+      "additionalProperties": false
+    },
+    "PreToolUseOutput": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["allow", "deny", "ask", "force_ask"],
+          "description": "Decision gate for the proposed tool invocation."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Explanation shown to agent or user for the decision."
+        },
+        "permissionOverrides": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of resource strings to override default permissions."
+        }
+      },
+      "required": ["decision"],
+      "additionalProperties": false
+    },
+    "PostToolUseInput": {
+      "type": "object",
+      "properties": {
+        "stepIdx": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "0-based index of the completed step."
+        },
+        "error": {
+          "type": "string",
+          "description": "Runtime error message if tool call failed; empty on success."
+        },
+        "conversationId": { "type": "string" },
+        "workspacePaths": { "type": "array", "items": { "type": "string" } },
+        "transcriptPath": { "type": "string" },
+        "artifactDirectoryPath": { "type": "string" },
+        "modelName": { "type": "string" }
+      },
+      "required": ["stepIdx"],
+      "additionalProperties": false
+    },
+    "PostToolUseOutput": {
+      "type": "object",
+      "maxProperties": 0,
+      "additionalProperties": false
+    },
+    "InvocationInput": {
+      "type": "object",
+      "properties": {
+        "invocationNum": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "0-indexed sequence number of current model invocation (PreInvocation / PostInvocation)."
+        },
+        "initialNumSteps": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of steps currently in trajectory."
+        },
+        "conversationId": { "type": "string" },
+        "workspacePaths": { "type": "array", "items": { "type": "string" } },
+        "transcriptPath": { "type": "string" },
+        "artifactDirectoryPath": { "type": "string" },
+        "modelName": { "type": "string" }
+      },
+      "required": ["invocationNum", "initialNumSteps"],
+      "additionalProperties": false
+    },
+    "PreInvocationOutput": {
+      "type": "object",
+      "properties": {
+        "injectSteps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/InjectStep" },
+          "description": "List of steps to inject before calling the model."
+        }
+      },
+      "required": ["injectSteps"],
+      "additionalProperties": false
+    },
+    "PostInvocationOutput": {
+      "type": "object",
+      "properties": {
+        "injectSteps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/InjectStep" },
+          "description": "List of steps to inject after invocation completes."
+        },
+        "terminationBehavior": {
+          "type": "string",
+          "enum": ["", "force_continue", "terminate"],
+          "default": "",
+          "description": "Controls execution flow after step injection."
+        }
+      },
+      "required": ["terminationBehavior"],
+      "additionalProperties": false
+    },
+    "StopInput": {
+      "type": "object",
+      "properties": {
+        "executionNum": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sequence number of execution attempt."
+        },
+        "terminationReason": {
+          "type": "string",
+          "description": "Reason execution is stopping (e.g. model_stop, max_steps_exceeded, error)."
+        },
+        "error": {
+          "type": "string",
+          "description": "Error message if termination caused by system error."
+        },
+        "fullyIdle": {
+          "type": "boolean",
+          "description": "True if agent is completely finished and all background tasks completed."
+        },
+        "conversationId": { "type": "string" },
+        "workspacePaths": { "type": "array", "items": { "type": "string" } },
+        "transcriptPath": { "type": "string" },
+        "artifactDirectoryPath": { "type": "string" },
+        "modelName": { "type": "string" }
+      },
+      "required": ["executionNum", "terminationReason", "fullyIdle"],
+      "additionalProperties": false
+    },
+    "StopOutput": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["continue"],
+          "description": "Set to 'continue' to prevent stopping and re-enter execution loop."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Message injected as system message if decision is continue."
+        }
+      },
+      "required": ["decision"],
+      "additionalProperties": false
+    }
+  }
+}

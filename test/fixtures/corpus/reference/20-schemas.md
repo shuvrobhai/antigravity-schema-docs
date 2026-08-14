@@ -1,6 +1,6 @@
 ## 20. Schemas
 
-### 20.2 Complete 19 Native Schemas
+### 20.2 Complete 20 Native Schemas
 
 | # | Key | Schema Name | Pydantic Model Class | Category | Exported JSON Schema File | Target File / Location |
 |---|---|---|---|---|---|---|
@@ -23,3 +23,4 @@
 | 17 | fixture_17 | Fixture 17 | Fixture17 | runtime | schemas/fixture_17.schema.json | ~/.config/agy/17.json |
 | 18 | fixture_18 | Fixture 18 | Fixture18 | runtime | schemas/fixture_18.schema.json | ~/.config/agy/18.json |
 | 19 | fixture_19 | Fixture 19 | Fixture19 | runtime | schemas/fixture_19.schema.json | ~/.config/agy/19.json |
+| 20 | fixture_20 | Fixture 20 | Fixture20 | runtime | schemas/fixture_20.schema.json | ~/.config/agy/20.json |

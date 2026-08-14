@@ -16,7 +16,7 @@ The official docs (`antigravity.google/docs/*`) leave the following behavioral q
 
 | Question | Context | Impact |
 |---|---|---|
-| What glob syntax do Rules use in `Glob` activation mode? | Official docs mention "Glob" mode | Incorrect patterns could silently fail to match |
+| What glob syntax do Rules use in `Glob` activation mode? | **RESOLVED 2026-08-14 (R-006):** Standard glob syntax supporting recursive globbing (`**`), brace expansion (e.g. `**/*.{tsx,jsx,vue,svelte,css,scss}`), and comma-delimited strings (e.g. `"**/*.tsx,**/components/**"`) or array format. Verified on live `design-rules.md`. | Resolved via R-006. |
 | How does `model: inherit` resolve — parent's selected model or parent's default? | Agent frontmatter `model` field | Subagent may use wrong model tier |
 | What happens when two workspace skills share the same name? | Workspace > Global precedence stated; same-level conflicts not | Unpredictable skill activation |
 | What is the plugin loading order when multiple plugins define hooks for the same event? | Multiple plugins can include hooks.json | Non-deterministic hook execution order |
