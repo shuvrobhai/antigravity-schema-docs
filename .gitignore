@@ -14,3 +14,6 @@ dist/
 
 # macOS
 .DS_Store
+
+# Scratch and audit directories
+for-audit/
