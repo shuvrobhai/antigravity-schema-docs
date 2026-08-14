@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { TabType } from './types';
 import {
   referenceModules,
@@ -13,17 +13,20 @@ import {
 } from './data/repository';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
-import { ReferenceViewer } from './components/ReferenceViewer';
-import { WorkspaceAuditor } from './components/WorkspaceAuditor';
-import { SchemaExplorer } from './components/SchemaExplorer';
-import { ExtensibilityHub } from './components/ExtensibilityHub';
-import { CliCheatSheet } from './components/CliCheatSheet';
-import { EvidenceMatrix } from './components/EvidenceMatrix';
-import { SourceArchiveViewer } from './components/SourceArchiveViewer';
-import { AdrViewer } from './components/AdrViewer';
-import { ValidationConsole } from './components/ValidationConsole';
-import { ComposedDocViewer } from './components/ComposedDocViewer';
-import { SearchModal } from './components/SearchModal';
+
+// Tab views are lazy-loaded so the initial bundle only ships the app shell;
+// heavy deps (ajv, react-markdown) load per-tab on first visit.
+const ReferenceViewer = lazy(() => import('./components/ReferenceViewer').then(m => ({ default: m.ReferenceViewer })));
+const WorkspaceAuditor = lazy(() => import('./components/WorkspaceAuditor').then(m => ({ default: m.WorkspaceAuditor })));
+const SchemaExplorer = lazy(() => import('./components/SchemaExplorer').then(m => ({ default: m.SchemaExplorer })));
+const ExtensibilityHub = lazy(() => import('./components/ExtensibilityHub').then(m => ({ default: m.ExtensibilityHub })));
+const CliCheatSheet = lazy(() => import('./components/CliCheatSheet').then(m => ({ default: m.CliCheatSheet })));
+const EvidenceMatrix = lazy(() => import('./components/EvidenceMatrix').then(m => ({ default: m.EvidenceMatrix })));
+const SourceArchiveViewer = lazy(() => import('./components/SourceArchiveViewer').then(m => ({ default: m.SourceArchiveViewer })));
+const AdrViewer = lazy(() => import('./components/AdrViewer').then(m => ({ default: m.AdrViewer })));
+const ValidationConsole = lazy(() => import('./components/ValidationConsole').then(m => ({ default: m.ValidationConsole })));
+const ComposedDocViewer = lazy(() => import('./components/ComposedDocViewer').then(m => ({ default: m.ComposedDocViewer })));
+const SearchModal = lazy(() => import('./components/SearchModal').then(m => ({ default: m.SearchModal })));
 
 const VALID_TABS: TabType[] = [
   'reference',
@@ -41,6 +44,12 @@ const VALID_TABS: TabType[] = [
 function isTabType(value: string): value is TabType {
   return (VALID_TABS as readonly string[]).includes(value);
 }
+
+const TabFallback: React.FC = () => (
+  <div className="w-full h-full flex items-center justify-center text-stone-400 text-sm">
+    Loading…
+  </div>
+);
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('reference');
@@ -188,6 +197,7 @@ export const App: React.FC = () => {
 
         {/* Viewport Content */}
         <main className="flex-1 flex overflow-hidden bg-stone-950">
+          <Suspense fallback={<TabFallback />}>
           {activeTab === 'reference' && currentModule && (
             <ReferenceViewer
               module={currentModule}
@@ -233,15 +243,18 @@ export const App: React.FC = () => {
           {activeTab === 'composed' && (
             <ComposedDocViewer content={parentComposedDocument} />
           )}
+          </Suspense>
         </main>
       </div>
 
       {/* Global Spotlight Search Modal */}
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        onNavigate={handleNavigate}
-      />
+      <Suspense fallback={null}>
+        <SearchModal
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          onNavigate={handleNavigate}
+        />
+      </Suspense>
     </div>
   );
 };
