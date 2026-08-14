@@ -2,6 +2,8 @@
 
 All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2026-08-13]` = live observation, `[GOOGLE]` = other Google sources, `[PROTOCOL]` = MCP specification, `[COMMUNITY]` = third-party.
 
+**Numbering is append-only as of 2026-08-14:** new sources are added at the end of the list with the next free numbers (see the trailing `[DOCS]` section) rather than renumbering existing entries and their archived snapshots.
+
 ### Live Evidence `[LIVE-1.1.12 · 2026-08-13]`
 
 - EV-001 through EV-020 — raw evidence recorded under `evidence/agy-1.1.12/evidence.md`
@@ -38,28 +40,58 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 28. Implementation Plan — https://antigravity.google/docs/implementation-plan
 29. Landing Page — https://antigravity.google/docs/
 30. Antigravity SDK Overview + Quick Start — https://antigravity.google/docs/sdk/overview
+31. Installation & Auth — https://antigravity.google/docs/cli/install
+32. Migration (Gemini CLI) — https://antigravity.google/docs/cli/gcli-migration
+33. IDE Rules — https://antigravity.google/docs/ide/rules
+34. IDE Workflows — https://antigravity.google/docs/ide/workflows
+35. SDK MCP — https://antigravity.google/docs/sdk/mcp
+36. Sidecars — https://antigravity.google/docs/sidecars
+37. Task Groups — https://antigravity.google/docs/task-groups
+38. Tools — https://antigravity.google/docs/tools
+39. FAQ — https://antigravity.google/docs/faq
+40. CLI Modes — https://antigravity.google/docs/cli/modes
+41. Vim Editor Mode — https://antigravity.google/docs/cli/vim-editor-mode
+42. AI Credits — https://antigravity.google/docs/cli/credits
+43. IDE Hooks — https://antigravity.google/docs/ide/hooks
+44. IDE Settings — https://antigravity.google/docs/ide/settings
+45. IDE Plugins — https://antigravity.google/docs/ide/plugins
+46. IDE MCP — https://antigravity.google/docs/ide/mcp
 
 ### Google-Owned, Non-Docs `[GOOGLE]`
 
-31. Agent Skills 101 — https://codelabs.developers.google.com/getting-started-with-antigravity-skills
-32. Getting Started with Google Antigravity — https://codelabs.developers.google.com/getting-started-google-antigravity
-33. Spec-Driven Development — https://codelabs.developers.google.com/sdd-agy-cli
-34. Hands-on with Antigravity CLI — https://codelabs.developers.google.com/antigravity-cli-hands-on
-35. Configuration — https://geminicli.com/docs/reference/configuration/ (relocated; old `google.github.io/gemini-cli/docs/configuration` returns 404 as of 2026-08-11)
-36. Antigravity SDK announcement blog — https://antigravity.google/blog/introducing-google-antigravity-sdk
-37. antigravity-sdk-python (official repo) — https://github.com/google-antigravity/antigravity-sdk-python
-38. CLI API-key auth feature request — https://github.com/google-antigravity/antigravity-cli/issues/78
+47. Agent Skills 101 — https://codelabs.developers.google.com/getting-started-with-antigravity-skills
+48. Configuration — https://geminicli.com/docs/reference/configuration/ (relocated; old `google.github.io/gemini-cli/docs/configuration` returns 404 as of 2026-08-11)
+49. Antigravity SDK announcement blog — https://antigravity.google/blog/introducing-google-antigravity-sdk
+50. antigravity-sdk-python (official repo) — https://github.com/google-antigravity/antigravity-sdk-python
+51. CLI API-key auth feature request — https://github.com/google-antigravity/antigravity-cli/issues/78
 
 ### Protocol Specification `[PROTOCOL]`
 
-39. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
+52. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
 
 ### Third-Party Sources `[COMMUNITY]`
 
-40. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
-41. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
-42. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
-43. Google Antigravity SDK: The developer guide (K. Weinmeister) — https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc
-44. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
-45. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
-46. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
+53. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
+54. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
+55. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
+56. Google Antigravity SDK: The developer guide (K. Weinmeister) — https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc
+57. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
+58. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
+59. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
+
+### Official Docs `[DOCS]` — Append-Only Additions (added 2026-08-14)
+
+60. Agents Command (/agents) — https://antigravity.google/docs/cli/commands/agents
+61. Code Search Command (/codesearch) — https://antigravity.google/docs/cli/commands/codesearch
+62. AI Credits Command (/credits) — https://antigravity.google/docs/cli/commands/credits
+63. Diff Command (/diff) — https://antigravity.google/docs/cli/commands/diff
+64. Permissions Command (/permissions) — https://antigravity.google/docs/cli/commands/permissions
+65. Resume Command (/resume) — https://antigravity.google/docs/cli/commands/resume
+66. Status Line Command (/statusline) — https://antigravity.google/docs/cli/commands/statusline
+67. Window Title Command (/title) — https://antigravity.google/docs/cli/commands/title
+68. Model Quotas (/usage) — https://antigravity.google/docs/cli/commands/usage
+69. IDE Overview — https://antigravity.google/docs/ide/overview
+70. IDE Getting Started — https://antigravity.google/docs/ide/getting-started
+71. CLI Overview — https://antigravity.google/docs/cli/overview
+72. CLI Features — https://antigravity.google/docs/cli/features
+73. CLI Prompting — https://antigravity.google/docs/cli/prompting

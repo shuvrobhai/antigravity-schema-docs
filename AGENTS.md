@@ -7,7 +7,7 @@ Repository for the Google Antigravity (`agy`) technical reference: modular Markd
 The **TypeScript toolchain is the source of truth** (ADR-0005). The repository is 100% TypeScript with zero Python dependencies.
 
 ```bash
-make install                 # npm install (package-lock.json; bun.lock also committed)
+make install                 # npm install (package-lock.json is the single source of truth)
 make build                   # compose reference/*.md → antigravity-reference.md
 make build-check             # verify parent doc in sync (CI mode, no write)
 make watch                   # live-rebuild on module changes

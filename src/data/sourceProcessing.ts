@@ -240,7 +240,7 @@ export function indexSourceReferenceLocations(
         currentSectionHeading = headingMatch[1].replace(/\*\*/g, '').trim();
       }
 
-      // Check for indexed tags: [DOCS:23], [DOCS:23,26], [GOOGLE:38], etc.
+      // Check for indexed tags: [DOCS:23], [DOCS:23,26], [GOOGLE:35], etc.
       for (const badge of scanCitationBadges(line)) {
         for (const num of badge.numbers) {
           const targetCitation = citationMap.get(num);
