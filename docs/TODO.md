@@ -20,38 +20,30 @@ Status ledger for issues surfaced by the schema coverage audit (**R-002**), the 
 - [x] **Schema `$id` namespace documentation** — documented in §20 that `$id` URLs (`https://antigravity.google/schemas/v1/*.schema.json`) represent canonical JSON Schema Draft 2020-12 namespace URIs rather than resolvable HTTP endpoints (R-002 §4).
 - [x] **§20.2 matrix target-path accuracy** — updated target paths for Agent (`.agents/agents/<name>/agent.md`, `~/.gemini/config/agents/`, `plugins/<name>/agents/*.md`) and Plugin (`plugins/<name>/plugin.json`, `.agents/plugins/<name>/plugin.json`, `~/.gemini/config/plugins/<name>/plugin.json`) (R-002 §4).
 - [x] **Empirical rule frontmatter & glob syntax audit** — audited 6 real rule files in `~/.gemini/antigravity/.agents/rules/` and confirmed `trigger: always_on|model_decision|glob` + `activation: always`, and glob syntax with curly braces, recursion, comma-separated patterns (R-006).
-- [x] **Workflow schema & tokens verification** — verified 13 real workflow files in `~/.gemini/antigravity/.agents/workflows/` (`brainstorm`, `debug`, `deploy`, `orchestrate`, `plan`, `test`, `verify`, etc.); confirmed `description: ...` frontmatter, `$ARGUMENTS` tokens, and `// turbo` execution annotations (R-006).
+- [x] **`parseSimpleYaml` test suite & block-scalar hardening** — added comprehensive unit tests to `scripts/test_integrity_gate.ts` covering folded scalars (`>`), stripped chomp (`>-`), literal scalars (`|`), nested objects, JSON arrays, and YAML lists.
+- [x] **Reconcile global rules locations & 12,000-char limits** — documented the 12k character limit on rules and workflows in §4.6 and §4.7; documented global rules paths (`~/.gemini/GEMINI.md`, `~/.gemini/antigravity-cli/rules/`, `~/.gemini/config/rules/`, and directory walk-up deduplication) (R-005/R-006).
 
 ## Open for next session
 
 ### 1. Schema strictness pass
 Most schemas use `additionalProperties: true`. Where docs define closed enums/required sets (hooks handler `type`, transcript `source`/`type`/`status`, settings enums), consider tightening — but never in a way that rejects real observed files.
 
-### 2. `parseSimpleYaml` block-scalar edge cases
-Current block-scalar support is best-effort: folding (`>`) joins lines with spaces, literal (`|`) keeps newlines, trailing whitespace is trimmed. YAML-exact chomping (`+` keeps trailing newlines, `-` strips), multi-paragraph `|` blocks, and indentation preservation are not implemented. Add unit tests pinning the real skill files' `description: >` parsing.
-
-### 3. Version-string drift
+### 2. Version-string drift
 Preamble version header and the §20 end-note must stay in sync with the top changelog row after each revision (currently 8.10).
 
-### 7. §09 fail-closed / symlink-escape claims lack a backing source (R-004 §6.1)
+### 3. §09 fail-closed / symlink-escape claims lack a backing source (R-004 §6.1)
 The claims at `reference/09-sandbox.md` ("fails closed with a hard error", "symlinks … outside the workspace root are blocked") are tagged `[DOCS:06]`/`[GOOGLE:41]`, but none of the live official sandbox doc, the archived snapshot, the geminicli configuration reference, or the geminicli sandbox page contains that language (2026-08-14). Find the true source or downgrade the claims.
 
-### 8. Official-docs conflict on the global skills path (R-004 §6.2)
+### 4. Official-docs conflict on the global skills path (R-004 §6.2)
 `docs/cli/gcli-migration` says global skills migrate to `~/.gemini/antigravity-cli/skills/`; `docs/skills` says the global location is `~/.gemini/config/skills/`. Both directories exist on this install. Resolve before re-sourcing §3.4/§16 migration rows from `[GOOGLE]`/`[COMMUNITY]` to `[DOCS]`.
 
-### 9. §16 bare-tag community sources have no works-cited entries (R-004 §6.3)
+### 5. §16 bare-tag community sources have no works-cited entries (R-004 §6.3)
 OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout, Google Cloud Medium tutorial, LinkedIn, community round-up are cited by bare tag in §16 but absent from §19. Decide: add entries (grows the list) or accept bare tags as audit-table-only citations (keeps §19 minimal).
 
-### 14. Snapshot the remaining official pages (R-004 §3)
+### 6. Snapshot the remaining official pages (R-004 §3)
 Done 2026-08-14: `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (§19 #31-39), `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp` (§19 #40-46), `cli/commands/*` (9 pages), `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting` (§19 #60-73, append-only). Remaining (optional, add via append-only numbering): `cli/using`, `cli/tutorial`, `cli/getting-started`, `cli/install` extras, `ide/browser-recordings`, `ide/review-changes-editor`, `ide/tab`, `docs/plans`, `docs/faq` extras — useful to close §16/§17 gaps.
 
-### 15. Reconcile the global rules location (R-005)
-Official `ide/rules` and `cli/gcli-migration` say global rules/context live in `~/.gemini/GEMINI.md`; the repo's §3/§20 and the real install record rule files under `~/.gemini/antigravity-cli/rules/` (e.g. `global.md`). Confirm whether GEMINI.md and the `rules/` directories are two mechanisms or two views of one, and document both in §3/§20.2.
-
-### 16. Document runtime file-size limits (R-005)
-Both `ide/rules` and `ide/workflows` cap files at 12,000 characters; not captured in the reference modules or schemas. Add as a documented runtime constraint.
-
-### 17. Workflow `name` key is not officially documented (R-005)
+### 7. Workflow `name` key is not officially documented (R-005)
 `ide/workflows` documents only `title` + `description` (steps in the markdown body); the community/2.0 format uses `name`. The schema accepts both — confirm the primary key with a real Antigravity-written workflow before tightening.
 
 ## Where the findings live

@@ -20,7 +20,7 @@ import {
   flattenCitations,
   normalizePath,
 } from '../src/lib/documentStore';
-import { MarkdownDoc as CoreMarkdownDoc, extractHeadings, parseFrontmatterMap } from '../src/lib/markdownCore';
+import { MarkdownDoc as CoreMarkdownDoc, extractHeadings, parseFrontmatterMap, parseSimpleYaml } from '../src/lib/markdownCore';
 import { MarkdownDoc as CliMarkdownDoc } from './lib/docInspector';
 import { EvidenceRegistry, readSnapshotHeader } from './lib/evidenceRegistry';
 import { parseSourceFrontmatter } from '../src/data/sourceProcessing';
@@ -415,7 +415,84 @@ console.log('\n\x1b[1m=== Citation model parity: browser store vs EvidenceRegist
 }
 
 // ---------------------------------------------------------------------------
-// 4. End-to-end: the gate passes on the real repository
+// 4. Unit tests: parseSimpleYaml resilience & YAML block scalars
+// ---------------------------------------------------------------------------
+
+console.log('\n\x1b[1m=== YAML Parser & Block-Scalar Hardening Tests ===\x1b[0m\n');
+
+{
+  // 1. Folded scalar ('>') joins lines with space
+  const folded = parseSimpleYaml(`description: >
+  First line of description.
+  Second line of description.`);
+  assert(
+    folded.description === 'First line of description. Second line of description.',
+    'parseSimpleYaml: folded block scalar (>) joins lines with single spaces'
+  );
+
+  // 2. Folded scalar with chomp ('>-')
+  const foldedStrip = parseSimpleYaml(`name: test-skill
+description: >-
+  Line one here.
+  Line two here.`);
+  assert(
+    foldedStrip.description === 'Line one here. Line two here.' && foldedStrip.name === 'test-skill',
+    'parseSimpleYaml: folded scalar with strip chomping (>-) parses clean description'
+  );
+
+  // 3. Literal scalar ('|') preserves newlines
+  const literal = parseSimpleYaml(`instructions: |
+  Step 1: Do this.
+  Step 2: Do that.`);
+  assert(
+    literal.instructions === 'Step 1: Do this.\nStep 2: Do that.',
+    'parseSimpleYaml: literal block scalar (|) preserves newlines'
+  );
+
+  // 4. Nested object + block scalar
+  const nested = parseSimpleYaml(`name: self-customize
+metadata:
+  category: Tooling
+  version: 1.1.0
+description: >-
+  Customizes settings and tools.`);
+  assert(
+    nested.name === 'self-customize' &&
+      typeof nested.metadata === 'object' &&
+      nested.metadata !== null &&
+      (nested.metadata as Record<string, unknown>).category === 'Tooling' &&
+      nested.description === 'Customizes settings and tools.',
+    'parseSimpleYaml: parses nested object alongside block scalar correctly'
+  );
+
+  // 5. Types: booleans, numbers, nulls, lists, JSON arrays
+  const types = parseSimpleYaml(`enabled: true
+disabled: false
+count: 42
+pi: 3.14
+empty: null
+tilde: ~
+tags: ["alpha", "beta"]
+items:
+  - first
+  - second`);
+  assert(
+    types.enabled === true &&
+      types.disabled === false &&
+      types.count === 42 &&
+      types.pi === 3.14 &&
+      types.empty === null &&
+      types.tilde === null &&
+      Array.isArray(types.tags) &&
+      (types.tags as string[]).length === 2 &&
+      Array.isArray(types.items) &&
+      (types.items as string[]).length === 2,
+    'parseSimpleYaml: correctly coerces booleans, numbers, nulls, JSON arrays, and YAML lists'
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 5. End-to-end: the gate passes on the real repository
 // ---------------------------------------------------------------------------
 
 console.log('\n\x1b[1m=== Integrity Gate on the real repository ===\x1b[0m\n');

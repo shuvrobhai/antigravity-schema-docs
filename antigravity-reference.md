@@ -866,12 +866,17 @@ Unconfigured MCP tools default to Ask mode.
 
 **Definition:** Markdown files defining constraints or guidelines for agent behavior `[DOCS]`.
 
-| Scope | Path |
-|---|---|
-| Global | `~/.gemini/GEMINI.md` |
-| Workspace | `.agents/rules/` |
+| Scope | Path | Details |
+|---|---|---|
+| **Global Context** | `~/.gemini/GEMINI.md` | Primary global constraint file; always active `[DOCS]` |
+| **Global Rule Stores** | `~/.gemini/config/rules/`, `~/.gemini/antigravity-cli/rules/` | Global modular rules `[LIVE-1.1.12 · 2026-08-13]` |
+| **Workspace Modular** | `<workspace-root>/.agents/rules/*.md` | Scoped rules with trigger/glob frontmatter `[DOCS]` |
+| **Directory Scope** | `<dir>/GEMINI.md`, `<dir>/AGENTS.md` | Injected hierarchically walking up from CWD `[DOCS]` |
+| **Plugin Rules** | `<plugin>/rules/*.md` | Loaded when parent plugin is enabled `[DOCS]` |
 
 Backward compat: `.agent/rules` (singular) `[DOCS]`.
+
+**Deduplication & Precedence:** Rules are automatically deduplicated across multiple inherited directory paths so each unique rule is loaded at most once per conversation session.
 
 **Size Limit:** 12,000 characters per rule file `[DOCS]`.
 
@@ -895,8 +900,9 @@ Backward compat: `.agent/rules` (singular) `[DOCS]`.
 | Invocation | `/workflow-name` |
 | Scope | Global or Workspace |
 | Composition | Workflows can call other workflows |
-| Execution | Sequential |
+| Execution | Sequential; supports `// turbo` and `// turbo-all` non-interactive annotations |
 | Management | Customizations panel |
+| Size Limit | **12,000 characters** per workflow file `[DOCS]` |
 
 **Distinction from Rules:** Rules = persistent context at prompt level. Workflows = structured sequences at trajectory level `[DOCS]`.
 
