@@ -65,6 +65,25 @@ The 12-check validation suite (`src/lib/integrityGate.ts`) implemented as pure f
 _Avoid_: validation engine, validator
 
 **Evidence Registry**:
-Domain catalog and verification module (`scripts/lib/evidenceRegistry.ts`) providing an immutable query interface over Section 19 citations, empirical evidence probes (EV-001..EV-020), snapshot path resolution, and `index.md` manifest verification.
+The pure, browser-safe citation and empirical probe catalog (`src/lib/evidenceRegistry.ts`) — Section 19 Works Cited parsing, empirical evidence probes (EV-001..EV-020), canonical URL normalization, duplicate grouping, cross-reference indexing, and archive manifest generation behind one domain interface.
 _Avoid_: citation helper, source parser
+
+**Evidence Registry Inspector**:
+The CLI adapter over the Evidence Registry (`scripts/lib/evidenceRegistry.ts`) — adds filesystem loading (`EvidenceRegistry.load()`), missing/orphan snapshot discovery, and live `index.md` synchronization on disk.
+_Avoid_: citation script, source validator
+
+**Workspace Session Engine**:
+The headless in-memory workspace session and scaffolding engine (`src/schema/workspaceSession.ts`) — manages file CRUD, preset catalogs, template scaffolding, diff computation, and audit execution behind one stateful object interface.
+_Avoid_: workspace manager, state helper, auditor utils
+
+**Manifest Generator**:
+The pure, typed manifest formatting and scaffolding engine (`src/schema/manifestGenerator.ts`) — encapsulates option contracts, relative path deduction, and valid YAML/JSON serialization for all 6 extensibility primitives (`SKILL.md`, `plugin.json`, `mcp_config.json`, `hooks.json`, `agent.md`, `rule.md`).
+_Avoid_: template helper, manifest util
+
+**Search Index**:
+The lightweight in-memory inverted search engine (`src/lib/searchIndex.ts`) — pre-tokenizes and indexes all corpus records (modules, schemas, evidence probes, citations, ADRs) for $O(1)$ token-to-document retrieval.
+_Avoid_: search utils, query helper
+
+
+
 

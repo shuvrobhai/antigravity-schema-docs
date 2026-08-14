@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Copy, Check, Sparkles, Box, Shield, Terminal, Cpu, FileCode, Layers, CheckCircle2, Download, AlertCircle, Wrench, type LucideIcon } from 'lucide-react';
-import Ajv from 'ajv';
-import type { JsonValue } from '../types';
-
-type SubtoolId = 'skill' | 'plugin' | 'mcp' | 'hook' | 'agent' | 'rule';
-type McpTransport = 'stdio' | 'remote';
-type McpAuthProvider = 'none' | 'google_credentials' | 'oauth';
-type HookEvent = 'PreToolUse' | 'PostToolUse' | 'PreInvocation' | 'PostInvocation' | 'Stop';
-type AgentModel = 'inherit' | 'pro' | 'flash';
-type AgentPolicy = 'sandbox' | 'auto' | 'eager' | 'off';
-type RuleMode = 'Always On' | 'Manual' | 'Model Decision' | 'Glob';
+import {
+  type SubtoolId,
+  type McpTransport,
+  type McpAuthProvider,
+  type HookEvent,
+  type AgentModel,
+  type AgentPolicy,
+  type RuleMode,
+  DEFAULT_SKILL_OPTIONS,
+  DEFAULT_PLUGIN_OPTIONS,
+  DEFAULT_MCP_OPTIONS,
+  DEFAULT_HOOK_OPTIONS,
+  DEFAULT_AGENT_OPTIONS,
+  DEFAULT_RULE_OPTIONS,
+  generateSkillManifest,
+  generatePluginManifest,
+  generateMcpManifest,
+  generateHookManifest,
+  generateAgentManifest,
+  generateRuleManifest,
+} from '../schema/manifestGenerator';
 
 const SUBTOOLS: { id: SubtoolId; label: string; icon: LucideIcon; section: string }[] = [
   { id: 'skill', label: 'Skill (SKILL.md)', icon: Sparkles, section: '§4.2' },
@@ -25,57 +36,57 @@ export const ExtensibilityHub: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   // Skill Generator State
-  const [skillName, setSkillName] = useState('code-security-reviewer');
-  const [skillDesc, setSkillDesc] = useState('Audits code for vulnerabilities, OWASP Top 10 risks, hardcoded secrets, and unsafe dependencies. Use when reviewing PRs or performing security passes.');
-  const [skillCategory, setSkillCategory] = useState('Security');
-  const [skillVersion, setSkillVersion] = useState('1.0.0');
-  const [skillDisableSlash, setSkillDisableSlash] = useState(false);
-  const [skillModelInvocable, setSkillModelInvocable] = useState(true);
-  const [skillBody, setSkillBody] = useState(`# Security Review Guide\n\n## When to Use\n- When conducting pull request reviews\n- When checking for unescaped user inputs or SQL injections\n\n## Review Steps\n1. Inspect modified lines for untrusted inputs\n2. Verify environment variable declarations in .env.example\n3. Flag any credentials or secrets`);
+  const [skillName, setSkillName] = useState(DEFAULT_SKILL_OPTIONS.name);
+  const [skillDesc, setSkillDesc] = useState(DEFAULT_SKILL_OPTIONS.description);
+  const [skillCategory, setSkillCategory] = useState(DEFAULT_SKILL_OPTIONS.category || 'Security');
+  const [skillVersion, setSkillVersion] = useState(DEFAULT_SKILL_OPTIONS.version || '1.0.0');
+  const [skillDisableSlash, setSkillDisableSlash] = useState(DEFAULT_SKILL_OPTIONS.disableSlashCommand || false);
+  const [skillModelInvocable, setSkillModelInvocable] = useState(DEFAULT_SKILL_OPTIONS.modelInvocable ?? true);
+  const [skillBody, setSkillBody] = useState(DEFAULT_SKILL_OPTIONS.body);
 
   // Plugin Generator State
-  const [pluginName, setPluginName] = useState('devops-toolchain');
-  const [pluginDesc, setPluginDesc] = useState('Production devops automation with Terraform, Docker, and Kubernetes skills.');
-  const [pluginHasSkills, setPluginHasSkills] = useState(true);
-  const [pluginHasAgents, setPluginHasAgents] = useState(true);
-  const [pluginHasHooks, setPluginHasHooks] = useState(true);
-  const [pluginHasMcp, setPluginHasMcp] = useState(true);
-  const [pluginHasRules, setPluginHasRules] = useState(false);
+  const [pluginName, setPluginName] = useState(DEFAULT_PLUGIN_OPTIONS.name);
+  const [pluginDesc, setPluginDesc] = useState(DEFAULT_PLUGIN_OPTIONS.description);
+  const [pluginHasSkills, setPluginHasSkills] = useState(DEFAULT_PLUGIN_OPTIONS.hasSkills ?? true);
+  const [pluginHasAgents, setPluginHasAgents] = useState(DEFAULT_PLUGIN_OPTIONS.hasAgents ?? true);
+  const [pluginHasHooks, setPluginHasHooks] = useState(DEFAULT_PLUGIN_OPTIONS.hasHooks ?? true);
+  const [pluginHasMcp, setPluginHasMcp] = useState(DEFAULT_PLUGIN_OPTIONS.hasMcp ?? true);
+  const [pluginHasRules, setPluginHasRules] = useState(DEFAULT_PLUGIN_OPTIONS.hasRules ?? false);
 
   // MCP Configurator State
-  const [mcpServerName, setMcpServerName] = useState('github-integration');
-  const [mcpTransport, setMcpTransport] = useState<McpTransport>('stdio');
-  const [mcpCommand, setMcpCommand] = useState('npx');
-  const [mcpArgs, setMcpArgs] = useState('-y @modelcontextprotocol/server-github');
-  const [mcpRemoteUrl, setMcpRemoteUrl] = useState('https://api.github.com/mcp/');
-  const [mcpEnvKey, setMcpEnvKey] = useState('GITHUB_PERSONAL_ACCESS_TOKEN');
-  const [mcpEnvVal, setMcpEnvVal] = useState('${GITHUB_TOKEN}');
-  const [mcpAuthProvider, setMcpAuthProvider] = useState<McpAuthProvider>('none');
-  const [mcpTimeout, setMcpTimeout] = useState<number>(30);
+  const [mcpServerName, setMcpServerName] = useState(DEFAULT_MCP_OPTIONS.serverName);
+  const [mcpTransport, setMcpTransport] = useState<McpTransport>(DEFAULT_MCP_OPTIONS.transport);
+  const [mcpCommand, setMcpCommand] = useState(DEFAULT_MCP_OPTIONS.command);
+  const [mcpArgs, setMcpArgs] = useState(DEFAULT_MCP_OPTIONS.args);
+  const [mcpRemoteUrl, setMcpRemoteUrl] = useState(DEFAULT_MCP_OPTIONS.remoteUrl);
+  const [mcpEnvKey, setMcpEnvKey] = useState(DEFAULT_MCP_OPTIONS.envKey);
+  const [mcpEnvVal, setMcpEnvVal] = useState(DEFAULT_MCP_OPTIONS.envVal);
+  const [mcpAuthProvider, setMcpAuthProvider] = useState<McpAuthProvider>(DEFAULT_MCP_OPTIONS.authProvider);
+  const [mcpTimeout, setMcpTimeout] = useState<number>(DEFAULT_MCP_OPTIONS.timeout);
 
   // Hook Configurator State
-  const [hookName, setHookName] = useState('linter-gate');
-  const [hookEvent, setHookEvent] = useState<HookEvent>('PostToolUse');
-  const [hookMatcher, setHookMatcher] = useState('run_command');
-  const [hookCommand, setHookCommand] = useState('./scripts/lint-check.sh');
-  const [hookTimeout, setHookTimeout] = useState(15);
-  const [hookEnabled, setHookEnabled] = useState(true);
+  const [hookName, setHookName] = useState(DEFAULT_HOOK_OPTIONS.name);
+  const [hookEvent, setHookEvent] = useState<HookEvent>(DEFAULT_HOOK_OPTIONS.event);
+  const [hookMatcher, setHookMatcher] = useState(DEFAULT_HOOK_OPTIONS.matcher);
+  const [hookCommand, setHookCommand] = useState(DEFAULT_HOOK_OPTIONS.command);
+  const [hookTimeout, setHookTimeout] = useState(DEFAULT_HOOK_OPTIONS.timeout);
+  const [hookEnabled, setHookEnabled] = useState(DEFAULT_HOOK_OPTIONS.enabled);
 
   // Custom Agent State
-  const [agentName, setAgentName] = useState('qa-engineer');
-  const [agentDesc, setAgentDesc] = useState('Automates end-to-end regression tests and generates coverage reports.');
-  const [agentModel, setAgentModel] = useState<AgentModel>('inherit');
-  const [agentPolicy, setAgentPolicy] = useState<AgentPolicy>('sandbox');
-  const [agentIsSubagent, setAgentIsSubagent] = useState(true);
-  const [agentIsMain, setAgentIsMain] = useState(true);
-  const [agentTools, setAgentTools] = useState<string[]>(['view_file', 'run_command', 'grep_search']);
-  const [agentPrompt, setAgentPrompt] = useState(`# QA Engineer System Prompt\nYou are an automated QA engineer specializing in TypeScript and Vitest.\n\n# Objectives\n- Always run unit tests after code modifications\n- Assert edge cases including null, undefined, and empty arrays`);
+  const [agentName, setAgentName] = useState(DEFAULT_AGENT_OPTIONS.name);
+  const [agentDesc, setAgentDesc] = useState(DEFAULT_AGENT_OPTIONS.description);
+  const [agentModel, setAgentModel] = useState<AgentModel>(DEFAULT_AGENT_OPTIONS.model);
+  const [agentPolicy, setAgentPolicy] = useState<AgentPolicy>(DEFAULT_AGENT_OPTIONS.policy);
+  const [agentIsSubagent, setAgentIsSubagent] = useState(DEFAULT_AGENT_OPTIONS.isSubagent);
+  const [agentIsMain, setAgentIsMain] = useState(DEFAULT_AGENT_OPTIONS.isMain);
+  const [agentTools, setAgentTools] = useState<string[]>(DEFAULT_AGENT_OPTIONS.tools);
+  const [agentPrompt, setAgentPrompt] = useState(DEFAULT_AGENT_OPTIONS.prompt);
 
   // Rule Generator State
-  const [ruleName, setRuleName] = useState('typescript-strictness');
-  const [ruleMode, setRuleMode] = useState<RuleMode>('Glob');
-  const [ruleGlob, setRuleGlob] = useState('src/**/*.{ts,tsx}');
-  const [ruleContent, setRuleContent] = useState(`All TypeScript files must adhere to strict type checking. Never use 'any' without an explicit code comment justifying the exception. Prefer interfaces over type aliases for object definitions.`);
+  const [ruleName, setRuleName] = useState(DEFAULT_RULE_OPTIONS.name);
+  const [ruleMode, setRuleMode] = useState<RuleMode>(DEFAULT_RULE_OPTIONS.mode);
+  const [ruleGlob, setRuleGlob] = useState(DEFAULT_RULE_OPTIONS.glob || 'src/**/*.{ts,tsx}');
+  const [ruleContent, setRuleContent] = useState(DEFAULT_RULE_OPTIONS.content);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -83,172 +94,82 @@ export const ExtensibilityHub: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Generate Skill Output
-  const generateSkillMarkdown = () => {
-    const metaBlock = skillCategory || skillVersion ? `\nmetadata:\n  category: ${skillCategory}\n  version: ${skillVersion}` : '';
-    const slashBlock = skillDisableSlash ? `\ndisable-slash-command: true` : '';
-    return `---
-name: ${skillName}
-description: >-
-  ${skillDesc}${metaBlock}${slashBlock}
----
-
-${skillBody}
-`;
-  };
-
-  // Generate Plugin Manifest Output
-  const generatePluginManifest = () => {
-    return JSON.stringify(
-      {
-        $schema: 'https://antigravity.google/schemas/v1/plugin.json',
-        name: pluginName,
-        description: pluginDesc,
-      },
-      null,
-      2
-    );
-  };
-
-  // Generate MCP Config Output
-  const generateMcpConfig = () => {
-    const serverObj: Record<string, JsonValue> = {};
-    if (mcpTransport === 'stdio') {
-      serverObj.command = mcpCommand;
-      serverObj.args = mcpArgs.split(' ').filter(Boolean);
-      if (mcpEnvKey) {
-        serverObj.env = { [mcpEnvKey]: mcpEnvVal };
-      }
-    } else {
-      serverObj.serverUrl = mcpRemoteUrl;
-      serverObj.headers = { Authorization: 'Bearer YOUR_TOKEN_OR_SECRET' };
-    }
-
-    if (mcpAuthProvider === 'google_credentials') {
-      serverObj.authProviderType = 'google_credentials';
-    } else if (mcpAuthProvider === 'oauth') {
-      serverObj.oauth = { clientId: 'CLIENT_ID', clientSecret: 'CLIENT_SECRET' };
-    }
-
-    if (mcpTimeout !== 30) {
-      serverObj.timeout = mcpTimeout;
-    }
-
-    return JSON.stringify(
-      {
-        mcpServers: {
-          [mcpServerName]: serverObj,
-        },
-      },
-      null,
-      2
-    );
-  };
-
-  // Generate Hooks Config Output
-  const generateHooksConfig = () => {
-    const hookObj: Record<string, JsonValue> = {};
-    if (!hookEnabled) hookObj.enabled = false;
-
-    const eventEntry: Record<string, JsonValue> = {
-      hooks: [
-        {
-          type: 'command',
+  const generatedResult = useMemo(() => {
+    switch (activeSubtool) {
+      case 'skill':
+        return generateSkillManifest({
+          name: skillName,
+          description: skillDesc,
+          category: skillCategory,
+          version: skillVersion,
+          disableSlashCommand: skillDisableSlash,
+          modelInvocable: skillModelInvocable,
+          body: skillBody,
+        });
+      case 'plugin':
+        return generatePluginManifest({
+          name: pluginName,
+          description: pluginDesc,
+          hasSkills: pluginHasSkills,
+          hasAgents: pluginHasAgents,
+          hasHooks: pluginHasHooks,
+          hasMcp: pluginHasMcp,
+          hasRules: pluginHasRules,
+        });
+      case 'mcp':
+        return generateMcpManifest({
+          serverName: mcpServerName,
+          transport: mcpTransport,
+          command: mcpCommand,
+          args: mcpArgs,
+          remoteUrl: mcpRemoteUrl,
+          envKey: mcpEnvKey,
+          envVal: mcpEnvVal,
+          authProvider: mcpAuthProvider,
+          timeout: mcpTimeout,
+        });
+      case 'hook':
+        return generateHookManifest({
+          name: hookName,
+          event: hookEvent,
+          matcher: hookMatcher,
           command: hookCommand,
           timeout: hookTimeout,
-        },
-      ],
-    };
-
-    if (hookEvent === 'PreToolUse' || hookEvent === 'PostToolUse') {
-      eventEntry.matcher = hookMatcher;
-    }
-
-    hookObj[hookEvent] = [eventEntry];
-
-    return JSON.stringify(
-      {
-        [hookName]: hookObj,
-      },
-      null,
-      2
-    );
-  };
-
-  // Generate Custom Agent Output
-  const generateAgentMarkdown = () => {
-    return `---
-name: ${agentName}
-description: >-
-  ${agentDesc}
-tools:
-${agentTools.map(t => `  - ${t}`).join('\n')}
-mainAgent: ${agentIsMain}
-subagent: ${agentIsSubagent}
-model: ${agentModel}
-commandExecutionPolicy: ${agentPolicy}
----
-
-${agentPrompt}
-`;
-  };
-
-  // Generate Rule Output
-  const generateRuleMarkdown = () => {
-    let header = '';
-    if (ruleMode === 'Glob') {
-      header = `<!-- activation: glob(${ruleGlob}) -->\n`;
-    } else if (ruleMode === 'Always On') {
-      header = `<!-- activation: always_on -->\n`;
-    } else if (ruleMode === 'Model Decision') {
-      header = `<!-- activation: model_decision -->\n`;
-    } else {
-      header = `<!-- activation: manual -->\n`;
-    }
-
-    return `${header}# Rule: ${ruleName}
-
-${ruleContent}
-`;
-  };
-
-  const getActiveCode = () => {
-    switch (activeSubtool) {
-      case 'skill':
-        return generateSkillMarkdown();
-      case 'plugin':
-        return generatePluginManifest();
-      case 'mcp':
-        return generateMcpConfig();
-      case 'hook':
-        return generateHooksConfig();
+          enabled: hookEnabled,
+        });
       case 'agent':
-        return generateAgentMarkdown();
+        return generateAgentManifest({
+          name: agentName,
+          description: agentDesc,
+          model: agentModel,
+          policy: agentPolicy,
+          isSubagent: agentIsSubagent,
+          isMain: agentIsMain,
+          tools: agentTools,
+          prompt: agentPrompt,
+        });
       case 'rule':
-        return generateRuleMarkdown();
+        return generateRuleManifest({
+          name: ruleName,
+          mode: ruleMode,
+          glob: ruleGlob,
+          content: ruleContent,
+        });
     }
-  };
+  }, [
+    activeSubtool,
+    skillName, skillDesc, skillCategory, skillVersion, skillDisableSlash, skillModelInvocable, skillBody,
+    pluginName, pluginDesc, pluginHasSkills, pluginHasAgents, pluginHasHooks, pluginHasMcp, pluginHasRules,
+    mcpServerName, mcpTransport, mcpCommand, mcpArgs, mcpRemoteUrl, mcpEnvKey, mcpEnvVal, mcpAuthProvider, mcpTimeout,
+    hookName, hookEvent, hookMatcher, hookCommand, hookTimeout, hookEnabled,
+    agentName, agentDesc, agentModel, agentPolicy, agentIsSubagent, agentIsMain, agentTools, agentPrompt,
+    ruleName, ruleMode, ruleGlob, ruleContent,
+  ]);
 
-  const getTargetFilePath = () => {
-    switch (activeSubtool) {
-      case 'skill':
-        return `.agents/skills/${skillName}/SKILL.md`;
-      case 'plugin':
-        return `plugins/${pluginName}/plugin.json`;
-      case 'mcp':
-        return `.agents/mcp_config.json`;
-      case 'hook':
-        return `.agents/hooks.json`;
-      case 'agent':
-        return `.agents/agents/${agentName}.md`;
-      case 'rule':
-        return `.agents/rules/${ruleName}.md`;
-    }
-  };
-
-  const currentCode = getActiveCode();
-  const charCount = currentCode.length;
-  const approxTokens = Math.round(charCount / 4);
+  const currentCode = generatedResult.content;
+  const targetFilePath = generatedResult.path;
+  const charCount = generatedResult.charCount;
+  const approxTokens = generatedResult.approxTokens;
 
   return (
     <div className="flex-1 h-[calc(100vh-4rem)] overflow-y-auto px-4 lg:px-8 py-6 space-y-6 max-w-7xl mx-auto">
@@ -265,7 +186,7 @@ ${ruleContent}
 
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono text-stone-400">
-              Target: <code className="text-cyan-300 bg-stone-900 px-2 py-0.5 rounded border border-stone-800">{getTargetFilePath()}</code>
+              Target: <code className="text-cyan-300 bg-stone-900 px-2 py-0.5 rounded border border-stone-800">{targetFilePath}</code>
             </span>
           </div>
         </div>
@@ -820,7 +741,7 @@ ${pluginHasSkills ? '├── skills/\n' : ''}${pluginHasAgents ? '├── ag
             <div className="flex items-center justify-between px-4 py-3 bg-stone-950 border-b border-stone-800">
               <div className="flex items-center gap-2">
                 <FileCode className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-mono font-bold text-stone-200">{getTargetFilePath()}</span>
+                <span className="text-xs font-mono font-bold text-stone-200">{targetFilePath}</span>
               </div>
 
               <div className="flex items-center gap-2">

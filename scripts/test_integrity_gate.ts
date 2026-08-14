@@ -23,7 +23,7 @@ import {
 import { MarkdownDoc as CoreMarkdownDoc, extractHeadings, parseFrontmatterMap, parseSimpleYaml } from '../src/lib/markdownCore';
 import { MarkdownDoc as CliMarkdownDoc } from './lib/docInspector';
 import { EvidenceRegistry, readSnapshotHeader } from './lib/evidenceRegistry';
-import { parseSourceFrontmatter } from '../src/data/sourceProcessing';
+import { parseSourceFrontmatter } from '../src/lib/evidenceRegistry';
 import { createFsStore } from './validate';
 
 const ROOT = process.cwd();

@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { ValidationCheckResult } from '../types';
-import { runAllValidations } from '../data/validationEngine';
+import { runChecks } from '../lib/integrityGate';
+import { documentStore } from '../data/repository';
+import type { CheckResult } from '../lib/documentStore';
 import { CheckCircle2, AlertTriangle, Info, RefreshCw, Terminal, Shield, Check, ChevronDown, ChevronRight } from 'lucide-react';
 
 export const ValidationConsole: React.FC = () => {
-  const [results, setResults] = useState<ValidationCheckResult[]>(() => runAllValidations());
+  const [results, setResults] = useState<CheckResult[]>(() => runChecks(documentStore));
   const [running, setRunning] = useState(false);
   const [expandedCheck, setExpandedCheck] = useState<string | null>(null);
 
   const handleRunAll = () => {
     setRunning(true);
     setTimeout(() => {
-      setResults(runAllValidations());
+      setResults(runChecks(documentStore));
       setRunning(false);
     }, 400);
   };
@@ -101,7 +102,7 @@ export const ValidationConsole: React.FC = () => {
                     </span>
                     {res.status === 'na' ? (
                       <Info className="w-4 h-4 text-amber-400 shrink-0" />
-                    ) : res.passed ? (
+                    ) : res.status === 'pass' ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     ) : (
                       <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />

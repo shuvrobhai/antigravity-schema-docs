@@ -1,11 +1,9 @@
 import { ReferenceModule, JsonSchemaItem, EvidenceProbe, SourceCitation, AdrRecord, JsonValue } from '../types';
 import {
-  groupDuplicateSources,
-  indexSourceReferenceLocations,
-  computeSourceArchiveStats,
-  SourceArchiveStats,
+  EvidenceRegistry,
   parseSourceFrontmatter,
-} from './sourceProcessing';
+  type SourceArchiveStats,
+} from '../lib/evidenceRegistry';
 import { extractHeadings as parseHeadings, parseYamlFrontmatter } from '../lib/markdownCore';
 import { flattenCitations, normalizePath } from '../lib/documentStore';
 import type { DocumentStore, CitationDoc } from '../lib/documentStore';
@@ -193,26 +191,30 @@ export function parseEvidenceProbesFromFiles(): EvidenceProbe[] {
 
 export const evidenceProbes = parseEvidenceProbesFromFiles();
 
-// 5. Process Source Citations (evidence/sources/) with Duplicate Identification and Location Indexing
+// 5. Process Source Citations (evidence/sources/) via unified EvidenceRegistry
 const rawSourceInputs = Object.entries(rawEvidenceDocs)
   .filter(([path]) => path.startsWith('/evidence/sources/') && !path.endsWith('index.md'))
   .map(([path, contentObj]) => ({
-    path,
+    path: path.replace(/^\//, ''),
     rawContent: extractContent(contentObj),
   }));
 
-const rawGroupedCitations = groupDuplicateSources(rawSourceInputs);
+const worksCitedRaw = rawReferenceModules['/reference/19-works-cited.md']
+  ? extractContent(rawReferenceModules['/reference/19-works-cited.md'])
+  : '';
 
-export const sourceCitations: SourceCitation[] = indexSourceReferenceLocations(rawGroupedCitations, {
-  referenceModules,
-  evidenceDoc,
-  evidenceProbes,
-  adrRecords,
-  jsonSchemas,
+export const evidenceRegistry = EvidenceRegistry.fromTexts({
+  worksCitedText: worksCitedRaw,
+  evidenceText: evidenceDoc,
+  snapshots: rawSourceInputs,
 });
 
-export const sourceArchiveStats: SourceArchiveStats = computeSourceArchiveStats(
-  sourceCitations,
+export const sourceCitations: SourceCitation[] = evidenceRegistry.indexCrossReferences(
+  referenceModules,
+  adrRecords
+);
+
+export const sourceArchiveStats: SourceArchiveStats = evidenceRegistry.getArchiveStats(
   rawSourceInputs.length
 );
 

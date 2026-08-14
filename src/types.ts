@@ -88,53 +88,11 @@ export interface EvidenceProbe {
   rawContent: string;
 }
 
-export interface SourceReferenceLocation {
-  targetType: 'reference' | 'evidence' | 'adr' | 'schema' | 'doc';
-  targetId: string; // e.g. 04-extensibility-architecture.md
-  targetTitle: string; // e.g. §04. Extensibility Architecture
-  sectionTitle?: string;
-  lineNumber: number;
-  lineText: string;
-  contextSnippet: string;
-  matchType: 'badge' | 'url' | 'file_link' | 'works_cited' | 'text_mention';
-  matchedText: string;
-  deepLink: { tab: TabType; selectedId: string; headingId?: string };
-}
-
-export interface MergedSourceItem {
-  number: number;
-  filename: string;
-  category: 'docs' | 'google' | 'protocol' | 'community';
-  title: string;
-  url: string;
-  finalUrl?: string;
-  rawContent: string;
-  fetched?: string;
-  status?: number | string;
-  license?: string;
-}
-
-export interface SourceCitation {
-  id: string;
-  number: number;
-  citationNumbers: number[];
-  slug: string;
-  title: string;
-  category: 'docs' | 'google' | 'protocol' | 'community';
-  url: string;
-  finalUrl?: string;
-  canonicalUrl: string;
-  filename: string;
-  filenames: string[];
-  rawContent: string;
-  archivedDate?: string;
-  license?: string;
-  status?: number | string;
-  isDuplicateGroup?: boolean;
-  duplicateCount?: number;
-  mergedSources?: MergedSourceItem[];
-  referenceLocations: SourceReferenceLocation[];
-}
+export type {
+  SourceReferenceLocation,
+  MergedSourceItem,
+  SourceCitation,
+} from './lib/evidenceRegistry';
 
 export interface AdrRecord {
   id: string;
@@ -146,16 +104,6 @@ export interface AdrRecord {
   rawContent: string;
 }
 
-export interface ValidationCheckResult {
-  id: string;
-  name: string;
-  category: string;
-  passed: boolean;
-  /** 'pass' | 'fail' | 'na' — n/a means the check needs disk access only the CLI has. */
-  status: 'pass' | 'fail' | 'na';
-  messages: string[];
-  details: string[];
-}
 
 export interface SearchResultItem {
   type: 'reference' | 'schema' | 'evidence' | 'source' | 'adr';

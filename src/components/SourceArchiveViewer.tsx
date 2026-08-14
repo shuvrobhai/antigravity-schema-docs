@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { SourceCitation, TabType, SourceReferenceLocation, MergedSourceItem } from '../types';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { normalizeCanonicalUrl } from '../data/sourceProcessing';
+import { normalizeCanonicalUrl } from '../lib/evidenceRegistry';
 import { extractFrontmatterBlock } from '../lib/markdownCore';
 import { CitationTooltip, LocationBadgeTooltip } from './CitationTooltip';
 import {
