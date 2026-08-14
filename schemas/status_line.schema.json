@@ -114,7 +114,8 @@
     },
     "execution_mode": {
       "type": "string",
-      "description": "Active execution strategy (e.g. 'planning', 'fast')."
+      "enum": ["planning", "fast", "default", "accept-edits"],
+      "description": "Active execution strategy (e.g. 'planning', 'fast', 'default', 'accept-edits')."
     },
     "vim": {
       "type": "object",

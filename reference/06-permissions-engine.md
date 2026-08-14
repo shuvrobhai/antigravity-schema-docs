@@ -11,6 +11,12 @@
 | `strict` | Prompts for all non-read tools |
 | `always-proceed` | No prompts |
 
+**Interactive Prompts & Runtime Scope Expansion `[DOCS]`:**
+When the agent executes a blocked or "Ask" tool, an interactive prompt card appears in the TUI or editor.
+* **Target Scope Editing:** Before selecting **Allow**, users can directly edit the proposed resource string in the prompt card (for example, broadening `read_file(/project/src/main.py)` to `read_file(/project/src/)` to apply the expanded grant for the remainder of the session).
+* **Security Guardrail:** Scope editing is **strictly disabled for terminal command resources** to prevent accidental privilege escalation.
+
+
 ### 6.2 Fine-Grained Level
 
 ```json

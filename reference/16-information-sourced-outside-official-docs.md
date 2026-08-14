@@ -39,14 +39,17 @@ All live corrections in this revision come from direct observation of a user-con
 | `general.preferredEditor` 18 enum values | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
 | `general.openEditorInNewWindow`, `general.vimMode` | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
 | `policyPaths`, `adminPolicyPaths` | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
-| Migration path mapping (`~/.gemini/skills/` → `~/.gemini/config/skills/`) | Migration docs `[GOOGLE]` | Provides critical path correction for users migrating from Gemini CLI |
+| Migration path mapping (`~/.gemini/skills/` → `~/.gemini/config/skills/` & `~/.gemini/antigravity-cli/skills/`) | `cli/gcli-migration` `[DOCS:32]` / `docs/skills` `[DOCS:08]` | Now officially sourced in official docs; dual-path loading confirmed by EV-012 |
 | `AfterAgent`/`AfterTool` event names | Claude-Mem integration docs `[COMMUNITY]` | Official hooks docs list `PreInvocation`/`PostInvocation`; naming discrepancy unresolved |
 | `/goal` command and subagent loop patterns | LinkedIn blog post `[GOOGLE]` | `/goal` now confirmed on official landing page; loop patterns are user experience |
 | `/schedule` one-time timers capped at 900 s | Google Cloud Medium tutorial (Antigravity CLI series) `[GOOGLE]` | Hard behavioral cap absent from official docs |
 
 ### From Third-Party Sources `[COMMUNITY]`
 
+*Policy Note:* Primary third-party claims are anchored by formally snapshotted entries in §19 (`#53`–`#59`). Secondary names and multi-author consensus reports listed below (e.g. OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout) serve as corroborating references in this audit ledger without inflating the primary snapshot archive.
+
 | Information | Source | Why Included |
+
 |---|---|---|
 | Skills interoperable across Claude Code, Cursor, Codex CLI | OrangeBot `[COMMUNITY]`, GitHub (claude-faces-expert) `[COMMUNITY]` | Official docs don't explicitly state cross-tool portability of Skills |
 | Security: hidden Unicode instructions can survive human review | Embrace The Red `[COMMUNITY]` | Official docs don't address this security concern |

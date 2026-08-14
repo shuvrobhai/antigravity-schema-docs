@@ -1,6 +1,21 @@
 ## 4. Extensibility Architecture
 
-Antigravity CLI supports seven extensibility mechanisms.
+Antigravity CLI supports seven modular extensibility mechanisms built on open, portable standards:
+
+```text
+                ┌──────────────────────────────────┐
+                │      Shared Ecosystem Core       │
+                └────────────────/─────────────────┘
+                                /
+        ┌──────────────────────┼──────────────────────┐
+        ▼                      ▼                      ▼
+  Custom Skills          Custom Agents          Native Plugins
+ (SKILL.md + YAML)       (.md + Frontmatter)    (plugin.json manifest)
+        │                      │                      │
+        ▼                      ▼                      ▼
+ ~/.gemini/.../skills/  .agents/agents/        ~/.gemini/config/plugins/
+```
+
 
 ### 4.1 Progressive Disclosure Engine
 
@@ -606,18 +621,38 @@ Backward compat: `.agent/rules` (singular) `[DOCS]`.
 
 ### 4.7 Workflows
 
-**Definition:** Markdown files with title, description, and step sequences `[DOCS]`.
+**Definition:** Markdown files defining multi-step prompt playbooks invoked sequentially via slash commands `[DOCS]`.
 
 | Aspect | Detail |
 |---|---|
-| Invocation | `/workflow-name` |
-| Scope | Global or Workspace |
+| Invocation | `/<workflow-name>` (derived from filename or frontmatter `name`) |
+| Scope | Global (`~/.gemini/antigravity/global_workflows/`) or Workspace (`.agents/workflows/*.md`) |
 | Composition | Workflows can call other workflows |
 | Execution | Sequential; supports `// turbo` and `// turbo-all` non-interactive annotations |
+| Argument Passing | `$ARGUMENTS` token in markdown body interpolates user-provided parameters |
 | Management | Customizations panel |
 | Size Limit | **12,000 characters** per workflow file `[DOCS]` |
 
+**Frontmatter Specification (`schemas/workflow.schema.json`):** `[DOCS:34]` / `[LIVE-1.1.12 · 2026-08-13]` (R-005, R-006)
+
+```yaml
+---
+title: Deploy Application          # Display title (official IDE format)
+name: deploy-app                   # Optional slug identifier (defaults to file name)
+description: Deploys the application to staging or production environment.
+---
+
+# /deploy - Production Deployment Playbook
+
+1. Run test suite before deployment: `npm test`
+2. Build production assets: `npm run build`
+3. Deploy target: `$ARGUMENTS`
+```
+
+*Note on Key Resolution:* Official docs (`ide/workflows`) document `title` + `description`. Real system workflows (audited in R-006) frequently declare only `description` in frontmatter while placing the command title in the Markdown H1 header and deriving the slash command from the filename. `schemas/workflow.schema.json` accepts `title`, `name`, and `description` as optional keys.
+
 **Distinction from Rules:** Rules = persistent context at prompt level. Workflows = structured sequences at trajectory level `[DOCS]`.
+
 
 ### 4.8 Lifecycle Hooks
 

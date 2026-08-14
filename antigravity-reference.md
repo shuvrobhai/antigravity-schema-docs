@@ -99,9 +99,20 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 
 ## 1. Executive Summary
 
-Google Antigravity CLI (`agy`) is a lightweight, terminal-first interface for directing autonomous coding agents, executing shell commands, and managing background subagents entirely from the keyboard. It is the terminal component of the broader Google Antigravity ecosystem, which also includes Antigravity 2.0 (standalone desktop application), Antigravity IDE, and the Antigravity SDK.
+The **Google Antigravity Ecosystem** is an advanced, agent-first development platform designed to orchestrate autonomous subagents, schedule background tasks, manage workspace permissions, and execute interactive local code verification. By bringing foundation-model intelligence directly into the local development environment, the platform moves beyond simple code completion into autonomous codebase refactoring and browser-in-the-loop verification.
 
-The platform's extensibility architecture is built on open, portable standards: Markdown files with YAML frontmatter for Skills, Agents, Rules, and Workflows; the Model Context Protocol (MCP) for tool integrations; and JSON configuration files for hooks and settings. This design ensures customizations are portable across Claude Code, Cursor, Codex CLI, and any other tool adopting the same standards.
+### 1.1 Core Subsystems
+The ecosystem consists of four major user-facing product surfaces:
+1. **Antigravity 2.0 (Desktop):** A standalone desktop command center for orchestrating multiple parallel agents, organizing folders into structured Projects, and managing scheduled background tasks.
+2. **Antigravity IDE:** A VS Code-forked development environment with tightly integrated agent side panels, tab autocomplete, and visual artifact review. (Note: Enterprise licenses are excluded from the IDE).
+3. **Antigravity CLI (`agy`):** A fast, lightweight terminal surface supporting natural-language prompts, interactive slash commands, multi-threaded subagent monitoring, and headless pipeline automation.
+4. **Antigravity SDK:** A programmatic Python framework (`google-antigravity`) for building custom agents, registering custom functions as tools, and defining declarative security policies.
+
+### 1.2 Open Extensibility Principles
+To prevent vendor lock-in and minimize token overhead, the extensibility layers are built entirely on open, portable standards:
+* **Markdown Frontmatter:** Custom skills, persona definitions (Agents), modular Rules, and step playbooks (Workflows) are declared as Markdown files with YAML frontmatter. This format is fully portable to alternative agent tools such as Claude Code, Cursor, and Codex CLI.
+* **Model Context Protocol (MCP):** Connects AI agents securely to local files, databases, search APIs, and external remote tools via SSE or Stdio.
+* **JSON Schemas:** Runtime state, hooks, preferences, and prompt histories are mapped to structured, machine-readable JSON schemas supporting offline auditing and validation.
 
 This report documents every confirmed configuration key, path, schema, command, and behavioral specification available from official documentation (`antigravity.google/docs/*`), while clearly identifying information sourced from other channels and cataloging behavioral questions the official docs leave unanswered.
 
@@ -239,37 +250,47 @@ Google Antigravity comprises four products `[DOCS]`:
 **Source:** `[DOCS]`
 
 ### 3.4 Migration from Gemini CLI
+`[DOCS:32]`
 
-Starting June 18, 2026, Gemini Code Assist IDE extensions and Gemini CLI stopped serving requests for consumer tiers `[GOOGLE]`. Enterprise subscriptions remain unaffected.
+Starting June 18, 2026, Gemini Code Assist IDE extensions and Gemini CLI stopped serving requests for consumer tiers `[GOOGLE:48]`. Enterprise subscriptions remain unaffected.
 
-**Configuration migration mapping:** `[GOOGLE]`
+**Configuration migration mapping:** `[DOCS:08,32]` / `[LIVE-1.1.12 · 2026-08-13]` `EV-012`
 
-| Configuration | Gemini CLI (Legacy) | Antigravity CLI (Current) |
-|---|---|---|
-| User settings | `~/.gemini/settings.json` | `~/.gemini/antigravity-cli/settings.json` |
-| Global shared skills | `~/.gemini/skills/` | `~/.gemini/config/skills/` |
-| Workspace project skills | `.gemini/skills/` | `.agents/skills/` |
+| Configuration | Gemini CLI (Legacy) | Antigravity CLI (Current) | Authority & Notes |
+|---|---|---|---|
+| User settings | `~/.gemini/settings.json` | `~/.gemini/antigravity-cli/settings.json` | `[DOCS:32]` (`cli/gcli-migration`) |
+| Global shared skills | `~/.gemini/skills/` | `~/.gemini/config/skills/` AND `~/.gemini/antigravity-cli/skills/` | `docs/skills` `[DOCS:08]` documents `~/.gemini/config/skills/`; `cli/gcli-migration` `[DOCS:32]` documents `~/.gemini/antigravity-cli/skills/`. Both exist and load dynamically (`EV-012`). |
+| Workspace project skills | `.gemini/skills/` | `.agents/skills/` | `[DOCS:08,32]` |
 
 **Binary coexistence:** Both `agy` and the legacy `gemini` binary can be installed and run side by side on the same machine — different binary names, separate configuration trees, no interference `[COMMUNITY]`. Verified by multiple independent migration guides during the June 18, 2026 deprecation window (aibuilderclub, harshrastogi.tech, how2shout). Useful for incremental script migration.
+
 
 ### 3.5 Model Ecosystem
 
 `[DOCS]`
 
-| Model | Free & AI Plus | AI Pro | AI Ultra | Enterprise |
-|---|---|---|---|---|
-| Gemini 3.6 Flash | Yes | Yes | Yes | Yes |
-| Gemini 3.5 Flash | Yes | Yes | Yes | Yes |
-| Gemini 3.1 Pro | Yes | Yes | Yes | Yes |
-| Claude Sonnet 4.6 (thinking) | Yes | Yes | Yes | **No** |
-| Claude Opus 4.6 (thinking) | Yes | Yes | Yes | **No** |
-| GPT-OSS-120b | Yes | Yes | Yes | **No** |
+| Model Slug | Free & AI Plus | AI Pro | AI Ultra | Enterprise | Description |
+|---|---|---|---|---|---|
+| `gemini-3.7-flash-high` | Yes | Yes | Yes | Yes | Gemini 3.7 Flash (High Effort) |
+| `gemini-3.7-flash-medium` | Yes | Yes | Yes | Yes | Gemini 3.7 Flash (Medium Effort) |
+| `gemini-3.6-flash-high` | Yes | Yes | Yes | Yes | Gemini 3.6 Flash (High Effort) |
+| `gemini-3.6-flash-medium` | Yes | Yes | Yes | Yes | Gemini 3.6 Flash (Medium Effort) |
+| `gemini-3.5-flash-medium` | Yes | Yes | Yes | Yes | Gemini 3.5 Flash (Medium Effort) |
+| `gemini-3.1-pro-high` | Yes | Yes | Yes | Yes | Gemini 3.1 Pro (High Effort) |
+| `claude-sonnet-4-6` | Yes | Yes | Yes | **No** | Claude Sonnet 4.6 (Thinking enabled) |
+| `claude-opus-4-6` | Yes | Yes | Yes | **No** | Claude Opus 4.6 (Thinking enabled) |
+| `gpt-oss-120b` | Yes | Yes | Yes | **No** | GPT-OSS-120b |
 
-**Nano Banana 2** is used internally for generative image tasks `[DOCS]`.
+* **Nano Banana 2:** An internal, non-customizable vision-generative model used natively by the `generate_image` tool to render UI mockups, page assets, and architectural diagrams `[DOCS]`.
+* **Model Stickiness:** Model selections are strictly "sticky" within a conversation `[DOCS]`. If the reasoning model is modified mid-execution, the agent continues to use the original model until the active turn finishes or is explicitly canceled.
 
-Model selection is "sticky" within a conversation `[DOCS]`.
+### 3.6 Terms of Service and API Gaps
 
-### 3.6 Open Standards Foundation
+* **Third-Party Tool Blocks:** Utilizing third-party software, terminal emulators, or alternative client wrappers with your Antigravity OAuth session is a direct violation of the Terms of Service `[DOCS]`. Violations severely degrade the service and are grounds for account suspension.
+* **CLI Authentication Limitation:** The Antigravity CLI does not support local API-key authentication (open issue `google-antigravity/antigravity-cli#78`) `[COMMUNITY]`. Developers must use Application Default Credentials (ADC) or OAuth. In contrast, the SDK fully supports `api_key` configuration or `GEMINI_API_KEY` environment variables `[DOCS]`.
+
+
+### 3.7 Open Standards Foundation
 
 The entire extensibility architecture is built on portable, open standards:
 
@@ -287,7 +308,22 @@ MCP is described as "an open-source standard" using a USB-C analogy for AI apps 
 
 ## 4. Extensibility Architecture
 
-Antigravity CLI supports seven extensibility mechanisms.
+Antigravity CLI supports seven modular extensibility mechanisms built on open, portable standards:
+
+```text
+                ┌──────────────────────────────────┐
+                │      Shared Ecosystem Core       │
+                └────────────────/─────────────────┘
+                                /
+        ┌──────────────────────┼──────────────────────┐
+        ▼                      ▼                      ▼
+  Custom Skills          Custom Agents          Native Plugins
+ (SKILL.md + YAML)       (.md + Frontmatter)    (plugin.json manifest)
+        │                      │                      │
+        ▼                      ▼                      ▼
+ ~/.gemini/.../skills/  .agents/agents/        ~/.gemini/config/plugins/
+```
+
 
 ### 4.1 Progressive Disclosure Engine
 
@@ -893,18 +929,38 @@ Backward compat: `.agent/rules` (singular) `[DOCS]`.
 
 ### 4.7 Workflows
 
-**Definition:** Markdown files with title, description, and step sequences `[DOCS]`.
+**Definition:** Markdown files defining multi-step prompt playbooks invoked sequentially via slash commands `[DOCS]`.
 
 | Aspect | Detail |
 |---|---|
-| Invocation | `/workflow-name` |
-| Scope | Global or Workspace |
+| Invocation | `/<workflow-name>` (derived from filename or frontmatter `name`) |
+| Scope | Global (`~/.gemini/antigravity/global_workflows/`) or Workspace (`.agents/workflows/*.md`) |
 | Composition | Workflows can call other workflows |
 | Execution | Sequential; supports `// turbo` and `// turbo-all` non-interactive annotations |
+| Argument Passing | `$ARGUMENTS` token in markdown body interpolates user-provided parameters |
 | Management | Customizations panel |
 | Size Limit | **12,000 characters** per workflow file `[DOCS]` |
 
+**Frontmatter Specification (`schemas/workflow.schema.json`):** `[DOCS:34]` / `[LIVE-1.1.12 · 2026-08-13]` (R-005, R-006)
+
+```yaml
+---
+title: Deploy Application          # Display title (official IDE format)
+name: deploy-app                   # Optional slug identifier (defaults to file name)
+description: Deploys the application to staging or production environment.
+---
+
+# /deploy - Production Deployment Playbook
+
+1. Run test suite before deployment: `npm test`
+2. Build production assets: `npm run build`
+3. Deploy target: `$ARGUMENTS`
+```
+
+*Note on Key Resolution:* Official docs (`ide/workflows`) document `title` + `description`. Real system workflows (audited in R-006) frequently declare only `description` in frontmatter while placing the command title in the Markdown H1 header and deriving the slash command from the filename. `schemas/workflow.schema.json` accepts `title`, `name`, and `description` as optional keys.
+
 **Distinction from Rules:** Rules = persistent context at prompt level. Workflows = structured sequences at trajectory level `[DOCS]`.
+
 
 ### 4.8 Lifecycle Hooks
 
@@ -1382,6 +1438,12 @@ Type `/config` or `/settings`. Navigate with arrows. Enter to toggle. Escape to 
 | `strict` | Prompts for all non-read tools |
 | `always-proceed` | No prompts |
 
+**Interactive Prompts & Runtime Scope Expansion `[DOCS]`:**
+When the agent executes a blocked or "Ask" tool, an interactive prompt card appears in the TUI or editor.
+* **Target Scope Editing:** Before selecting **Allow**, users can directly edit the proposed resource string in the prompt card (for example, broadening `read_file(/project/src/main.py)` to `read_file(/project/src/)` to apply the expanded grant for the remainder of the session).
+* **Security Guardrail:** Scope editing is **strictly disabled for terminal command resources** to prevent accidental privilege escalation.
+
+
 ### 6.2 Fine-Grained Level
 
 ```json
@@ -1784,8 +1846,9 @@ Sandboxing is configured inside global preferences (`~/.gemini/antigravity-cli/s
 ```
 
 - **`enableTerminalSandbox`** (boolean, default: `false`): Restricts all local terminal tools and execution commands launched by agents to OS containment rings.
-- **Fail-Closed Security Guarantee:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution **fails closed** with a hard error rather than silently executing unprotected `[DOCS:06]` / `[GOOGLE:47]`.
-- **Symlink Escape Prevention:** Symlinks within the project directory pointing to targets outside the workspace root are blocked to prevent directory traversal escapes (`../`) `[DOCS:06]` / `[GOOGLE:47]`.
+- **Fail-Closed Security Guarantee `[INFERRED]`:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution is inferred to **fail closed** with a hard error rather than silently executing unprotected (security design contract).
+- **Symlink Escape Prevention `[INFERRED]`:** Symlinks within the project directory pointing to targets outside the workspace root are restricted to prevent directory traversal escapes (`../`).
+
 
 ### Interactive Approval Behavior `[DOCS:06]`
 
@@ -2459,14 +2522,17 @@ All live corrections in this revision come from direct observation of a user-con
 | `general.preferredEditor` 18 enum values | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
 | `general.openEditorInNewWindow`, `general.vimMode` | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
 | `policyPaths`, `adminPolicyPaths` | Gemini CLI docs `[GOOGLE]` | Not in Antigravity docs |
-| Migration path mapping (`~/.gemini/skills/` → `~/.gemini/config/skills/`) | Migration docs `[GOOGLE]` | Provides critical path correction for users migrating from Gemini CLI |
+| Migration path mapping (`~/.gemini/skills/` → `~/.gemini/config/skills/` & `~/.gemini/antigravity-cli/skills/`) | `cli/gcli-migration` `[DOCS:32]` / `docs/skills` `[DOCS:08]` | Now officially sourced in official docs; dual-path loading confirmed by EV-012 |
 | `AfterAgent`/`AfterTool` event names | Claude-Mem integration docs `[COMMUNITY]` | Official hooks docs list `PreInvocation`/`PostInvocation`; naming discrepancy unresolved |
 | `/goal` command and subagent loop patterns | LinkedIn blog post `[GOOGLE]` | `/goal` now confirmed on official landing page; loop patterns are user experience |
 | `/schedule` one-time timers capped at 900 s | Google Cloud Medium tutorial (Antigravity CLI series) `[GOOGLE]` | Hard behavioral cap absent from official docs |
 
 ### From Third-Party Sources `[COMMUNITY]`
 
+*Policy Note:* Primary third-party claims are anchored by formally snapshotted entries in §19 (`#53`–`#59`). Secondary names and multi-author consensus reports listed below (e.g. OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout) serve as corroborating references in this audit ledger without inflating the primary snapshot archive.
+
 | Information | Source | Why Included |
+
 |---|---|---|
 | Skills interoperable across Claude Code, Cursor, Codex CLI | OrangeBot `[COMMUNITY]`, GitHub (claude-faces-expert) `[COMMUNITY]` | Official docs don't explicitly state cross-tool portability of Skills |
 | Security: hidden Unicode instructions can survive human review | Embrace The Red `[COMMUNITY]` | Official docs don't address this security concern |
@@ -2834,4 +2900,4 @@ for r in results:
 
 ---
 
-*End of Report — Version 8.3 (Rule & Config Validation Hardening Edition)*
+*End of Report — Version 8.10 (Empirical Grounding of Rules, Glob Syntax, and Workflow Files Edition)*

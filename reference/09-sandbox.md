@@ -22,8 +22,9 @@ Sandboxing is configured inside global preferences (`~/.gemini/antigravity-cli/s
 ```
 
 - **`enableTerminalSandbox`** (boolean, default: `false`): Restricts all local terminal tools and execution commands launched by agents to OS containment rings.
-- **Fail-Closed Security Guarantee:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution **fails closed** with a hard error rather than silently executing unprotected `[DOCS:06]` / `[GOOGLE:47]`.
-- **Symlink Escape Prevention:** Symlinks within the project directory pointing to targets outside the workspace root are blocked to prevent directory traversal escapes (`../`) `[DOCS:06]` / `[GOOGLE:47]`.
+- **Fail-Closed Security Guarantee `[INFERRED]`:** If the underlying OS sandbox binary or namespace capabilities are missing (e.g. inside an unprivileged Docker container lacking namespace privileges), execution is inferred to **fail closed** with a hard error rather than silently executing unprotected (security design contract).
+- **Symlink Escape Prevention `[INFERRED]`:** Symlinks within the project directory pointing to targets outside the workspace root are restricted to prevent directory traversal escapes (`../`).
+
 
 ### Interactive Approval Behavior `[DOCS:06]`
 

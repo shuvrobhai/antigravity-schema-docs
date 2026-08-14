@@ -21,14 +21,14 @@ antigtavity-schema/
 ├── Makefile                       # Standard task automation interface
 ├── antigravity-reference.md       # Composed monolithic parent document (Build artifact)
 │
-├── schemas/                       # 19 Standalone JSON Schemas (Section 20 catalog)
+├── schemas/                       # 20 Standalone JSON Schemas (Section 20 catalog)
 │   ├── settings.schema.json       # CLI configuration schema
 │   ├── plugin.schema.json         # Plugin manifest schema
 │   ├── agent.schema.json          # Agent frontmatter schema
 │   ├── skill.schema.json          # Skill frontmatter schema
 │   ├── mcp_config.schema.json     # MCP server configuration schema
 │   ├── hooks.schema.json          # Lifecycle hooks schema
-│   └── ... (19 total schemas)
+│   └── ... (20 total schemas)
 │
 ├── reference/                     # Source modules (Source of truth)
 │   ├── 00-preamble.md             # Title, changelog, report methodology, and TOC

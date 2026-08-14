@@ -33,37 +33,47 @@ Google Antigravity comprises four products `[DOCS]`:
 **Source:** `[DOCS]`
 
 ### 3.4 Migration from Gemini CLI
+`[DOCS:32]`
 
-Starting June 18, 2026, Gemini Code Assist IDE extensions and Gemini CLI stopped serving requests for consumer tiers `[GOOGLE]`. Enterprise subscriptions remain unaffected.
+Starting June 18, 2026, Gemini Code Assist IDE extensions and Gemini CLI stopped serving requests for consumer tiers `[GOOGLE:48]`. Enterprise subscriptions remain unaffected.
 
-**Configuration migration mapping:** `[GOOGLE]`
+**Configuration migration mapping:** `[DOCS:08,32]` / `[LIVE-1.1.12 · 2026-08-13]` `EV-012`
 
-| Configuration | Gemini CLI (Legacy) | Antigravity CLI (Current) |
-|---|---|---|
-| User settings | `~/.gemini/settings.json` | `~/.gemini/antigravity-cli/settings.json` |
-| Global shared skills | `~/.gemini/skills/` | `~/.gemini/config/skills/` |
-| Workspace project skills | `.gemini/skills/` | `.agents/skills/` |
+| Configuration | Gemini CLI (Legacy) | Antigravity CLI (Current) | Authority & Notes |
+|---|---|---|---|
+| User settings | `~/.gemini/settings.json` | `~/.gemini/antigravity-cli/settings.json` | `[DOCS:32]` (`cli/gcli-migration`) |
+| Global shared skills | `~/.gemini/skills/` | `~/.gemini/config/skills/` AND `~/.gemini/antigravity-cli/skills/` | `docs/skills` `[DOCS:08]` documents `~/.gemini/config/skills/`; `cli/gcli-migration` `[DOCS:32]` documents `~/.gemini/antigravity-cli/skills/`. Both exist and load dynamically (`EV-012`). |
+| Workspace project skills | `.gemini/skills/` | `.agents/skills/` | `[DOCS:08,32]` |
 
 **Binary coexistence:** Both `agy` and the legacy `gemini` binary can be installed and run side by side on the same machine — different binary names, separate configuration trees, no interference `[COMMUNITY]`. Verified by multiple independent migration guides during the June 18, 2026 deprecation window (aibuilderclub, harshrastogi.tech, how2shout). Useful for incremental script migration.
+
 
 ### 3.5 Model Ecosystem
 
 `[DOCS]`
 
-| Model | Free & AI Plus | AI Pro | AI Ultra | Enterprise |
-|---|---|---|---|---|
-| Gemini 3.6 Flash | Yes | Yes | Yes | Yes |
-| Gemini 3.5 Flash | Yes | Yes | Yes | Yes |
-| Gemini 3.1 Pro | Yes | Yes | Yes | Yes |
-| Claude Sonnet 4.6 (thinking) | Yes | Yes | Yes | **No** |
-| Claude Opus 4.6 (thinking) | Yes | Yes | Yes | **No** |
-| GPT-OSS-120b | Yes | Yes | Yes | **No** |
+| Model Slug | Free & AI Plus | AI Pro | AI Ultra | Enterprise | Description |
+|---|---|---|---|---|---|
+| `gemini-3.7-flash-high` | Yes | Yes | Yes | Yes | Gemini 3.7 Flash (High Effort) |
+| `gemini-3.7-flash-medium` | Yes | Yes | Yes | Yes | Gemini 3.7 Flash (Medium Effort) |
+| `gemini-3.6-flash-high` | Yes | Yes | Yes | Yes | Gemini 3.6 Flash (High Effort) |
+| `gemini-3.6-flash-medium` | Yes | Yes | Yes | Yes | Gemini 3.6 Flash (Medium Effort) |
+| `gemini-3.5-flash-medium` | Yes | Yes | Yes | Yes | Gemini 3.5 Flash (Medium Effort) |
+| `gemini-3.1-pro-high` | Yes | Yes | Yes | Yes | Gemini 3.1 Pro (High Effort) |
+| `claude-sonnet-4-6` | Yes | Yes | Yes | **No** | Claude Sonnet 4.6 (Thinking enabled) |
+| `claude-opus-4-6` | Yes | Yes | Yes | **No** | Claude Opus 4.6 (Thinking enabled) |
+| `gpt-oss-120b` | Yes | Yes | Yes | **No** | GPT-OSS-120b |
 
-**Nano Banana 2** is used internally for generative image tasks `[DOCS]`.
+* **Nano Banana 2:** An internal, non-customizable vision-generative model used natively by the `generate_image` tool to render UI mockups, page assets, and architectural diagrams `[DOCS]`.
+* **Model Stickiness:** Model selections are strictly "sticky" within a conversation `[DOCS]`. If the reasoning model is modified mid-execution, the agent continues to use the original model until the active turn finishes or is explicitly canceled.
 
-Model selection is "sticky" within a conversation `[DOCS]`.
+### 3.6 Terms of Service and API Gaps
 
-### 3.6 Open Standards Foundation
+* **Third-Party Tool Blocks:** Utilizing third-party software, terminal emulators, or alternative client wrappers with your Antigravity OAuth session is a direct violation of the Terms of Service `[DOCS]`. Violations severely degrade the service and are grounds for account suspension.
+* **CLI Authentication Limitation:** The Antigravity CLI does not support local API-key authentication (open issue `google-antigravity/antigravity-cli#78`) `[COMMUNITY]`. Developers must use Application Default Credentials (ADC) or OAuth. In contrast, the SDK fully supports `api_key` configuration or `GEMINI_API_KEY` environment variables `[DOCS]`.
+
+
+### 3.7 Open Standards Foundation
 
 The entire extensibility architecture is built on portable, open standards:
 

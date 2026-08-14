@@ -114,4 +114,5 @@ for r in results:
 
 ---
 
-*End of Report — Version 8.3 (Rule & Config Validation Hardening Edition)*
+*End of Report — Version 8.10 (Empirical Grounding of Rules, Glob Syntax, and Workflow Files Edition)*
+
