@@ -1,5 +1,5 @@
 ---
-source: 45
+source: 42
 category: community
 title: Antigravity SDK API key in CI (GitHub Action)
 url: "https://github.com/rsamborski/run-agy-sdk"

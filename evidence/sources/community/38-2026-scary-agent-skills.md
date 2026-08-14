@@ -1,5 +1,5 @@
 ---
-source: 41
+source: 38
 category: community
 title: Scary Agent Skills
 url: "https://embracethered.com/blog/posts/2026/scary-agent-skills/"

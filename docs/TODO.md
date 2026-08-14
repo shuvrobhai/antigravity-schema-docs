@@ -1,6 +1,6 @@
 # TODO — Open Issues & Next-Session Work
 
-Status ledger for issues surfaced by the schema coverage audit (**R-002**) and the rule frontmatter research (**R-003**), plus related hardening. Applied items are listed for traceability; the open items below are the next session's backlog.
+Status ledger for issues surfaced by the schema coverage audit (**R-002**), the rule frontmatter research (**R-003**), and the works-cited verification (**R-004**), plus related hardening. Applied items are listed for traceability; the open items below are the next session's backlog.
 
 ## Applied (2026-08-14)
 
@@ -11,6 +11,7 @@ Status ledger for issues surfaced by the schema coverage audit (**R-002**) and t
 - [x] **MCP transport** — each `mcpServers` entry requires at least one of `command` (stdio) or `serverUrl` (remote), per the official docs (R-002 §3.3).
 - [x] **`settings.general.defaultApprovalMode`** — enumerated `default | auto_edit | plan` (R-002 §4; resolved in §18).
 - [x] **YAML block scalars** — `parseSimpleYaml` in `src/lib/markdownCore.ts` supports `>` / `|` values, so multi-line skill/rule descriptions parse fully (R-002 §4).
+- [x] **Works Cited minimization** — re-verified every Google/community §19 entry against the official docs (`llms.txt` + live pages), dropped the 3 never-cited codelabs, renumbered 46 → 43 entries, renamed/renumbered snapshots + `source:` frontmatter, regenerated the manifest, updated badges/§2 ranges/registry self-test/UI counts (R-004).
 
 ## Open for next session
 
@@ -41,8 +42,24 @@ Most schemas use `additionalProperties: true`. Where docs define closed enums/re
 Current block-scalar support is best-effort: folding (`>`) joins lines with spaces, literal (`|`) keeps newlines, trailing whitespace is trimmed. YAML-exact chomping (`+` keeps trailing newlines, `-` strips), multi-paragraph `|` blocks, and indentation preservation are not implemented. Add unit tests pinning the real skill files' `description: >` parsing.
 
 ### 9. Version-string drift
-Preamble version header and the §20 end-note must stay in sync with the top changelog row after each revision (currently 8.3).
+Preamble version header and the §20 end-note must stay in sync with the top changelog row after each revision (currently 8.4).
+
+### 10. §09 fail-closed / symlink-escape claims lack a backing source (R-004 §6.1)
+The claims at `reference/09-sandbox.md` ("fails closed with a hard error", "symlinks … outside the workspace root are blocked") are tagged `[DOCS:06]`/`[GOOGLE:32]`, but none of the live official sandbox doc, the archived snapshot, the geminicli configuration reference, or the geminicli sandbox page contains that language (2026-08-14). Find the true source or downgrade the claims.
+
+### 11. Official-docs conflict on the global skills path (R-004 §6.2)
+`docs/cli/gcli-migration` says global skills migrate to `~/.gemini/antigravity-cli/skills/`; `docs/skills` says the global location is `~/.gemini/config/skills/`. Both directories exist on this install. Resolve before re-sourcing §3.4/§16 migration rows from `[GOOGLE]`/`[COMMUNITY]` to `[DOCS]`.
+
+### 12. §16 bare-tag community sources have no works-cited entries (R-004 §6.3)
+OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout, Google Cloud Medium tutorial, LinkedIn, community round-up are cited by bare tag in §16 but absent from §19. Decide: add entries (grows the list) or accept bare tags as audit-table-only citations (keeps §19 minimal).
+
+### 13. Live settings doc lists keys not yet in `settings.schema.json` (R-004 §6.4)
+`allowNonWorkspaceAccess`, `altScreenMode`, `runningLightSpeed`, `verbosity`, `useG1Credits`, `showTips`, `showFeedbackSurvey`, `notifications`, `editorMode` — re-check schema coverage against the 2026-08-14 live page.
+
+### 14. Snapshot the newly-surfaced official pages (R-004 §3)
+`cli/install`, `cli/gcli-migration`, `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `cli/commands/*`, `ide/rules`, `ide/workflows`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq`, `plans` — candidates to close §16/§17 gaps.
 
 ## Where the findings live
 - `evidence/reports/R-002-schema-coverage-audit.md`
 - `evidence/reports/R-003-rule-frontmatter-format.md`
+- `evidence/reports/R-004-works-cited-minimization-audit.md`

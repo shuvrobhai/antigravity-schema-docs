@@ -85,7 +85,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onNav
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search all 21 chapters, 18 schemas, 20 evidence logs, 46 sources..."
+            placeholder="Search all 21 chapters, 19 schemas, 20 evidence logs, 43 sources..."
             value={query}
             onChange={e => setQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm text-white placeholder-stone-500 focus:outline-none font-mono"

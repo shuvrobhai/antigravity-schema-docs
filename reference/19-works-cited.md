@@ -42,24 +42,21 @@ All sources are tagged by category: `[DOCS]` = official docs, `[LIVE-1.1.12 · 2
 ### Google-Owned, Non-Docs `[GOOGLE]`
 
 31. Agent Skills 101 — https://codelabs.developers.google.com/getting-started-with-antigravity-skills
-32. Getting Started with Google Antigravity — https://codelabs.developers.google.com/getting-started-google-antigravity
-33. Spec-Driven Development — https://codelabs.developers.google.com/sdd-agy-cli
-34. Hands-on with Antigravity CLI — https://codelabs.developers.google.com/antigravity-cli-hands-on
-35. Configuration — https://geminicli.com/docs/reference/configuration/ (relocated; old `google.github.io/gemini-cli/docs/configuration` returns 404 as of 2026-08-11)
-36. Antigravity SDK announcement blog — https://antigravity.google/blog/introducing-google-antigravity-sdk
-37. antigravity-sdk-python (official repo) — https://github.com/google-antigravity/antigravity-sdk-python
-38. CLI API-key auth feature request — https://github.com/google-antigravity/antigravity-cli/issues/78
+32. Configuration — https://geminicli.com/docs/reference/configuration/ (relocated; old `google.github.io/gemini-cli/docs/configuration` returns 404 as of 2026-08-11)
+33. Antigravity SDK announcement blog — https://antigravity.google/blog/introducing-google-antigravity-sdk
+34. antigravity-sdk-python (official repo) — https://github.com/google-antigravity/antigravity-sdk-python
+35. CLI API-key auth feature request — https://github.com/google-antigravity/antigravity-cli/issues/78
 
 ### Protocol Specification `[PROTOCOL]`
 
-39. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
+36. MCP Specification — https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
 
 ### Third-Party Sources `[COMMUNITY]`
 
-40. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
-41. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
-42. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
-43. Google Antigravity SDK: The developer guide (K. Weinmeister) — https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc
-44. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
-45. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
-46. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
+37. Antigravity CLI Setup — https://docs.claude-mem.ai/antigravity-cli/setup
+38. Scary Agent Skills — https://embracethered.com/blog/posts/2026/scary-agent-skills/
+39. claude-faces-expert — https://github.com/omnifaces/claude-faces-expert
+40. Google Antigravity SDK: The developer guide (K. Weinmeister) — https://www.linkedin.com/pulse/google-antigravity-sdk-developer-guide-karl-weinmeister-nymsc
+41. C# Dev Kit not available in Google Antigravity IDE — https://github.com/microsoft/vscode-dotnettools/issues/2557
+42. Antigravity SDK API key in CI (GitHub Action) — https://github.com/rsamborski/run-agy-sdk
+43. 15-Minute Migration to Antigravity CLI — https://harshrastogi.tech/blog/gemini-cli-shutdown-antigravity-migration-guide
