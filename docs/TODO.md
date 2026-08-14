@@ -16,49 +16,31 @@ Status ledger for issues surfaced by the schema coverage audit (**R-002**), the 
 - [x] **Evidence archive expansion II** — added 7 more official-docs sources (`cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp`) as §19 entries #40-46; renumbered §19 to 59 entries (docs 1-46, google 47-51, protocol 52, community 53-59); renamed the 13 affected snapshots + `source:` frontmatter and fetched the 7 new pages into `evidence/sources/docs/`.
 - [x] **Append-only numbering + final archive batch** — adopted append-only §19 numbering (new sources get the next free numbers at the end of the list, no renumbering of existing entries/snapshots); archived the final `llms.txt` batch (9 CLI command pages, `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting`) as §19 entries #60-73 (now 73 entries); fetched the 14 pages into `evidence/sources/docs/`.
 - [x] **Schema verification against archived IDE pages** — confirmed `hooks`/`rule`/`workflow` schemas match the official `ide/hooks`, `ide/rules`, `ide/workflows` pages (R-005); validated the exact documented hooks.json example and workflow `title`+`description` frontmatter with the repo's own validator. No schema changes required.
+- [x] **Hook payload schemas & 20-schema catalog expansion** — added `schemas/hook_payload.schema.json` as the 20th native schema covering stdin/stdout contracts across all five hook events (`PreToolUse`, `PostToolUse`, `PreInvocation`, `PostInvocation`, `Stop`) with reusable `$defs` (`CommonHookContext`, `InjectStep`); registered in the §20.2 matrix (R-002 §2.2).
+- [x] **Schema `$id` namespace documentation** — documented in §20 that `$id` URLs (`https://antigravity.google/schemas/v1/*.schema.json`) represent canonical JSON Schema Draft 2020-12 namespace URIs rather than resolvable HTTP endpoints (R-002 §4).
+- [x] **§20.2 matrix target-path accuracy** — updated target paths for Agent (`.agents/agents/<name>/agent.md`, `~/.gemini/config/agents/`, `plugins/<name>/agents/*.md`) and Plugin (`plugins/<name>/plugin.json`, `.agents/plugins/<name>/plugin.json`, `~/.gemini/config/plugins/<name>/plugin.json`) (R-002 §4).
+- [x] **Empirical rule frontmatter & glob syntax audit** — audited 6 real rule files in `~/.gemini/antigravity/.agents/rules/` and confirmed `trigger: always_on|model_decision|glob` + `activation: always`, and glob syntax with curly braces, recursion, comma-separated patterns (R-006).
+- [x] **Workflow schema & tokens verification** — verified 13 real workflow files in `~/.gemini/antigravity/.agents/workflows/` (`brainstorm`, `debug`, `deploy`, `orchestrate`, `plan`, `test`, `verify`, etc.); confirmed `description: ...` frontmatter, `$ARGUMENTS` tokens, and `// turbo` execution annotations (R-006).
 
 ## Open for next session
 
-### 1. Hook payload schemas (R-002 §2.2)
-The five hook events have formally documented stdin/stdout contracts (`decision`, `injectSteps`, `terminationBehavior`, `permissionOverrides`, common fields `conversationId`/`workspacePaths`/`transcriptPath`/`artifactDirectoryPath`/`modelName`) with **no schemas**. Add a `hook_payload` family (one schema per event, or one schema with per-event `$defs`) — consistent with `status_line` already being a runtime IPC payload schema. Requires registering new schemas in the §20.2 matrix and bumping the catalog count.
-Evidence: `https://antigravity.google/docs/hooks` → Input/Output Contract tables.
-
-### 2. `$id` URLs are 404 placeholders (R-002 §4)
-All schemas claim `https://antigravity.google/schemas/v1/*.schema.json`, but the URLs do not resolve (verified 2026-08-14). Decide: keep them as internal namespaces and document that they are not resolvable, or drop `$id`. Do not present them as Google-served URLs.
-
-### 3. §20.2 matrix target-path accuracy (R-002 §4)
-- Agent: add folder form `.agents/agents/<name>/agent.md`, global `~/.gemini/config/agents/`, plugin `agents/` components (EV-007/EV-008).
-- Plugin: add locations `.agents/plugins/` and `~/.gemini/config/plugins/`; note that `description`/`version`/`author`/`homepage` beyond `name` are extras (EV-010).
-
-### 4. Definitively confirm rule frontmatter with a live probe (R-003)
-Community tooling says `trigger: always_on|glob|model_decision|manual_mention`; the only real frontmatter'd file found uses `activation: always`. Create a rule through the actual UI/CLI (Rules panel or direct write in `.agents/rules/`) and inspect what Antigravity itself writes, then lock the schema's primary key.
-
-### 5. Workflow schema verification against real files
-The repo's `.agents/workflows/antigravity_research_workflow.md` (description-only frontmatter) validates. Sweep `~/.gemini` for real workflow files (`.agent/workflows/`, `.agents/workflows/`, `global_workflows/`) to confirm frontmatter keys and the `// turbo` / `// turbo-all` annotation semantics (Mace Labs).
-
-### 6. Rule glob syntax semantics (§17 open gap)
-"What glob syntax do Rules use in `Glob` activation mode?" — minimatch vs gitignore, negation (`!`), comma-joined vs array. Close with a live probe; then tighten `rule.schema.json`'s `globs` docs.
-
-### 7. Schema strictness pass
+### 1. Schema strictness pass
 Most schemas use `additionalProperties: true`. Where docs define closed enums/required sets (hooks handler `type`, transcript `source`/`type`/`status`, settings enums), consider tightening — but never in a way that rejects real observed files.
 
-### 8. `parseSimpleYaml` block-scalar edge cases
+### 2. `parseSimpleYaml` block-scalar edge cases
 Current block-scalar support is best-effort: folding (`>`) joins lines with spaces, literal (`|`) keeps newlines, trailing whitespace is trimmed. YAML-exact chomping (`+` keeps trailing newlines, `-` strips), multi-paragraph `|` blocks, and indentation preservation are not implemented. Add unit tests pinning the real skill files' `description: >` parsing.
 
-### 9. Version-string drift
-Preamble version header and the §20 end-note must stay in sync with the top changelog row after each revision (currently 8.4).
+### 3. Version-string drift
+Preamble version header and the §20 end-note must stay in sync with the top changelog row after each revision (currently 8.10).
 
-### 10. §09 fail-closed / symlink-escape claims lack a backing source (R-004 §6.1)
+### 7. §09 fail-closed / symlink-escape claims lack a backing source (R-004 §6.1)
 The claims at `reference/09-sandbox.md` ("fails closed with a hard error", "symlinks … outside the workspace root are blocked") are tagged `[DOCS:06]`/`[GOOGLE:41]`, but none of the live official sandbox doc, the archived snapshot, the geminicli configuration reference, or the geminicli sandbox page contains that language (2026-08-14). Find the true source or downgrade the claims.
 
-### 11. Official-docs conflict on the global skills path (R-004 §6.2)
+### 8. Official-docs conflict on the global skills path (R-004 §6.2)
 `docs/cli/gcli-migration` says global skills migrate to `~/.gemini/antigravity-cli/skills/`; `docs/skills` says the global location is `~/.gemini/config/skills/`. Both directories exist on this install. Resolve before re-sourcing §3.4/§16 migration rows from `[GOOGLE]`/`[COMMUNITY]` to `[DOCS]`.
 
-### 12. §16 bare-tag community sources have no works-cited entries (R-004 §6.3)
+### 9. §16 bare-tag community sources have no works-cited entries (R-004 §6.3)
 OrangeBot, mslinn.com, BleepingComputer, aibuilderclub, how2shout, Google Cloud Medium tutorial, LinkedIn, community round-up are cited by bare tag in §16 but absent from §19. Decide: add entries (grows the list) or accept bare tags as audit-table-only citations (keeps §19 minimal).
-
-### 13. Live settings doc lists keys not yet in `settings.schema.json` (R-004 §6.4)
-`allowNonWorkspaceAccess`, `altScreenMode`, `runningLightSpeed`, `verbosity`, `useG1Credits`, `showTips`, `showFeedbackSurvey`, `notifications`, `editorMode` — re-check schema coverage against the 2026-08-14 live page.
 
 ### 14. Snapshot the remaining official pages (R-004 §3)
 Done 2026-08-14: `cli/install`, `cli/gcli-migration`, `ide/rules`, `ide/workflows`, `sdk/mcp`, `sidecars`, `task-groups`, `tools`, `faq` (§19 #31-39), `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp` (§19 #40-46), `cli/commands/*` (9 pages), `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting` (§19 #60-73, append-only). Remaining (optional, add via append-only numbering): `cli/using`, `cli/tutorial`, `cli/getting-started`, `cli/install` extras, `ide/browser-recordings`, `ide/review-changes-editor`, `ide/tab`, `docs/plans`, `docs/faq` extras — useful to close §16/§17 gaps.
@@ -77,3 +59,4 @@ Both `ide/rules` and `ide/workflows` cap files at 12,000 characters; not capture
 - `evidence/reports/R-003-rule-frontmatter-format.md`
 - `evidence/reports/R-004-works-cited-minimization-audit.md`
 - `evidence/reports/R-005-schema-verification-against-archived-ide-pages.md`
+- `evidence/reports/R-006-rule-and-workflow-live-inventory-audit.md`

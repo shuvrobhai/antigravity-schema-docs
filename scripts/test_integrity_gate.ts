@@ -138,7 +138,7 @@ function fixtureSchemas(): SchemaDoc[] {
       },
     },
   ];
-  for (let i = 4; i <= 19; i++) {
+  for (let i = 4; i <= 20; i++) {
     const name = `fixture_${String(i).padStart(2, '0')}`;
     schemas.push({ filename: `${name}.schema.json`, schema: { title: name, description: 'x', properties: {} } });
   }

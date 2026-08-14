@@ -1,6 +1,6 @@
 # Google Antigravity Ecosystem: Complete Technical Reference, Schema Specification, and Gap Analysis
 
-## Version 8.8 — Schema Verification Against Archived IDE Pages Edition (agy 1.1.12)
+## Version 8.10 — Empirical Grounding of Rules, Glob Syntax, and Workflow Files (agy 1.1.12)
 
 **Live verification date:** 2026-08-13  
 **Live binary:** `agy 1.1.12`  
@@ -50,6 +50,8 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 | 8.6 | 2026-08-14 | **Evidence Archive Expansion II:** added 7 more official-docs sources to §19 — `cli/modes`, `cli/vim-editor-mode`, `cli/credits`, `ide/hooks`, `ide/settings`, `ide/plugins`, `ide/mcp` (now 59 entries: docs #1-46, Google #47-51, protocol #52, community #53-59); renamed the 13 affected archive snapshots with their `source:` frontmatter, fetched the 7 new pages into `evidence/sources/docs/`, regenerated the manifest and §2 source ranges; updated badge indices (`[GOOGLE:41]`→`[GOOGLE:47]`, `[GOOGLE:44]`→`[GOOGLE:50]`), registry self-test (52→59), and UI counts (59 sources). |
 | 8.7 | 2026-08-14 | **Append-Only Numbering & Archive Completion:** adopted append-only §19 numbering — new sources get the next free numbers at the end of the list (documented in the §19 header) so existing entries and their snapshots are never renumbered again; archived the final `llms.txt` batch (9 CLI command pages `cli/commands/*`, `ide/overview`, `ide/getting-started`, `cli/overview`, `cli/features`, `cli/prompting`) as §19 entries #60-73 (now 73 entries); fetched the 14 pages into `evidence/sources/docs/`; registry self-test (59→73) and UI counts (73 sources). |
 | 8.8 | 2026-08-14 | **Schema Verification Against Archived IDE Pages:** verified `hooks`/`rule`/`workflow` schemas against the newly-archived official `ide/hooks`, `ide/rules`, `ide/workflows` pages (S-043/S-033/S-034) with the repo's own validator — the exact documented hooks.json example (plain-list `PreInvocation`/`PostInvocation`/`Stop`, `enabled`, optional handler `type`, `timeout`) and workflow `title`+`description` frontmatter all validate; recorded R-005 (no schema changes required) and three new open items (global rules path `~/.gemini/GEMINI.md` vs `rules/` dirs, 12,000-char file limits, workflow `name` key). |
+| 8.9 | 2026-08-14 | **Hook Payload Runtime Schema & 20-Schema Catalog Expansion:** added `HookPayloadSchema` (`schemas/hook_payload.schema.json`, the 20th native schema) covering stdin/stdout contracts across all five hook events (`PreToolUse`, `PostToolUse`, `PreInvocation`, `PostInvocation`, `Stop`) and reusable context/step definitions; updated §20.2 matrix table with item #20 and expanded target paths for agents/plugins; added §20 documentation note clarifying `$id` URI namespaces; updated test suite and integrity gates to 20 native schemas. |
+| 8.10 | 2026-08-14 | **Rule Frontmatter, Glob Syntax, & Workflow Live Audit:** audited 6 real rule files and 13 real workflow files in `~/.gemini/antigravity/.agents/`; confirmed `trigger: always_on|model_decision|glob`, `activation: always`, glob syntax (curly brace expansion, recursive globbing, comma-delimited strings), and `$ARGUMENTS` workflow tokens; recorded research report R-006; resolved the §17 glob syntax gap. |
 
 ## How This Report Was Built
 
@@ -86,7 +88,7 @@ This version adds a live-system grounding pass against `agy 1.1.12` using eviden
 18. Remaining Hard Gaps
     18.1 Transcript Schema (verified hands-on, 2026-08-11)
 19. Works Cited
-20. Automated Schema Toolkit & 19 Native Schemas Reference Architecture
+20. Automated Schema Toolkit & 20 Native Schemas Reference Architecture
     20.1 Toolkit Architecture (SchemaRegistry, AuditReport, DocSyncInspector)
-    20.2 Complete 19 Native Schema Matrix
+    20.2 Complete 20 Native Schema Matrix
     20.3 Detailed Pydantic Specifications & Usage Examples

@@ -4,7 +4,7 @@ import type { ErrorObject, AnySchemaObject, ValidateFunction } from 'ajv';
 import fs from 'fs';
 import path from 'path';
 
-// Load all 19 JSON schemas: Vite statically replaces the literal
+// Load all 20 JSON schemas: Vite statically replaces the literal
 // import.meta.glob() call in the browser bundle (dev and prod builds); the
 // Node/CLI toolchain reads them from disk. Note: `typeof import.meta.glob`
 // cannot be used as a guard — it is never a runtime function in Vite builds.
@@ -82,7 +82,7 @@ for (const [path, rawModule] of Object.entries(rawSchemas)) {
 }
 
 /**
- * Validate any payload object against one of the 19 Antigravity native schemas.
+ * Validate any payload object against one of the 20 Antigravity native schemas.
  */
 export function validateAntigravityPayload(schemaKey: string, payload: unknown): SchemaValidationResult {
   const descriptor = schemaRegistry.get(schemaKey);
